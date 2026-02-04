@@ -17,8 +17,6 @@ interface UsageRecord {
   tool_name: string
   tool_display_name: string
   credits_used: number
-  input_preview: string
-  output_preview: string
   created_at: string
 }
 
@@ -32,7 +30,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadData() {
-      // Kullanıcıyı al
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
@@ -42,7 +39,6 @@ export default function DashboardPage() {
       
       setUser(user)
 
-      // Kredileri al
       const { data: creditsData } = await supabase
         .from('credits')
         .select('balance, total_used')
@@ -52,18 +48,10 @@ export default function DashboardPage() {
       if (creditsData) {
         setCredits(creditsData)
       } else {
-        // Kredi yoksa oluştur
-        await supabase
-          .from('credits')
-          .insert({
-            user_id: user.id,
-            balance: 50,
-            total_used: 0
-          })
+        await supabase.from('credits').insert({ user_id: user.id, balance: 50, total_used: 0 })
         setCredits({ balance: 50, total_used: 0 })
       }
 
-      // Kullanım geçmişini al
       const { data: historyData } = await supabase
         .from('usage_history')
         .select('*')
@@ -71,10 +59,7 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
         .limit(5)
 
-      if (historyData) {
-        setHistory(historyData)
-      }
-
+      if (historyData) setHistory(historyData)
       setLoading(false)
     }
 
@@ -87,31 +72,132 @@ export default function DashboardPage() {
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     })
   }
 
-  const getToolEmoji = (toolName: string) => {
-    const emojis: { [key: string]: string } = {
-      'summarize': '📝',
-      'sentiment': '🎭',
-      'generate': '✍️',
-      'translate': '🌍',
-      'image': '🖼️',
-    }
-    return emojis[toolName] || '🔧'
+  const toolEmojis: {[key: string]: string} = {
+    'platform-adapter': '🔄',
+    'hook-generator': '🎣',
+    'tone-adjuster': '💬',
+    'decision-helper': '⚖️',
+    'summarize': '📝',
+    'sentiment': '🎭',
   }
+
+  // Araç kategorileri
+  const toolCategories = [
+    {
+      key: 'productivity',
+      title: t.dashboard.categories.productivity,
+      color: 'from-blue-500 to-cyan-500',
+      tools: [
+        {
+          href: '/tools/platform-adapter',
+          icon: '🔄',
+          name: t.tools.platformAdapter.title,
+          desc: t.tools.platformAdapter.description,
+          credits: t.tools.platformAdapter.credits,
+          color: 'hover:border-pink-500',
+          badge: 'from-pink-500 to-purple-500'
+        },
+        {
+          href: '/tools/summarize',
+          icon: '📝',
+          name: t.tools.quickSummary.title,
+          desc: t.tools.quickSummary.description,
+          credits: t.tools.quickSummary.credits,
+          color: 'hover:border-blue-500',
+          badge: 'from-blue-500 to-cyan-500'
+        },
+      ]
+    },
+    {
+      key: 'marketing',
+      title: t.dashboard.categories.marketing,
+      color: 'from-yellow-500 to-orange-500',
+      tools: [
+        {
+          href: '/tools/hook-generator',
+          icon: '🎣',
+          name: t.tools.hookGenerator.title,
+          desc: t.tools.hookGenerator.description,
+          credits: t.tools.hookGenerator.credits,
+          color: 'hover:border-yellow-500',
+          badge: 'from-yellow-500 to-orange-500'
+        },
+        {
+          href: '#',
+          icon: '💰',
+          name: t.tools.salesAnalyzer.title,
+          desc: t.tools.salesAnalyzer.description,
+          credits: t.tools.salesAnalyzer.credits,
+          color: 'hover:border-green-500',
+          badge: 'from-green-500 to-emerald-500',
+          comingSoon: true
+        },
+      ]
+    },
+    {
+      key: 'communication',
+      title: t.dashboard.categories.communication,
+      color: 'from-cyan-500 to-blue-500',
+      tools: [
+        {
+          href: '/tools/tone-adjuster',
+          icon: '💬',
+          name: t.tools.toneAdjuster.title,
+          desc: t.tools.toneAdjuster.description,
+          credits: t.tools.toneAdjuster.credits,
+          color: 'hover:border-cyan-500',
+          badge: 'from-cyan-500 to-blue-500'
+        },
+        {
+          href: '#',
+          icon: '📧',
+          name: t.tools.emailRewriter.title,
+          desc: t.tools.emailRewriter.description,
+          credits: t.tools.emailRewriter.credits,
+          color: 'hover:border-violet-500',
+          badge: 'from-violet-500 to-purple-500',
+          comingSoon: true
+        },
+      ]
+    },
+    {
+      key: 'thinking',
+      title: t.dashboard.categories.thinking,
+      color: 'from-indigo-500 to-purple-500',
+      tools: [
+        {
+          href: '/tools/decision-helper',
+          icon: '⚖️',
+          name: t.tools.decisionHelper.title,
+          desc: t.tools.decisionHelper.description,
+          credits: t.tools.decisionHelper.credits,
+          color: 'hover:border-indigo-500',
+          badge: 'from-indigo-500 to-purple-500'
+        },
+        {
+          href: '#',
+          icon: '🧘',
+          name: t.tools.thoughtClarifier.title,
+          desc: t.tools.thoughtClarifier.description,
+          credits: t.tools.thoughtClarifier.credits,
+          color: 'hover:border-pink-500',
+          badge: 'from-pink-500 to-rose-500',
+          comingSoon: true
+        },
+      ]
+    },
+  ]
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">🧠</div>
+          <div className="text-5xl mb-4 animate-pulse">🧠</div>
           <p className="text-xl">{t.common.loading}</p>
         </div>
       </div>
@@ -125,149 +211,76 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="text-2xl">🧠</span>
-            <span className="text-xl font-bold">AI Toolkit</span>
+            <span className="text-xl font-bold">Clarity AI</span>
           </Link>
 
           <div className="flex items-center gap-4">
-            {/* Language Switcher */}
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-2 py-1 rounded text-xs transition ${
-                  language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('tr')}
-                className={`px-2 py-1 rounded text-xs transition ${
-                  language === 'tr' ? 'bg-blue-600 text-white' : 'text-gray-400'
-                }`}
-              >
-                TR
-              </button>
+              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>EN</button>
+              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>TR</button>
             </div>
-
             <span className="text-gray-400 text-sm hidden md:block">{user?.email}</span>
-            <button
-              onClick={handleLogout}
-              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition"
-            >
+            <button onClick={handleLogout} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">
               {t.nav.logout}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{t.dashboard.welcome}! 👋</h1>
-          <p className="text-gray-400">{user?.email}</p>
-        </div>
-
-        {/* Credits Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <p className="text-white/80 text-sm mb-1">{t.dashboard.credits}</p>
-              <div className="flex items-baseline gap-3">
-                <p className="text-5xl font-bold">{credits?.balance || 0}</p>
-                <p className="text-white/60 text-sm">
-                  / {(credits?.balance || 0) + (credits?.total_used || 0)} total
-                </p>
-              </div>
-              <p className="text-white/60 text-sm mt-2">
-                {language === 'en' ? 'Total used:' : 'Toplam kullanılan:'} {credits?.total_used || 0}
-              </p>
+        {/* Welcome + Credits */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <div className="lg:col-span-2">
+            <h1 className="text-3xl font-bold mb-2">{t.dashboard.welcome}! 👋</h1>
+            <p className="text-gray-400">{language === 'en' ? 'What would you like to accomplish today?' : 'Bugün ne başarmak istersin?'}</p>
+          </div>
+          
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6">
+            <p className="text-white/80 text-sm mb-1">{t.dashboard.credits}</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-4xl font-bold">{credits?.balance || 0}</p>
+              <p className="text-white/60 text-sm">{t.common.credits}</p>
             </div>
-            <button className="bg-white/20 hover:bg-white/30 backdrop-blur px-6 py-3 rounded-xl font-semibold transition">
+            <button className="mt-4 w-full bg-white/20 hover:bg-white/30 py-2 rounded-lg text-sm font-medium transition">
               {t.dashboard.buyCredits}
             </button>
           </div>
         </div>
 
-        {/* Tools Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">{t.dashboard.tools}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            
-            {/* Text Summarizer */}
-            <Link 
-              href="/tools/summarize" 
-              className="bg-gray-800 rounded-2xl p-6 hover:bg-gray-750 transition border border-gray-700 hover:border-blue-500 group"
-            >
-              <div className="text-4xl mb-4 group-hover:scale-110 transition">📝</div>
-              <h3 className="text-lg font-semibold mb-2">{t.tools.summarize.title}</h3>
-              <p className="text-gray-400 text-sm mb-4">{t.tools.summarize.description}</p>
-              <span className="inline-block text-xs bg-blue-600 px-3 py-1 rounded-full">
-                {t.tools.summarize.credits}
-              </span>
-            </Link>
-
-            {/* Sentiment Analysis */}
-            <Link 
-              href="/tools/sentiment" 
-              className="bg-gray-800 rounded-2xl p-6 hover:bg-gray-750 transition border border-gray-700 hover:border-purple-500 group"
-            >
-              <div className="text-4xl mb-4 group-hover:scale-110 transition">🎭</div>
-              <h3 className="text-lg font-semibold mb-2">{t.tools.sentiment.title}</h3>
-              <p className="text-gray-400 text-sm mb-4">{t.tools.sentiment.description}</p>
-              <span className="inline-block text-xs bg-purple-600 px-3 py-1 rounded-full">
-                {t.tools.sentiment.credits}
-              </span>
-            </Link>
-
-            {/* Coming Soon Cards */}
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
-              <div className="text-4xl mb-4">✍️</div>
-              <h3 className="text-lg font-semibold mb-2">Content Generator</h3>
-              <p className="text-gray-400 text-sm mb-4">Generate blog posts, social media</p>
-              <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">
-                {t.common.comingSoon}
-              </span>
+        {/* Tool Categories */}
+        {toolCategories.map(category => (
+          <div key={category.key} className="mb-10">
+            <h2 className={`text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r ${category.color}`}>
+              {category.title}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {category.tools.map((tool, index) => (
+                tool.comingSoon ? (
+                  <div key={index} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
+                    <div className="text-4xl mb-4">{tool.icon}</div>
+                    <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
+                    <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
+                    <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">{t.common.comingSoon}</span>
+                  </div>
+                ) : (
+                  <Link key={index} href={tool.href} className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${tool.color} transition group`}>
+                    <div className="text-4xl mb-4 group-hover:scale-110 transition">{tool.icon}</div>
+                    <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
+                    <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
+                    <span className={`inline-block text-xs bg-gradient-to-r ${tool.badge} px-3 py-1 rounded-full`}>{tool.credits}</span>
+                  </Link>
+                )
+              ))}
             </div>
-
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
-              <div className="text-4xl mb-4">🖼️</div>
-              <h3 className="text-lg font-semibold mb-2">Image Generator</h3>
-              <p className="text-gray-400 text-sm mb-4">Create images with AI</p>
-              <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">
-                {t.common.comingSoon}
-              </span>
-            </div>
-
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
-              <div className="text-4xl mb-4">🌍</div>
-              <h3 className="text-lg font-semibold mb-2">Translator</h3>
-              <p className="text-gray-400 text-sm mb-4">Translate 50+ languages</p>
-              <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">
-                {t.common.comingSoon}
-              </span>
-            </div>
-
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
-              <div className="text-4xl mb-4">💻</div>
-              <h3 className="text-lg font-semibold mb-2">Code Assistant</h3>
-              <p className="text-gray-400 text-sm mb-4">Generate and explain code</p>
-              <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">
-                {t.common.comingSoon}
-              </span>
-            </div>
-
           </div>
-        </div>
+        ))}
 
         {/* Recent History */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">{t.dashboard.history}</h2>
             {history.length > 0 && (
-              <button className="text-blue-400 hover:underline text-sm">
-                {t.dashboard.viewAll}
-              </button>
+              <button className="text-blue-400 hover:underline text-sm">{t.dashboard.viewAll}</button>
             )}
           </div>
           
@@ -275,38 +288,19 @@ export default function DashboardPage() {
             <div className="bg-gray-800 rounded-2xl border border-gray-700 p-8 text-center">
               <div className="text-4xl mb-4">📭</div>
               <p className="text-gray-400">{t.dashboard.noHistory}</p>
-              <p className="text-gray-500 text-sm mt-2">
-                {language === 'en' 
-                  ? 'Start using AI tools to see your history here'
-                  : 'Geçmişinizi görmek için AI araçlarını kullanmaya başlayın'}
-              </p>
             </div>
           ) : (
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
               {history.map((record, index) => (
-                <div 
-                  key={record.id}
-                  className={`p-4 flex items-center gap-4 ${
-                    index !== history.length - 1 ? 'border-b border-gray-700' : ''
-                  }`}
-                >
-                  <div className="text-2xl">
-                    {getToolEmoji(record.tool_name)}
-                  </div>
+                <div key={record.id} className={`p-4 flex items-center gap-4 ${index !== history.length - 1 ? 'border-b border-gray-700' : ''}`}>
+                  <div className="text-2xl">{toolEmojis[record.tool_name] || '🔧'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium">{record.tool_display_name}</span>
-                      <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">
-                        -{record.credits_used} credits
-                      </span>
+                      <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">-{record.credits_used} {t.common.credits}</span>
                     </div>
-                    <p className="text-gray-400 text-sm truncate">
-                      {record.input_preview}
-                    </p>
                   </div>
-                  <div className="text-gray-500 text-sm whitespace-nowrap">
-                    {formatDate(record.created_at)}
-                  </div>
+                  <div className="text-gray-500 text-sm whitespace-nowrap">{formatDate(record.created_at)}</div>
                 </div>
               ))}
             </div>
