@@ -84,6 +84,10 @@ export default function DashboardPage() {
     'summarize': '📝',
     'trend-detector': '🔥',
     'competitor-analyzer': '🔍',
+    'persona-forge': '🧬',
+    'objection-crusher': '🛡️',
+    'onboarding-checklist': '🧭',
+    'release-notes': '🗒️',
   }
 
   // Basitleştirilmiş araç listesi - KATEGORİ YOK
@@ -150,6 +154,42 @@ export default function DashboardPage() {
       credits: t.tools.quickSummary.credits,
       color: 'hover:border-blue-500',
       badge: 'from-blue-500 to-cyan-500'
+    },
+    {
+      href: '/tools/persona-forge',
+      icon: '🧬',
+      name: t.tools.personaForge.title,
+      desc: t.tools.personaForge.description,
+      credits: t.tools.personaForge.credits,
+      color: 'hover:border-teal-500',
+      badge: 'from-teal-500 to-emerald-500'
+    },
+    {
+      href: '/tools/objection-crusher',
+      icon: '🛡️',
+      name: t.tools.objectionCrusher.title,
+      desc: t.tools.objectionCrusher.description,
+      credits: t.tools.objectionCrusher.credits,
+      color: 'hover:border-amber-500',
+      badge: 'from-amber-500 to-orange-500'
+    },
+    {
+      href: '/tools/onboarding-checklist',
+      icon: '🧭',
+      name: t.tools.onboardingChecklist.title,
+      desc: t.tools.onboardingChecklist.description,
+      credits: t.tools.onboardingChecklist.credits,
+      color: 'hover:border-sky-500',
+      badge: 'from-sky-500 to-blue-500'
+    },
+    {
+      href: '/tools/release-notes',
+      icon: '🗒️',
+      name: t.tools.releaseNotes.title,
+      desc: t.tools.releaseNotes.description,
+      credits: t.tools.releaseNotes.credits,
+      color: 'hover:border-purple-500',
+      badge: 'from-purple-500 to-fuchsia-500'
     },
   ]
 
