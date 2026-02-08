@@ -80,116 +80,76 @@ export default function DashboardPage() {
   const toolEmojis: {[key: string]: string} = {
     'platform-adapter': '🔄',
     'hook-generator': '🎣',
-    'tone-adjuster': '💬',
     'decision-helper': '⚖️',
     'summarize': '📝',
-    'sentiment': '🎭',
+    'trend-detector': '🔥',
+    'competitor-analyzer': '🔍',
   }
 
-  // Araç kategorileri
-  const toolCategories = [
+  // Basitleştirilmiş araç listesi - KATEGORİ YOK
+  const tools = [
+    // PREMIUM ARAÇLAR
     {
-      key: 'productivity',
-      title: t.dashboard.categories.productivity,
-      color: 'from-blue-500 to-cyan-500',
-      tools: [
-        {
-          href: '/tools/platform-adapter',
-          icon: '🔄',
-          name: t.tools.platformAdapter.title,
-          desc: t.tools.platformAdapter.description,
-          credits: t.tools.platformAdapter.credits,
-          color: 'hover:border-pink-500',
-          badge: 'from-pink-500 to-purple-500'
-        },
-        {
-          href: '/tools/summarize',
-          icon: '📝',
-          name: t.tools.quickSummary.title,
-          desc: t.tools.quickSummary.description,
-          credits: t.tools.quickSummary.credits,
-          color: 'hover:border-blue-500',
-          badge: 'from-blue-500 to-cyan-500'
-        },
-      ]
+      href: '/tools/competitor-analyzer',
+      icon: '🔍',
+      name: language === 'tr' ? 'Rakip Analizi' : 'Competitor Analyzer',
+      desc: language === 'tr' 
+        ? 'Rakiplerden öğren, daha iyi içerik üret' 
+        : 'Learn from competitors, create better content',
+      credits: '8 Kredi',
+      color: 'hover:border-purple-500',
+      badge: 'from-purple-500 to-pink-500',
+      isPremium: true
     },
     {
-      key: 'marketing',
-      title: t.dashboard.categories.marketing,
-      color: 'from-yellow-500 to-orange-500',
-      tools: [
-        {
-          href: '/tools/hook-generator',
-          icon: '🎣',
-          name: t.tools.hookGenerator.title,
-          desc: t.tools.hookGenerator.description,
-          credits: t.tools.hookGenerator.credits,
-          color: 'hover:border-yellow-500',
-          badge: 'from-yellow-500 to-orange-500'
-        },
-        {
-          href: '#',
-          icon: '💰',
-          name: t.tools.salesAnalyzer.title,
-          desc: t.tools.salesAnalyzer.description,
-          credits: t.tools.salesAnalyzer.credits,
-          color: 'hover:border-green-500',
-          badge: 'from-green-500 to-emerald-500',
-          comingSoon: true
-        },
-      ]
+      href: '/tools/trend-detector',
+      icon: '🔥',
+      name: language === 'tr' ? 'Trend Dedektörü' : 'Trend Detector',
+      desc: language === 'tr' 
+        ? 'Niş\'inizde şu an trend olanları keşfedin' 
+        : 'Discover trending topics in your niche',
+      credits: '5 Kredi',
+      color: 'hover:border-red-500',
+      badge: 'from-red-500 to-pink-500',
+      isPremium: true
+    },
+    
+    // STANDART ARAÇLAR
+    {
+      href: '/tools/hook-generator',
+      icon: '🎣',
+      name: t.tools.hookGenerator.title,
+      desc: t.tools.hookGenerator.description,
+      credits: t.tools.hookGenerator.credits,
+      color: 'hover:border-yellow-500',
+      badge: 'from-yellow-500 to-orange-500'
     },
     {
-      key: 'communication',
-      title: t.dashboard.categories.communication,
-      color: 'from-cyan-500 to-blue-500',
-      tools: [
-        {
-          href: '/tools/tone-adjuster',
-          icon: '💬',
-          name: t.tools.toneAdjuster.title,
-          desc: t.tools.toneAdjuster.description,
-          credits: t.tools.toneAdjuster.credits,
-          color: 'hover:border-cyan-500',
-          badge: 'from-cyan-500 to-blue-500'
-        },
-        {
-          href: '#',
-          icon: '📧',
-          name: t.tools.emailRewriter.title,
-          desc: t.tools.emailRewriter.description,
-          credits: t.tools.emailRewriter.credits,
-          color: 'hover:border-violet-500',
-          badge: 'from-violet-500 to-purple-500',
-          comingSoon: true
-        },
-      ]
+      href: '/tools/platform-adapter',
+      icon: '🔄',
+      name: t.tools.platformAdapter.title,
+      desc: t.tools.platformAdapter.description,
+      credits: t.tools.platformAdapter.credits,
+      color: 'hover:border-pink-500',
+      badge: 'from-pink-500 to-purple-500'
     },
     {
-      key: 'thinking',
-      title: t.dashboard.categories.thinking,
-      color: 'from-indigo-500 to-purple-500',
-      tools: [
-        {
-          href: '/tools/decision-helper',
-          icon: '⚖️',
-          name: t.tools.decisionHelper.title,
-          desc: t.tools.decisionHelper.description,
-          credits: t.tools.decisionHelper.credits,
-          color: 'hover:border-indigo-500',
-          badge: 'from-indigo-500 to-purple-500'
-        },
-        {
-          href: '#',
-          icon: '🧘',
-          name: t.tools.thoughtClarifier.title,
-          desc: t.tools.thoughtClarifier.description,
-          credits: t.tools.thoughtClarifier.credits,
-          color: 'hover:border-pink-500',
-          badge: 'from-pink-500 to-rose-500',
-          comingSoon: true
-        },
-      ]
+      href: '/tools/decision-helper',
+      icon: '⚖️',
+      name: t.tools.decisionHelper.title,
+      desc: t.tools.decisionHelper.description,
+      credits: t.tools.decisionHelper.credits,
+      color: 'hover:border-indigo-500',
+      badge: 'from-indigo-500 to-purple-500'
+    },
+    {
+      href: '/tools/summarize',
+      icon: '📝',
+      name: t.tools.quickSummary.title,
+      desc: t.tools.quickSummary.description,
+      credits: t.tools.quickSummary.credits,
+      color: 'hover:border-blue-500',
+      badge: 'from-blue-500 to-cyan-500'
     },
   ]
 
@@ -232,7 +192,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
           <div className="lg:col-span-2">
             <h1 className="text-3xl font-bold mb-2">{t.dashboard.welcome}! 👋</h1>
-            <p className="text-gray-400">{language === 'en' ? 'What would you like to accomplish today?' : 'Bugün ne başarmak istersin?'}</p>
+            <p className="text-gray-400">
+              {language === 'en' 
+                ? 'What would you like to accomplish today?' 
+                : 'Bugün ne başarmak istersin?'}
+            </p>
           </div>
           
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6">
@@ -247,40 +211,46 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tool Categories */}
-        {toolCategories.map(category => (
-          <div key={category.key} className="mb-10">
-            <h2 className={`text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r ${category.color}`}>
-              {category.title}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {category.tools.map((tool, index) => (
-                tool.comingSoon ? (
-                  <div key={index} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 opacity-50 cursor-not-allowed">
-                    <div className="text-4xl mb-4">{tool.icon}</div>
-                    <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
-                    <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
-                    <span className="inline-block text-xs bg-gray-600 px-3 py-1 rounded-full">{t.common.comingSoon}</span>
+        {/* Araçlar - TEK GRİD, KATEGORİ YOK */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">
+            {language === 'en' ? '🛠️ AI Tools' : '🛠️ AI Araçlar'}
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tools.map((tool, index) => (
+              <Link 
+                key={index} 
+                href={tool.href} 
+                className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${tool.color} transition group relative`}
+              >
+                {tool.isPremium && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full font-medium">
+                      PREMIUM
+                    </span>
                   </div>
-                ) : (
-                  <Link key={index} href={tool.href} className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${tool.color} transition group`}>
-                    <div className="text-4xl mb-4 group-hover:scale-110 transition">{tool.icon}</div>
-                    <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
-                    <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
-                    <span className={`inline-block text-xs bg-gradient-to-r ${tool.badge} px-3 py-1 rounded-full`}>{tool.credits}</span>
-                  </Link>
-                )
-              ))}
-            </div>
+                )}
+                
+                <div className="text-4xl mb-4 group-hover:scale-110 transition">{tool.icon}</div>
+                <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
+                <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
+                <span className={`inline-block text-xs bg-gradient-to-r ${tool.badge} px-3 py-1 rounded-full text-white`}>
+                  {tool.credits}
+                </span>
+              </Link>
+            ))}
           </div>
-        ))}
+        </div>
 
         {/* Recent History */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">{t.dashboard.history}</h2>
             {history.length > 0 && (
-              <button className="text-blue-400 hover:underline text-sm">{t.dashboard.viewAll}</button>
+              <button className="text-blue-400 hover:underline text-sm">
+                {t.dashboard.viewAll}
+              </button>
             )}
           </div>
           
@@ -292,15 +262,24 @@ export default function DashboardPage() {
           ) : (
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
               {history.map((record, index) => (
-                <div key={record.id} className={`p-4 flex items-center gap-4 ${index !== history.length - 1 ? 'border-b border-gray-700' : ''}`}>
+                <div 
+                  key={record.id} 
+                  className={`p-4 flex items-center gap-4 ${
+                    index !== history.length - 1 ? 'border-b border-gray-700' : ''
+                  }`}
+                >
                   <div className="text-2xl">{toolEmojis[record.tool_name] || '🔧'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium">{record.tool_display_name}</span>
-                      <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">-{record.credits_used} {t.common.credits}</span>
+                      <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">
+                        -{record.credits_used} {t.common.credits}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-gray-500 text-sm whitespace-nowrap">{formatDate(record.created_at)}</div>
+                  <div className="text-gray-500 text-sm whitespace-nowrap">
+                    {formatDate(record.created_at)}
+                  </div>
                 </div>
               ))}
             </div>

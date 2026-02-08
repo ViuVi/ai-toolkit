@@ -37,7 +37,7 @@ export default function HookGeneratorPage() {
       const response = await fetch('/api/hook-generator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, userId, language }),
+        body: JSON.stringify({ topic, userId, language }),
       })
 
       const data = await response.json()

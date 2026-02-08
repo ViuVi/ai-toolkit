@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
 
     console.log('⚖️ Analyzing decision in language:', language)
 
-    // Karar analizi yap
-    const analysis = analyzeDecision(decision, language)
+    // Llama 3.1 ile karar analizi
+    const analysis = await analyzeWithLlama(decision, language)
 
     // Kredi düşür
     if (userId) {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           .insert({
             user_id: userId,
             tool_name: 'decision-helper',
-            tool_display_name: 'Decision Helper',
+            tool_display_name: language === 'tr' ? 'Karar Yardımcısı' : 'Decision Helper',
             credits_used: 3,
             input_preview: decision.substring(0, 200),
             output_preview: 'Decision analyzed',
@@ -66,305 +66,375 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ analysis })
 
   } catch (error) {
-    console.log('❌ Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    console.error('❌ Decision Helper Error:', error)
+    return NextResponse.json({ 
+      error: language === 'tr' ? 'Bir hata oluştu' : 'An error occurred' 
+    }, { status: 500 })
   }
 }
 
-function analyzeDecision(decision: string, language: string): any {
-  const decisionLower = decision.toLowerCase()
+async function analyzeWithLlama(decision: string, language: string): Promise<any> {
   
-  // Seçenekleri tespit et
+  const prompt = language === 'tr'
+    ? `Karar: "${decision}"
+
+Bu karar için detaylı bir analiz yap. Şu formatı kullan:
+
+SEÇENEKİ: [İlk seçenek açıkça belirt]
+ARTILAR:
+- [Artı 1]
+- [Artı 2]
+- [Artı 3]
+EKSİLER:
+- [Eksi 1]
+- [Eksi 2]
+RİSK: [Düşük/Orta/Yüksek]
+
+SEÇENEKİI: [İkinci seçenek açıkça belirt]
+ARTILAR:
+- [Artı 1]
+- [Artı 2]
+- [Artı 3]
+EKSİLER:
+- [Eksi 1]
+- [Eksi 2]
+RİSK: [Düşük/Orta/Yüksek]
+
+ÖNEMLİ FAKTÖRLER:
+- [Faktör 1]
+- [Faktör 2]
+
+ÖNERİ: [Detaylı önerilen ve mantıklı tavsiye]
+
+DÜŞÜNÜLECEK SORULAR:
+1. [Soru 1]
+2. [Soru 2]
+3. [Soru 3]`
+    : `Decision: "${decision}"
+
+Provide a detailed analysis for this decision. Use this format:
+
+OPTION 1: [Clearly state first option]
+PROS:
+- [Pro 1]
+- [Pro 2]
+- [Pro 3]
+CONS:
+- [Con 1]
+- [Con 2]
+RISK: [Low/Medium/High]
+
+OPTION 2: [Clearly state second option]
+PROS:
+- [Pro 1]
+- [Pro 2]
+- [Pro 3]
+CONS:
+- [Con 1]
+- [Con 2]
+RISK: [Low/Medium/High]
+
+KEY FACTORS:
+- [Factor 1]
+- [Factor 2]
+
+RECOMMENDATION: [Detailed and thoughtful advice]
+
+QUESTIONS TO CONSIDER:
+1. [Question 1]
+2. [Question 2]
+3. [Question 3]`
+
+  try {
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 1500,
+            temperature: 0.7,
+            top_p: 0.9,
+            do_sample: true,
+            return_full_text: false
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Llama API failed')
+    }
+
+    const result = await response.json()
+    
+    // Model yükleniyorsa
+    if (result.error && result.error.includes('loading')) {
+      console.log('Model loading, waiting...')
+      await new Promise(resolve => setTimeout(resolve, 20000))
+      return analyzeWithLlama(decision, language) // Retry
+    }
+
+    const generatedText = result[0]?.generated_text || result.generated_text || ''
+    console.log('Generated analysis:', generatedText.substring(0, 300))
+    
+    // Parse et
+    const analysis = parseAnalysis(generatedText, decision, language)
+    return analysis
+
+  } catch (error) {
+    console.error('Llama analysis failed:', error)
+    return getIntelligentFallback(decision, language)
+  }
+}
+
+function parseAnalysis(text: string, decision: string, language: string): any {
   const options = extractOptions(decision, language)
   
-  // Her seçenek için farklı artı/eksiler
-  const optionAnalysis = options.map((option, index) => ({
-    option,
-    pros: generatePros(option, decisionLower, language, index),
-    cons: generateCons(option, decisionLower, language, index),
-    riskLevel: assessRisk(decisionLower, index, language),
-  }))
-
-  // Genel analiz
-  const factors = analyzeFactors(decisionLower, language)
-  const recommendation = generateRecommendation(options, decisionLower, language)
-  const questions = generateClarifyingQuestions(language)
-
+  // OPTION 1 ve OPTION 2'yi bul
+  const opt1Match = text.match(/(?:OPTION 1|SEÇENEKİ):([^\n]+)/i)
+  const opt2Match = text.match(/(?:OPTION 2|SEÇENEKİI):([^\n]+)/i)
+  
+  // PROS/ARTILAR bul
+  const prosPattern = language === 'tr'
+    ? /ARTILAR:\s*((?:[-•*]\s*.+\n?)+)/gi
+    : /PROS:\s*((?:[-•*]\s*.+\n?)+)/gi
+  const prosMatches = [...text.matchAll(prosPattern)]
+  
+  // CONS/EKSİLER bul
+  const consPattern = language === 'tr'
+    ? /EKSİLER:\s*((?:[-•*]\s*.+\n?)+)/gi
+    : /CONS:\s*((?:[-•*]\s*.+\n?)+)/gi
+  const consMatches = [...text.matchAll(consPattern)]
+  
+  // RİSK bul
+  const risk1Match = text.match(/RİSK:\s*(Düşük|Orta|Yüksek|Low|Medium|High)/i)
+  const risk2Matches = [...text.matchAll(/RİSK:\s*(Düşük|Orta|Yüksek|Low|Medium|High)/gi)]
+  
+  const optionA = {
+    option: opt1Match?.[1]?.trim() || options[0],
+    pros: extractBulletPoints(prosMatches[0]?.[1] || ''),
+    cons: extractBulletPoints(consMatches[0]?.[1] || ''),
+    riskLevel: risk1Match?.[1] || (language === 'tr' ? 'Orta' : 'Medium')
+  }
+  
+  const optionB = {
+    option: opt2Match?.[1]?.trim() || options[1],
+    pros: extractBulletPoints(prosMatches[1]?.[1] || ''),
+    cons: extractBulletPoints(consMatches[1]?.[1] || ''),
+    riskLevel: risk2Matches[1]?.[1] || (language === 'tr' ? 'Orta' : 'Medium')
+  }
+  
+  // Eğer parse başarısızsa fallback
+  if (optionA.pros.length === 0 && optionB.pros.length === 0) {
+    return getIntelligentFallback(decision, language)
+  }
+  
   return {
-    options: optionAnalysis,
-    keyFactors: factors,
-    recommendation,
-    questionsToConsider: questions,
+    options: [optionA, optionB],
+    keyFactors: extractKeyFactors(text, decision, language),
+    recommendation: extractRecommendation(text, language),
+    questionsToConsider: extractQuestions(text, language)
   }
 }
 
 function extractOptions(decision: string, language: string): string[] {
-  // Türkçe kalıplar
   if (language === 'tr') {
-    const yoksa = decision.match(/(.+?)\s+(?:yoksa|veya|ya da|mi yoksa|mı yoksa)\s+(.+?)(?:\?|$)/i)
-    const arasinda = decision.match(/(.+?)\s+(?:arasında|arasında karar|seçmek)\s+(.+?)(?:\?|$)/i)
-    const mi = decision.match(/(.+?)\s+(?:mı|mi|mu|mü)\s+(.+?)(?:\?|$)/i)
-    
-    if (yoksa) return [yoksa[1].trim(), yoksa[2].trim()]
-    if (arasinda) return [arasinda[1].trim(), arasinda[2].trim()]
-    if (mi) return [mi[1].trim(), mi[2].trim()]
-    
-    // Genel ayrıştırma
-    const parts = decision.split(/(?:yoksa|veya|ya da|mı|mi|arasında)/i).filter(p => p.trim().length > 3)
-    if (parts.length >= 2) return [parts[0].trim(), parts[1].trim()]
-    
-    return [
-      decision.length > 50 ? decision.substring(0, 50) + '...' : decision,
-      'Alternatif seçenek'
-    ]
-  }
-  
-  // İngilizce kalıplar
-  const orMatch = decision.match(/(.+?)\s+(?:or|vs\.?|versus)\s+(.+?)(?:\?|$)/i)
-  const betweenMatch = decision.match(/between\s+(.+?)\s+and\s+(.+?)(?:\?|$)/i)
-  const shouldMatch = decision.match(/should\s+i\s+(.+?)\s+or\s+(.+?)(?:\?|$)/i)
-  
-  if (orMatch) return [orMatch[1].trim(), orMatch[2].trim()]
-  if (betweenMatch) return [betweenMatch[1].trim(), betweenMatch[2].trim()]
-  if (shouldMatch) return [shouldMatch[1].trim(), shouldMatch[2].trim()]
-  
-  return [
-    decision.length > 50 ? decision.substring(0, 50) + '...' : decision,
-    'The alternative option'
-  ]
-}
-
-function generatePros(option: string, context: string, language: string, optionIndex: number): string[] {
-  const shuffle = <T>(arr: T[]): T[] => arr.sort(() => Math.random() - 0.5)
-  
-  if (language === 'tr') {
-    const prosPool = [
-      // İş/Kariyer
-      ...(context.includes('iş') || context.includes('kariyer') || context.includes('şirket') ? [
-        'Kariyer gelişimi fırsatı sunar',
-        'Yeni beceriler kazanma imkanı',
-        'Profesyonel ağını genişletir',
-        'Gelir artışı potansiyeli var',
-        'Sektör deneyimi kazandırır',
-      ] : []),
-      // Eğitim
-      ...(context.includes('üniversite') || context.includes('eğitim') || context.includes('yüksek lisans') ? [
-        'Akademik bilgi birikimi sağlar',
-        'Uzun vadeli kariyer avantajı',
-        'Uzmanlık alanı geliştirme',
-        'Networking fırsatları',
-      ] : []),
-      // Genel
-      'Bu seçenek yeni deneyimler sunar',
-      'Kişisel gelişim fırsatı barındırır',
-      'Uzun vadeli kazanımlar sağlayabilir',
-      'Risk-kazanç dengesi makul görünüyor',
-      'Hedeflerinle uyumlu olabilir',
-      'Değişim için iyi bir başlangıç noktası',
+    const patterns = [
+      /(.+?)\s+(?:yoksa|veya|ya da|mi|mı)\s+(.+?)(?:\?|$)/i,
+      /(.+?)\s+ve\s+(.+?)\s+arasında/i,
     ]
     
-    // Her seçenek için farklı artılar
-    const selectedPros = shuffle(prosPool)
-    return optionIndex === 0 
-      ? selectedPros.slice(0, 4)
-      : selectedPros.slice(4, 8)
-  }
-  
-  // English
-  const prosPoolEN = [
-    ...(context.includes('job') || context.includes('career') || context.includes('work') ? [
-      'Offers career advancement opportunities',
-      'Chance to develop new skills',
-      'Expands professional network',
-      'Potential for income growth',
-      'Builds industry experience',
-    ] : []),
-    ...(context.includes('business') || context.includes('startup') || context.includes('company') ? [
-      'Potential for significant returns',
-      'Building something of your own',
-      'Learning entrepreneurship firsthand',
-      'Freedom and flexibility',
-    ] : []),
-    'Opens doors to new experiences',
-    'Opportunity for personal growth',
-    'Potential long-term benefits',
-    'Reasonable risk-reward balance',
-    'Aligns with your stated goals',
-    'Good starting point for change',
-    'Could lead to unexpected opportunities',
-  ]
-  
-  const selectedPros = shuffle(prosPoolEN)
-  return optionIndex === 0 
-    ? selectedPros.slice(0, 4)
-    : selectedPros.slice(4, 8)
-}
-
-function generateCons(option: string, context: string, language: string, optionIndex: number): string[] {
-  const shuffle = <T>(arr: T[]): T[] => arr.sort(() => Math.random() - 0.5)
-  
-  if (language === 'tr') {
-    const consPool = [
-      ...(context.includes('iş') || context.includes('kariyer') ? [
-        'Adaptasyon süreci gerektirir',
-        'Mevcut ilişkileri bırakmak zor olabilir',
-        'Öğrenme eğrisi var',
-        'Başlangıçta belirsizlik yaşanabilir',
-      ] : []),
-      'Zaman ve enerji yatırımı gerektirir',
-      'Konfor alanından çıkmayı gerektirir',
-      'Sonuçlar garanti değil',
-      'Fırsat maliyeti göz önünde bulundurulmalı',
-      'Başlangıç zorlukları olabilir',
-      'Bazı fedakarlıklar gerektirebilir',
-      'Planlama ve hazırlık gerektirir',
-    ]
+    for (const pattern of patterns) {
+      const match = decision.match(pattern)
+      if (match && match[1] && match[2]) {
+        return [match[1].trim(), match[2].trim()]
+      }
+    }
     
-    const selectedCons = shuffle(consPool)
-    return optionIndex === 0 
-      ? selectedCons.slice(0, 3)
-      : selectedCons.slice(3, 6)
+    return ['Seçenek A', 'Seçenek B']
   }
   
-  // English
-  const consPoolEN = [
-    ...(context.includes('job') || context.includes('career') ? [
-      'Requires adjustment period',
-      'Leaving familiar relationships',
-      'Learning curve challenges',
-      'Initial uncertainty expected',
-    ] : []),
-    'Requires time and energy investment',
-    'Stepping out of comfort zone',
-    'Results are not guaranteed',
-    'Opportunity cost to consider',
-    'Initial challenges expected',
-    'May require some sacrifices',
-    'Needs planning and preparation',
-    'Potential stress during transition',
+  const patterns = [
+    /(.+?)\s+(?:or|vs\.?|versus)\s+(.+?)(?:\?|$)/i,
+    /between\s+(.+?)\s+and\s+(.+?)(?:\?|$)/i,
+    /should\s+i\s+(.+?)\s+or\s+(.+?)(?:\?|$)/i
   ]
   
-  const selectedCons = shuffle(consPoolEN)
-  return optionIndex === 0 
-    ? selectedCons.slice(0, 3)
-    : selectedCons.slice(3, 6)
-}
-
-function assessRisk(context: string, optionIndex: number, language: string): string {
-  const risks = language === 'tr' 
-    ? ['Düşük', 'Orta', 'Yüksek']
-    : ['Low', 'Medium', 'High']
-  
-  // Bağlama göre risk değerlendirmesi
-  if (context.includes('safe') || context.includes('stable') || context.includes('güvenli') || context.includes('kalmalı')) {
-    return optionIndex === 0 ? risks[0] : risks[1]
-  }
-  if (context.includes('risky') || context.includes('startup') || context.includes('riskli') || context.includes('girişim')) {
-    return optionIndex === 0 ? risks[2] : risks[1]
+  for (const pattern of patterns) {
+    const match = decision.match(pattern)
+    if (match && match[1] && match[2]) {
+      return [match[1].trim(), match[2].trim()]
+    }
   }
   
-  // Farklı seçeneklere farklı risk ata
-  return optionIndex === 0 ? risks[1] : risks[Math.floor(Math.random() * 3)]
+  return ['Option A', 'Option B']
 }
 
-function analyzeFactors(decision: string, language: string): string[] {
+function extractBulletPoints(text: string): string[] {
+  if (!text) return []
+  return text
+    .split('\n')
+    .map(line => line.replace(/^[-•*]\s*/, '').trim())
+    .filter(line => line.length > 5)
+    .slice(0, 5)
+}
+
+function extractKeyFactors(text: string, decision: string, language: string): string[] {
+  const factorPattern = language === 'tr'
+    ? /(?:ÖNEMLİ FAKTÖRLER|FAKTÖRLER):\s*((?:[-•*]\s*.+\n?)+)/i
+    : /(?:KEY FACTORS|FACTORS):\s*((?:[-•*]\s*.+\n?)+)/i
+  
+  const match = text.match(factorPattern)
+  if (match) {
+    const factors = extractBulletPoints(match[1])
+    if (factors.length > 0) return factors.slice(0, 4)
+  }
+  
+  // Akıllı fallback - içeriğe göre faktörler üret
+  const keywords = {
+    money: language === 'tr' ? '💰 Finansal etki önemli' : '💰 Financial impact matters',
+    career: language === 'tr' ? '💼 Kariyer gelişimi söz konusu' : '💼 Career development at stake',
+    time: language === 'tr' ? '⏰ Zaman faktörü kritik' : '⏰ Timing is critical',
+    family: language === 'tr' ? '👨‍👩‍👧 Aile ve ilişkiler etkileniyor' : '👨‍👩‍👧 Family and relationships affected'
+  }
+  
   const factors = []
+  const lowerDecision = decision.toLowerCase()
+  
+  if (lowerDecision.match(/para|maaş|ücret|money|salary|cost/)) factors.push(keywords.money)
+  if (lowerDecision.match(/iş|kariyer|job|career|work/)) factors.push(keywords.career)
+  if (lowerDecision.match(/zaman|süre|time|deadline/)) factors.push(keywords.time)
+  if (lowerDecision.match(/aile|family|relationship/)) factors.push(keywords.family)
+  
+  return factors.length > 0 ? factors : [
+    language === 'tr' ? '🎯 Uzun vadeli hedeflerinizi düşünün' : '🎯 Consider long-term goals',
+    language === 'tr' ? '⚖️ Artı ve eksileri dengeleyin' : '⚖️ Balance pros and cons'
+  ]
+}
+
+function extractRecommendation(text: string, language: string): string {
+  const recPattern = language === 'tr'
+    ? /(?:ÖNERİ|TAVSİYE):\s*(.+?)(?:\n\n|DÜŞÜNÜLECEK|$)/is
+    : /(?:RECOMMENDATION|ADVICE):\s*(.+?)(?:\n\n|QUESTIONS|$)/is
+  
+  const match = text.match(recPattern)
+  if (match && match[1] && match[1].length > 20) {
+    return match[1].trim()
+  }
+  
+  return language === 'tr'
+    ? 'Her iki seçeneği de dikkatlice değerlendirin. Uzun vadeli hedeflerinizle en çok örtüşen ve denemeden pişman olacağınız seçeneği tercih edin. Çoğu karar geri alınabilir - önemli olan harekete geçmektir.'
+    : 'Carefully evaluate both options. Choose the one that aligns most with your long-term goals and that you would regret not trying. Most decisions are reversible - what matters is taking action.'
+}
+
+function extractQuestions(text: string, language: string): string[] {
+  const questionPattern = /\d+\.\s+(.+?\?)/g
+  const matches = [...text.matchAll(questionPattern)]
+  
+  const questions = matches
+    .map(m => m[1].trim())
+    .slice(0, 5)
+  
+  if (questions.length >= 3) {
+    return questions
+  }
+  
+  return language === 'tr'
+    ? [
+        'İç sesiniz ne diyor?',
+        '5 yıl sonra hangi seçeneği denememiş olmaktan pişman olursunuz?',
+        'Her seçenekte en çok neden korkuyorsunuz?',
+        'En yakın arkadaşınıza ne tavsiye ederdiniz?'
+      ]
+    : [
+        'What does your gut tell you?',
+        'Which option would you regret not trying in 5 years?',
+        'What are you most afraid of with each option?',
+        'What would you advise your best friend?'
+      ]
+}
+
+function getIntelligentFallback(decision: string, language: string): any {
+  const options = extractOptions(decision, language)
+  const lowerDecision = decision.toLowerCase()
+  
+  // İçerik analizi yap
+  const isCareerRelated = lowerDecision.match(/iş|kariyer|job|career|work|company/)
+  const isMoneyRelated = lowerDecision.match(/para|maaş|money|salary|income/)
+  const isRiskyContext = lowerDecision.match(/risk|startup|girişim|change/)
   
   if (language === 'tr') {
-    if (decision.includes('para') || decision.includes('maaş') || decision.includes('ücret') || decision.includes('gelir')) {
-      factors.push('💰 Finansal etki önemli bir faktör')
-    }
-    if (decision.includes('aile') || decision.includes('ilişki') || decision.includes('eş') || decision.includes('çocuk')) {
-      factors.push('👨‍👩‍👧 Aile ve ilişkiler bu kararda rol oynuyor')
-    }
-    if (decision.includes('kariyer') || decision.includes('iş') || decision.includes('meslek')) {
-      factors.push('💼 Kariyer yörüngesi söz konusu')
-    }
-    if (decision.includes('zaman') || decision.includes('süre') || decision.includes('hız')) {
-      factors.push('⏰ Zamanlama önemli bir faktör')
-    }
-    if (decision.includes('sağlık') || decision.includes('stres') || decision.includes('mutluluk')) {
-      factors.push('🏥 Sağlık ve esenlik göz önünde')
-    }
+    const optionAPros = isCareerRelated 
+      ? ['Kariyer gelişimi fırsatı', 'Yeni beceriler kazanma', 'Profesyonel ağ genişletme', 'Deneyim kazanımı']
+      : ['Yeni deneyimler sunar', 'Kişisel gelişim fırsatı', 'Uzun vadeli kazanımlar', 'Hedeflerinizle uyumlu olabilir']
     
-    if (factors.length === 0) {
-      factors.push('🎯 Bu önemli bir yaşam kararı gibi görünüyor')
-      factors.push('⚖️ Birden fazla faktör değerlendirilmeli')
-    }
-  } else {
-    if (decision.includes('money') || decision.includes('salary') || decision.includes('income') || decision.includes('cost')) {
-      factors.push('💰 Financial impact is a key consideration')
-    }
-    if (decision.includes('family') || decision.includes('relationship') || decision.includes('partner') || decision.includes('spouse')) {
-      factors.push('👨‍👩‍👧 Family and relationships are involved')
-    }
-    if (decision.includes('career') || decision.includes('job') || decision.includes('work') || decision.includes('profession')) {
-      factors.push('💼 Career trajectory is at stake')
-    }
-    if (decision.includes('time') || decision.includes('deadline') || decision.includes('urgent')) {
-      factors.push('⏰ Timing is a factor')
-    }
-    if (decision.includes('health') || decision.includes('stress') || decision.includes('happiness') || decision.includes('wellbeing')) {
-      factors.push('🏥 Health and wellbeing considerations')
-    }
+    const optionBPros = isMoneyRelated
+      ? ['Finansal güvenlik', 'Sabit gelir', 'Öngörülebilir', 'Düşük stres']
+      : ['Alternatif bakış açısı', 'Farklı fırsatlar', 'Yeni bir başlangıç', 'Değişim şansı']
     
-    if (factors.length === 0) {
-      factors.push('🎯 This appears to be a significant life decision')
-      factors.push('⚖️ Multiple factors need to be weighed')
+    return {
+      options: [
+        {
+          option: options[0],
+          pros: optionAPros,
+          cons: ['Adaptasyon süreci gerekir', 'Belirsizlik içerir', 'Zaman ve enerji yatırımı'],
+          riskLevel: isRiskyContext ? 'Yüksek' : 'Orta'
+        },
+        {
+          option: options[1],
+          pros: optionBPros,
+          cons: ['Konfor alanından çıkmayı gerektirir', 'Sonuçlar garanti değil', 'Fırsat maliyeti var'],
+          riskLevel: 'Orta'
+        }
+      ],
+      keyFactors: extractKeyFactors('', decision, language),
+      recommendation: 'Her iki seçeneği de dikkatlice değerlendirin. Uzun vadeli hedeflerinizle en çok örtüşen seçeneği tercih edin. Unutmayın: Çoğu karar geri alınabilir ve "yanlış" bir seçimden ders çıkarmak hareketsizlikten daha iyidir.',
+      questionsToConsider: [
+        'İç sesiniz ne diyor?',
+        '5 yıl sonra hangi seçeneği denememiş olmaktan pişman olursunuz?',
+        'Her seçenekte en çok neden korkuyorsunuz?',
+        'En yakın arkadaşınıza bu durumda ne tavsiye ederdiniz?'
+      ]
     }
   }
   
-  return factors
-}
-
-function generateRecommendation(options: string[], context: string, language: string): string {
-  if (language === 'tr') {
-    return `Açıklamanıza dayanarak, bu karar ${options.length} ana seçenek arasında bir tercih gerektiriyor.
-
-**Şunu seçmeyi düşünün:**
-1. Uzun vadeli hedeflerinizle en çok örtüşen seçeneği
-2. Denemeden pişman olacağınız seçeneği
-3. Sonuç ne olursa olsun en çok öğrenme fırsatı sunan seçeneği
-
-**Kendinize sorun:**
-"En yakın arkadaşım bu durumda olsa ona ne tavsiye ederdim?"
-
-**Unutmayın:** Çoğu karar geri alınabilir. Hareketsizliğin maliyeti genellikle "yanlış" bir seçim yapıp ondan ders çıkarmanın maliyetinden daha yüksektir.
-
-Mükemmel karar diye bir şey yoktur - sadece o anki en iyi kararınız vardır.`
-  }
-
-  return `Based on your description, this decision involves weighing ${options.length} main options.
-
-**Consider choosing the option that:**
-1. Aligns most closely with your long-term goals
-2. You would regret NOT trying more than failing at
-3. Offers the best learning opportunity regardless of outcome
-
-**Ask yourself:**
-"If I were advising my best friend in this exact situation, what would I tell them?"
-
-**Remember:** Most decisions are reversible. The cost of inaction often exceeds the cost of making a "wrong" choice that you can learn from.
-
-There's no perfect decision - only your best decision with the information you have right now.`
-}
-
-function generateClarifyingQuestions(language: string): string[] {
-  if (language === 'tr') {
-    return [
-      'İç sesin sana ne söylüyor?',
-      'Başarısızlığın imkansız olduğunu bilsen hangisini seçerdin?',
-      '10 yıl sonra hangi seçeneği denememiş olmaktan pişman olursun?',
-      'Her seçenekte en çok neyden korkuyorsun?',
-      'Para ve zaman faktör olmasaydı hangisini seçerdin?',
+  // English fallback
+  const optionAPros = isCareerRelated
+    ? ['Career advancement opportunity', 'Develop new skills', 'Expand professional network', 'Gain valuable experience']
+    : ['Opens new experiences', 'Personal growth opportunity', 'Long-term benefits potential', 'May align with goals']
+  
+  const optionBPros = isMoneyRelated
+    ? ['Financial security', 'Stable income', 'Predictable path', 'Lower stress']
+    : ['Alternative perspective', 'Different opportunities', 'Fresh start', 'Chance for change']
+  
+  return {
+    options: [
+      {
+        option: options[0],
+        pros: optionAPros,
+        cons: ['Requires adaptation period', 'Involves uncertainty', 'Time and energy investment needed'],
+        riskLevel: isRiskyContext ? 'High' : 'Medium'
+      },
+      {
+        option: options[1],
+        pros: optionBPros,
+        cons: ['Requires leaving comfort zone', 'Results not guaranteed', 'Opportunity cost exists'],
+        riskLevel: 'Medium'
+      }
+    ],
+    keyFactors: extractKeyFactors('', decision, language),
+    recommendation: 'Carefully evaluate both options. Choose the one that aligns most with your long-term goals. Remember: Most decisions are reversible, and learning from a "wrong" choice is better than inaction.',
+    questionsToConsider: [
+      'What does your gut tell you?',
+      'Which option would you regret not trying in 5 years?',
+      'What are you most afraid of with each option?',
+      'What would you advise your best friend in this situation?'
     ]
   }
-  
-  return [
-    'What does your gut instinct tell you?',
-    'Which would you choose if you knew you couldn\'t fail?',
-    'Which option would you regret not trying 10 years from now?',
-    'What are you most afraid of with each option?',
-    'If money and time weren\'t factors, which would you choose?',
-  ]
 }
