@@ -1,330 +1,308 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-interface Credits {
-  balance: number
-  total_used: number
-}
-
-interface UsageRecord {
-  id: string
-  tool_name: string
-  tool_display_name: string
-  credits_used: number
-  created_at: string
-}
-
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [credits, setCredits] = useState<Credits | null>(null)
-  const [history, setHistory] = useState<UsageRecord[]>([])
+  const [user, setUser] = useState<any>(null)
+  const [credits, setCredits] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const router = useRouter()
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
 
   useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      
-      setUser(user)
+    checkUser()
+  }, [])
 
-      const { data: creditsData } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', user.id)
-        .single()
-
-      if (creditsData) {
-        setCredits(creditsData)
-      } else {
-        await supabase.from('credits').insert({ user_id: user.id, balance: 50, total_used: 0 })
-        setCredits({ balance: 50, total_used: 0 })
-      }
-
-      const { data: historyData } = await supabase
-        .from('usage_history')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      if (historyData) setHistory(historyData)
-      setLoading(false)
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      router.push('/login')
+      return
     }
 
-    loadData()
-  }, [router])
+    setUser(user)
+
+    const { data: creditsData } = await supabase
+      .from('credits')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    setCredits(creditsData)
+    setLoading(false)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/')
+    router.push('/login')
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(language === 'en' ? 'en-US' : 'tr-TR', {
-      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-    })
-  }
-
-  const toolEmojis: {[key: string]: string} = {
-    'platform-adapter': '🔄',
-    'hook-generator': '🎣',
-    'decision-helper': '⚖️',
-    'summarize': '📝',
-    'trend-detector': '🔥',
-    'competitor-analyzer': '🔍',
-    'persona-forge': '🧬',
-    'objection-crusher': '🛡️',
-    'onboarding-checklist': '🧭',
-    'release-notes': '🗒️',
-  }
-
-  // Basitleştirilmiş araç listesi - KATEGORİ YOK
   const tools = [
-    // PREMIUM ARAÇLAR
-    {
-      href: '/tools/competitor-analyzer',
-      icon: '🔍',
-      name: language === 'tr' ? 'Rakip Analizi' : 'Competitor Analyzer',
-      desc: language === 'tr' 
-        ? 'Rakiplerden öğren, daha iyi içerik üret' 
-        : 'Learn from competitors, create better content',
-      credits: '8 Kredi',
-      color: 'hover:border-purple-500',
-      badge: 'from-purple-500 to-pink-500',
-      isPremium: true
-    },
-    {
-      href: '/tools/trend-detector',
-      icon: '🔥',
-      name: language === 'tr' ? 'Trend Dedektörü' : 'Trend Detector',
-      desc: language === 'tr' 
-        ? 'Niş\'inizde şu an trend olanları keşfedin' 
-        : 'Discover trending topics in your niche',
-      credits: '5 Kredi',
-      color: 'hover:border-red-500',
-      badge: 'from-red-500 to-pink-500',
-      isPremium: true
-    },
+    // Video Tools
+    { name: language === 'tr' ? 'Alt Yazı Ekleyici' : 'Subtitle Generator', icon: '📹', path: '/tools/subtitle-generator', credits: 4, category: 'video', description: language === 'tr' ? 'Videolarınıza alt yazı ekleyin' : 'Add subtitles to videos' },
+    { name: language === 'tr' ? 'Video Script Writer' : 'Video Script Writer', icon: '🎬', path: '/tools/video-script-writer', credits: 4, category: 'video', description: language === 'tr' ? 'YouTube & TikTok için script' : 'Scripts for YouTube & TikTok' },
     
-    // STANDART ARAÇLAR
-    {
-      href: '/tools/hook-generator',
-      icon: '🎣',
-      name: t.tools.hookGenerator.title,
-      desc: t.tools.hookGenerator.description,
-      credits: t.tools.hookGenerator.credits,
-      color: 'hover:border-yellow-500',
-      badge: 'from-yellow-500 to-orange-500'
-    },
-    {
-      href: '/tools/platform-adapter',
-      icon: '🔄',
-      name: t.tools.platformAdapter.title,
-      desc: t.tools.platformAdapter.description,
-      credits: t.tools.platformAdapter.credits,
-      color: 'hover:border-pink-500',
-      badge: 'from-pink-500 to-purple-500'
-    },
-    {
-      href: '/tools/decision-helper',
-      icon: '⚖️',
-      name: t.tools.decisionHelper.title,
-      desc: t.tools.decisionHelper.description,
-      credits: t.tools.decisionHelper.credits,
-      color: 'hover:border-indigo-500',
-      badge: 'from-indigo-500 to-purple-500'
-    },
-    {
-      href: '/tools/summarize',
-      icon: '📝',
-      name: t.tools.quickSummary.title,
-      desc: t.tools.quickSummary.description,
-      credits: t.tools.quickSummary.credits,
-      color: 'hover:border-blue-500',
-      badge: 'from-blue-500 to-cyan-500'
-    },
-    {
-      href: '/tools/persona-forge',
-      icon: '🧬',
-      name: t.tools.personaForge.title,
-      desc: t.tools.personaForge.description,
-      credits: t.tools.personaForge.credits,
-      color: 'hover:border-teal-500',
-      badge: 'from-teal-500 to-emerald-500'
-    },
-    {
-      href: '/tools/objection-crusher',
-      icon: '🛡️',
-      name: t.tools.objectionCrusher.title,
-      desc: t.tools.objectionCrusher.description,
-      credits: t.tools.objectionCrusher.credits,
-      color: 'hover:border-amber-500',
-      badge: 'from-amber-500 to-orange-500'
-    },
-    {
-      href: '/tools/onboarding-checklist',
-      icon: '🧭',
-      name: t.tools.onboardingChecklist.title,
-      desc: t.tools.onboardingChecklist.description,
-      credits: t.tools.onboardingChecklist.credits,
-      color: 'hover:border-sky-500',
-      badge: 'from-sky-500 to-blue-500'
-    },
-    {
-      href: '/tools/release-notes',
-      icon: '🗒️',
-      name: t.tools.releaseNotes.title,
-      desc: t.tools.releaseNotes.description,
-      credits: t.tools.releaseNotes.credits,
-      color: 'hover:border-purple-500',
-      badge: 'from-purple-500 to-fuchsia-500'
-    },
+    // Content Creation
+    { name: 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },
+    { name: 'Caption Writer', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content', description: language === 'tr' ? 'Profesyonel caption\'lar' : 'Professional captions' },
+    { name: 'Platform Adapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content', description: language === 'tr' ? 'İçeriği platformlara uyarla' : 'Adapt content to platforms' },
+    { name: 'Summarize', icon: '📝', path: '/tools/summarize', credits: 2, category: 'content', description: language === 'tr' ? 'Metinleri özetle' : 'Summarize texts' },
+    
+    // Analysis & Strategy
+    { name: language === 'tr' ? 'Rakip Analizi' : 'Competitor Analysis', icon: '🔍', path: '/tools/competitor-analysis', credits: 8, category: 'analysis', description: language === 'tr' ? 'Rakiplerinizi analiz edin' : 'Analyze competitors' },
+    { name: language === 'tr' ? 'Trend Dedektörü' : 'Trend Detector', icon: '📊', path: '/tools/trend-detector', credits: 5, category: 'analysis', description: language === 'tr' ? 'Güncel trendleri keşfet' : 'Discover trends' },
+    { name: 'Engagement Predictor', icon: '📈', path: '/tools/engagement-predictor', credits: 5, category: 'analysis', description: language === 'tr' ? 'Etkileşim tahmini' : 'Predict engagement' },
+    { name: 'Brand Voice Analyzer', icon: '🎯', path: '/tools/brand-voice', credits: 2, category: 'analysis', description: language === 'tr' ? 'Marka sesinizi analiz edin' : 'Analyze brand voice', new: true },
+    
+    // Optimization
+    { name: 'Hashtag Generator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 3, category: 'optimization', description: language === 'tr' ? 'Viral hashtag\'ler' : 'Viral hashtags' },
+    { name: 'Bio Generator', icon: '👤', path: '/tools/bio-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'Profil bio\'ları' : 'Profile bios', free: true },
+    { name: language === 'tr' ? 'QR Kod' : 'QR Code', icon: '📱', path: '/tools/qr-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'QR kod oluştur' : 'Generate QR codes', free: true },
+    
+    // Helper Tools
+    { name: 'Post Scheduler', icon: '📅', path: '/tools/post-scheduler', credits: 0, category: 'helper', description: language === 'tr' ? 'En iyi paylaşım saatleri' : 'Best posting times', free: true },
+    { name: language === 'tr' ? 'İçerik Takvimi' : 'Content Calendar', icon: '🗓️', path: '/tools/content-calendar', credits: 0, category: 'helper', description: language === 'tr' ? 'Aylık içerik planı' : 'Monthly content plan', free: true, new: true },
+    { name: language === 'tr' ? 'Viral Skor' : 'Viral Score', icon: '🚀', path: '/tools/viral-score', credits: 0, category: 'helper', description: language === 'tr' ? 'Viral potansiyel tahmini' : 'Predict viral potential', free: true, new: true },
   ]
+
+  const categories = [
+    { id: 'all', name: language === 'tr' ? 'Tümü' : 'All', icon: '🎯' },
+    { id: 'video', name: language === 'tr' ? 'Video' : 'Video', icon: '📹' },
+    { id: 'content', name: language === 'tr' ? 'İçerik' : 'Content', icon: '✍️' },
+    { id: 'analysis', name: language === 'tr' ? 'Analiz' : 'Analysis', icon: '📊' },
+    { id: 'optimization', name: language === 'tr' ? 'Optimizasyon' : 'Optimization', icon: '⚡' },
+    { id: 'helper', name: language === 'tr' ? 'Yardımcı' : 'Helper', icon: '🛠️' },
+  ]
+
+  const filteredTools = tools.filter(tool => {
+    const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || tool.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🧠</div>
-          <p className="text-xl">{t.common.loading}</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">{language === 'tr' ? 'Yükleniyor...' : 'Loading...'}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span>
-            <span className="text-xl font-bold">Clarity AI</span>
-          </Link>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>TR</button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <span className="text-xl font-bold text-white">M</span>
+              </div>
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Media
+                  </span>
+                  <span className="text-xl font-bold text-white">
+                    Tool Kit
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">{language === 'tr' ? 'İçerik Üretim Platformu' : 'Content Creation Platform'}</p>
+              </div>
             </div>
-            <span className="text-gray-400 text-sm hidden md:block">{user?.email}</span>
-            <button onClick={handleLogout} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">
-              {t.nav.logout}
-            </button>
+
+            {/* Right Side */}
+            <div className="flex items-center gap-4">
+              {/* Language Switcher */}
+              <div className="flex items-center bg-gray-700/50 rounded-lg p-1">
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-3 py-1 rounded text-xs font-medium transition ${
+                    language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => setLanguage('tr')}
+                  className={`px-3 py-1 rounded text-xs font-medium transition ${
+                    language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  TR
+                </button>
+              </div>
+
+              {/* Credits */}
+              <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg px-4 py-2">
+                <span className="text-2xl">💰</span>
+                <div>
+                  <p className="text-xs text-gray-400">{language === 'tr' ? 'Kredi' : 'Credits'}</p>
+                  <p className="text-lg font-bold text-yellow-400">{credits?.balance || 0}</p>
+                </div>
+              </div>
+
+              {/* User Menu */}
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-white">{user?.user_metadata?.full_name || 'User'}</p>
+                  <p className="text-xs text-gray-400">{user?.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition"
+                  title={language === 'tr' ? 'Çıkış Yap' : 'Logout'}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome + Credits */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-          <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold mb-2">{t.dashboard.welcome}! 👋</h1>
-            <p className="text-gray-400">
-              {language === 'en' 
-                ? 'What would you like to accomplish today?' 
-                : 'Bugün ne başarmak istersin?'}
-            </p>
-          </div>
-          
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6">
-            <p className="text-white/80 text-sm mb-1">{t.dashboard.credits}</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-4xl font-bold">{credits?.balance || 0}</p>
-              <p className="text-white/60 text-sm">{t.common.credits}</p>
-            </div>
-            <button className="mt-4 w-full bg-white/20 hover:bg-white/30 py-2 rounded-lg text-sm font-medium transition">
-              {t.dashboard.buyCredits}
-            </button>
-          </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Banner */}
+        <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            {language === 'tr' ? `Hoş geldin, ${user?.user_metadata?.full_name || 'Kullanıcı'}! 👋` : `Welcome back, ${user?.user_metadata?.full_name || 'User'}! 👋`}
+          </h2>
+          <p className="text-gray-400">
+            {language === 'tr' ? '16 güçlü araçla içeriklerini oluştur ve markanı büyüt!' : 'Create content with 16 powerful tools and grow your brand!'}
+          </p>
         </div>
 
-        {/* Araçlar - TEK GRİD, KATEGORİ YOK */}
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-6">
-            {language === 'en' ? '🛠️ AI Tools' : '🛠️ AI Araçlar'}
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tools.map((tool, index) => (
-              <Link 
-                key={index} 
-                href={tool.href} 
-                className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${tool.color} transition group relative`}
+        {/* Search & Filter */}
+        <div className="mb-8 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder={language === 'tr' ? 'Araç ara...' : 'Search tools...'}
+            />
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-4 py-2 rounded-lg font-medium transition ${
+                  selectedCategory === cat.id
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
               >
-                {tool.isPremium && (
-                  <div className="absolute top-3 right-3">
-                    <span className="text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full font-medium">
-                      PREMIUM
-                    </span>
-                  </div>
-                )}
-                
-                <div className="text-4xl mb-4 group-hover:scale-110 transition">{tool.icon}</div>
-                <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
-                <p className="text-gray-400 text-sm mb-4">{tool.desc}</p>
-                <span className={`inline-block text-xs bg-gradient-to-r ${tool.badge} px-3 py-1 rounded-full text-white`}>
-                  {tool.credits}
-                </span>
-              </Link>
+                <span className="mr-2">{cat.icon}</span>
+                {cat.name}
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Recent History */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t.dashboard.history}</h2>
-            {history.length > 0 && (
-              <button className="text-blue-400 hover:underline text-sm">
-                {t.dashboard.viewAll}
-              </button>
-            )}
-          </div>
-          
-          {history.length === 0 ? (
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-8 text-center">
-              <div className="text-4xl mb-4">📭</div>
-              <p className="text-gray-400">{t.dashboard.noHistory}</p>
-            </div>
-          ) : (
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-              {history.map((record, index) => (
-                <div 
-                  key={record.id} 
-                  className={`p-4 flex items-center gap-4 ${
-                    index !== history.length - 1 ? 'border-b border-gray-700' : ''
-                  }`}
-                >
-                  <div className="text-2xl">{toolEmojis[record.tool_name] || '🔧'}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{record.tool_display_name}</span>
-                      <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">
-                        -{record.credits_used} {t.common.credits}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-gray-500 text-sm whitespace-nowrap">
-                    {formatDate(record.created_at)}
-                  </div>
+        {/* Tools Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredTools.map((tool, index) => (
+            <Link
+              key={index}
+              href={tool.path}
+              className="group bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:scale-[1.02] relative overflow-hidden"
+            >
+              {/* Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:to-pink-500/5 transition-all duration-300"></div>
+
+              {/* New Badge */}
+              {tool.new && (
+                <div className="absolute top-4 right-4">
+                  <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {language === 'tr' ? 'YENİ' : 'NEW'}
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
+
+              {/* Free Badge */}
+              {tool.free && (
+                <div className="absolute top-4 right-4">
+                  <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {language === 'tr' ? 'ÜCRETSİZ' : 'FREE'}
+                  </span>
+                </div>
+              )}
+
+              <div className="relative">
+                {/* Icon */}
+                <div className="text-4xl mb-4">{tool.icon}</div>
+
+                {/* Title */}
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition">
+                  {tool.name}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm text-gray-400 mb-4">
+                  {tool.description}
+                </p>
+
+                {/* Credits */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {tool.credits === 0 ? (
+                      <span className="text-xs font-bold text-green-400">
+                        {language === 'tr' ? 'ÜCRETSİZ' : 'FREE'}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-yellow-400">💰</span>
+                        <span className="text-sm font-bold text-yellow-400">{tool.credits}</span>
+                        <span className="text-xs text-gray-500">{language === 'tr' ? 'kredi' : 'credits'}</span>
+                      </>
+                    )}
+                  </div>
+                  <svg className="w-5 h-5 text-gray-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
+
+        {/* No Results */}
+        {filteredTools.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              {language === 'tr' ? 'Araç bulunamadı' : 'No tools found'}
+            </h3>
+            <p className="text-gray-400">
+              {language === 'tr' ? 'Farklı bir arama yapın veya kategori seçin' : 'Try a different search or category'}
+            </p>
+          </div>
+        )}
       </main>
     </div>
   )
