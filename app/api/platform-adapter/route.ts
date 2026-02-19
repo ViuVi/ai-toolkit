@@ -164,36 +164,36 @@ function extractHashtags(content: string): string {
   const commonWords = ['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'whom', 'whose', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']
   
   const keywords = words
-    .filter(word => word.length > 4 && !commonWords.includes(word))
-    .filter((word, index, self) => self.indexOf(word) === index)
+    .filter(function(word: string) { return word.length > 4 && !commonWords.includes(word))
+    .filter(function(word: string, index: number, self: string[]) { return self.indexOf(word) === index)
     .slice(0, 5)
-    .map(word => `#${word.replace(/[^a-z]/g, '')}`)
+    .map(function(word: string) { return '#' +${word.replace(/[^a-z]/g, '')}`)
   
   return keywords.join(' ')
 }
 
 function getKeyPoints(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20).slice(0, 3)
-  return sentences.map(s => `→ ${s.trim()}`).join('\n')
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 20).slice(0, 3)
+  return sentences.map(function(s: string) { return '→ ' +${s.trim()}`).join('\n')
 }
 
 function getConclusion(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10)
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 10)
   return sentences[sentences.length - 1]?.trim() || 'Action leads to results.'
 }
 
 function getFirstPoint(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20)
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 20)
   return sentences[0]?.trim().substring(0, 250) || 'Key insight here'
 }
 
 function getSecondPoint(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20)
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 20)
   return sentences[1]?.trim().substring(0, 250) || 'Another important point'
 }
 
 function getThirdPoint(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20)
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 20)
   return sentences[2]?.trim().substring(0, 250) || 'Final thought'
 }
 
@@ -203,6 +203,6 @@ function getHook(content: string): string {
 }
 
 function getBulletPoints(content: string): string {
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 15).slice(0, 4)
-  return sentences.map((s, i) => `${i + 1}. ${s.trim()}`).join('\n')
+  const sentences = content.split(/[.!?]+/).filter(function(s: string) { return s.trim().length > 15).slice(0, 4)
+  return sentences.map(function(s: string, i: number) { return (i + 1) +. ${s.trim()}`).join('\n')
 }

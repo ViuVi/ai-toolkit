@@ -265,7 +265,7 @@ function generateTopPosts(platform: string, followers: number, language: string)
     comments: Math.floor(Math.random() * (followers * 0.02)) + Math.floor(followers * 0.001),
     shares: Math.floor(Math.random() * (followers * 0.01)) + Math.floor(followers * 0.0005),
     caption: captions[i]
-  })).sort((a, b) => b.likes - a.likes)
+  })).sort(function(a: any, b: any) { return b.likes - a.likes })
 }
 
 function generateRelevantHashtags(platform: string, accountName: string): string[] {
@@ -280,7 +280,7 @@ function generateRelevantHashtags(platform: string, accountName: string): string
   const tags = genericHashtags[platform] || genericHashtags.instagram
   
   // Shuffle and return
-  return [...tags].sort(() => Math.random() - 0.5).slice(0, 10)
+  return [...tags].sort(function() { return Math.random() - 0.5 }).slice(0, 10)
 }
 
 function generateStrengths(engagement: string, postFreq: number, contentScore: number, language: string): string[] {
@@ -304,7 +304,7 @@ function generateStrengths(engagement: string, postFreq: number, contentScore: n
         'Strong storytelling'
       ]
 
-  return strengthsPool.filter(s => s !== null).slice(0, 4) as string[]
+  return strengthsPool.filter(function(s: string | null) { return s !== null }).slice(0, 4) as string[]
 }
 
 function generateWeaknesses(engagement: string, postFreq: number, contentScore: number, language: string): string[] {
@@ -328,7 +328,7 @@ function generateWeaknesses(engagement: string, postFreq: number, contentScore: 
         'Limited follower interaction'
       ]
 
-  return weaknessesPool.filter(w => w !== null).slice(0, 3) as string[]
+  return weaknessesPool.filter(function(w: string | null) { return w !== null }).slice(0, 3) as string[]
 }
 
 function generateSmartRecommendations(platform: string, engagement: string, postFreq: number, contentScore: number, language: string): string[] {

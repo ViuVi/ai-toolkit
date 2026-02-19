@@ -160,13 +160,17 @@ Now write 8 hooks (curiosity, shocking, question, story, curiosity, shocking, qu
 
 function parseHooks(text: string, language: string): Array<{type: string, emoji: string, text: string, reason: string}> {
   const hooks: Array<{type: string, emoji: string, text: string, reason: string}> = []
-  const lines = text.split('\n').filter(line => line.trim())
+  const lines = text.split('\n').filter(function(line: string) { return line.trim() })
   
   for (const line of lines) {
     // Format: TYPE|EMOJI|TEXT|REASON
     const parts = line.split('|')
     if (parts.length >= 4) {
-      const [type, emoji, hookText, reason] = parts.map(p => p.trim())
+      const mappedParts = parts.map(function(p: string) { return p.trim() })
+      const type = mappedParts[0]
+      const emoji = mappedParts[1]
+      const hookText = mappedParts[2]
+      const reason = mappedParts[3]
       
       if (hookText && hookText.length > 10 && hookText.length < 200) {
         hooks.push({
@@ -247,7 +251,7 @@ function getEnhancedFallbackHooks(topic: string, language: string): Array<{type:
     ]
     
     // Karıştır - her seferinde farklı sıralama
-    return hooks.sort(() => Math.random() - 0.5)
+    return hooks.sort(function() { return Math.random() - 0.5 })
   }
   
   // English hooks
@@ -302,5 +306,5 @@ function getEnhancedFallbackHooks(topic: string, language: string): Array<{type:
     },
   ]
   
-  return hooks.sort(() => Math.random() - 0.5)
+  return hooks.sort(function() { return Math.random() - 0.5 })
 }

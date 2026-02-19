@@ -262,7 +262,7 @@ export async function GET() {
   // Dile göre grupla
   const groupedVoices: {[key: string]: any[]} = {}
   
-  Object.entries(VOICES).forEach(([id, info]) => {
+  Object.entries(VOICES).forEach(function(entry: [string, any]) { const id = entry[0]; const info = entry[1];
     if (!groupedVoices[info.language]) {
       groupedVoices[info.language] = []
     }

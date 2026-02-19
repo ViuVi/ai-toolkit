@@ -131,7 +131,7 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
 
     // Özel gün kontrolü
     const monthSpecialDays = currentSpecialDays[month] || []
-    const specialDay = monthSpecialDays.find(sd => sd.startsWith(String(day) + ' -'))
+    const specialDay = monthSpecialDays.find(function(sd: string) { return sd.startsWith(String(day) + ' -'))
 
     // Haftasonları farklı öneri
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
@@ -156,10 +156,10 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
   // Haftalık özet
   const weeklyPlan = {
     totalPosts: Math.ceil(daysInMonth * 0.8),
-    reels: days.filter(d => d.contentType.includes('Reel') || d.contentType.includes('Video')).length,
-    posts: days.filter(d => d.contentType === 'Post').length,
-    stories: days.filter(d => d.contentType === 'Story').length,
-    specialDaysCount: days.filter(d => d.specialDay).length
+    reels: days.filter(function(d: any) { return d.contentType.includes('Reel') || d.contentType.includes('Video')).length,
+    posts: days.filter(function(d: any) { return d.contentType === 'Post').length,
+    stories: days.filter(function(d: any) { return d.contentType === 'Story').length,
+    specialDaysCount: days.filter(function(d: any) { return d.specialDay }).length
   }
 
   return {

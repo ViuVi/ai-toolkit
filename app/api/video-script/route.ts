@@ -178,7 +178,7 @@ Now write the script for "${topic}":`
     }
 
     // Kelime ve süre hesapla
-    const totalWords = sections.reduce((acc, s) => acc + s.content.split(' ').length, 0)
+    const totalWords = sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0)
     
     return {
       topic,
@@ -231,7 +231,7 @@ function parseAIScript(text: string, duration: string, language: string): Array<
   
   // If parsing failed, try splitting by newlines
   if (sections.length < 2) {
-    const lines = text.split('\n').filter(l => l.trim().length > 20)
+    const lines = text.split('\n').filter(function(l: string) { return l.trim().length > 20)
     if (lines.length >= 3) {
       sections.push({
         timestamp: '0:00',
@@ -363,8 +363,8 @@ function generateEnhancedFallback(topic: string, platform: string, duration: str
     duration: `${duration}s`,
     style,
     sections,
-    totalWords: sections.reduce((acc, s) => acc + s.content.split(' ').length, 0),
-    estimatedReadingTime: `${Math.ceil(sections.reduce((acc, s) => acc + s.content.split(' ').length, 0) / 150)} min`,
+    totalWords: sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0),
+    estimatedReadingTime: `${Math.ceil(sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0) / 150)} min`,
     generatedBy: 'Enhanced Template'
   }
 }

@@ -85,7 +85,7 @@ function generateSchedule(platform: string, contentType: string, userTimezone: s
   const hourDifference = userOffset - targetOffset
 
   // Hedef bölge saatlerini kullanıcı saatine çevir
-  const convertedTimes = targetTimes.map(time => {
+  const convertedTimes = targetTimes.map(function(time: string) {
     const [hours, minutes] = time.split(':').map(Number)
     let newHours = hours + hourDifference
     

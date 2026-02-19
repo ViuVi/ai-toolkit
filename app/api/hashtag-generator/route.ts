@@ -111,24 +111,24 @@ function categorizeHashtags(hashtags: string[], topic: string, platform: string)
   const topicWords = topic.toLowerCase().split(' ')
   
   // Ana hashtagler (topic içerenler)
-  const main = hashtags.filter(h => 
-    topicWords.some(word => h.toLowerCase().includes(word))
-  ).slice(0, 5)
+  const main = hashtags.filter(function(h: string) { 
+    return topicWords.some(function(word: string) { return h.toLowerCase().includes(word) })
+  }).slice(0, 5)
   
   // Trending (kısa ve genel)
-  const trending = hashtags.filter(h => 
-    h.length < 15 && !main.includes(h)
-  ).slice(0, 5)
+  const trending = hashtags.filter(function(h: string) { 
+    return h.length < 15 && !main.includes(h)
+  }).slice(0, 5)
   
   // Niche (uzun ve spesifik)
-  const niche = hashtags.filter(h => 
-    h.length >= 15 && !main.includes(h) && !trending.includes(h)
-  ).slice(0, 5)
+  const niche = hashtags.filter(function(h: string) { 
+    return h.length >= 15 && !main.includes(h) && !trending.includes(h)
+  }).slice(0, 5)
   
   // Related (geri kalanlar)
-  const related = hashtags.filter(h => 
-    !main.includes(h) && !trending.includes(h) && !niche.includes(h)
-  ).slice(0, 5)
+  const related = hashtags.filter(function(h: string) { 
+    return !main.includes(h) && !trending.includes(h) && !niche.includes(h)
+  }).slice(0, 5)
 
   return { main, trending, niche, related }
 }
@@ -175,34 +175,37 @@ function generateSmartHashtags(topic: string, platform: string, count: number, l
   }
 
   // Main hashtagler
+  const filteredWords = topicWords.filter(function(w: string) { return w.length > 3 })
+  const mappedWords = filteredWords.map(function(w: string) { return '#' + w })
   const main = [
-    `#${topicSlug}`,
-    ...topicWords.filter(w => w.length > 3).map(w => `#${w}`),
-    `#${topicSlug}tips`,
-    `#${topicSlug}${new Date().getFullYear()}`,
-    `#best${topicSlug}`
+    '#' + topicSlug,
+    ...mappedWords,
+    '#' + topicSlug + 'tips',
+    '#' + topicSlug + new Date().getFullYear(),
+    '#best' + topicSlug
   ].slice(0, 5)
 
   // Trending hashtagler
   const platformTags = platformTrending[platform] || platformTrending.instagram
-  const trending = platformTags.sort(() => Math.random() - 0.5).slice(0, 5)
+  const trending = platformTags.sort(function() { return Math.random() - 0.5 }).slice(0, 5)
 
   // Niche hashtagler
   const nicheTags = nicheCategories[bestCategory] || nicheCategories.business
-  const niche = nicheTags.sort(() => Math.random() - 0.5).slice(0, 5)
+  const niche = nicheTags.sort(function() { return Math.random() - 0.5 }).slice(0, 5)
 
   // Related hashtagler
   const relatedPrefixes = language === 'tr' 
-    ? ['günlük', 'türkiye', 'keşfet', 'paylaş', 'takip']
+    ? ['gunluk', 'turkiye', 'kesfet', 'paylas', 'takip']
     : ['daily', 'life', 'love', 'best', 'top']
   
+  const mappedPrefixes = relatedPrefixes.map(function(p: string) { return '#' + p + topicSlug })
   const related = [
-    ...relatedPrefixes.map(p => `#${p}${topicSlug}`),
-    `#${topicSlug}lover`,
-    `#${topicSlug}community`,
-    `#${topicSlug}life`,
-    `#learn${topicSlug}`,
-    `#${topicSlug}goals`
+    ...mappedPrefixes,
+    '#' + topicSlug + 'lover',
+    '#' + topicSlug + 'community',
+    '#' + topicSlug + 'life',
+    '#learn' + topicSlug,
+    '#' + topicSlug + 'goals'
   ].slice(0, 5)
 
   return { main, trending, niche, related }

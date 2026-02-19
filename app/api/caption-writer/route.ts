@@ -191,18 +191,18 @@ Write 3 captions (each on a new line):`
 function parseCaptions(text: string, topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string): string[] {
   // Split by numbered items, newlines, or dashes
   let lines = text.split(/\n+/)
-    .map(l => l.replace(/^\d+[\.\)]\s*|^[-•]\s*/, '').trim())
-    .filter(l => l.length > 30 && l.length < 500)
+    .map(function(l: string) { return l.replace(/^\d+[\.\)]\s*|^[-•]\s*/, '').trim())
+    .filter(function(l: string) { return l.length > 30 && l.length < 500)
   
   // Filter out lines that look like instructions
-  lines = lines.filter(l => 
+  lines = lines.filter(function(l: string) { return 
     !l.toLowerCase().includes('caption') && 
     !l.toLowerCase().includes('write') &&
     !l.toLowerCase().includes('here are')
   )
   
   // Ensure each caption has proper structure
-  const processedCaptions = lines.slice(0, 3).map(caption => {
+  const processedCaptions = lines.slice(0, 3).map(function(caption: string) { return {
     let processed = caption
     
     // Add hashtags if needed and not present
@@ -216,7 +216,7 @@ function parseCaptions(text: string, topic: string, platform: string, tone: stri
         linkedin: ['business', 'success', 'growth']
       }
       const hashes = platformHashes[platform as keyof typeof platformHashes] || platformHashes.instagram
-      const selectedHashes = hashes.sort(() => Math.random() - 0.5).slice(0, 3)
+      const selectedHashes = hashes.sort(function() { return Math.random() - 0.5 }).slice(0, 3)
       processed += `\n\n#${topicHash} #${selectedHashes.join(' #')}`
     }
     
@@ -340,7 +340,7 @@ function generateEnhancedCaptions(topic: string, platform: string, tone: string,
   const langTemplates = language === 'tr' ? toneTemplates.tr : toneTemplates.en
 
   // Shuffle and select
-  const shuffled = [...langTemplates].sort(() => Math.random() - 0.5)
+  const shuffled = [...langTemplates].sort(function() { return Math.random() - 0.5 })
   
   // Add hashtags if needed
   if (includeHashtags) {
@@ -354,9 +354,9 @@ function generateEnhancedCaptions(topic: string, platform: string, tone: string,
     }
     
     const hashes = platformHashes[platform] || platformHashes.instagram
-    const selectedHashes = hashes.sort(() => Math.random() - 0.5).slice(0, 3)
+    const selectedHashes = hashes.sort(function() { return Math.random() - 0.5 }).slice(0, 3)
     
-    return shuffled.map(caption => `${caption}\n\n#${topicHash} #${selectedHashes.join(' #')}`)
+    return shuffled.map(function(caption: string) { return `${caption}\n\n#${topicHash} #${selectedHashes.join(' #')}`)
   }
   
   return shuffled

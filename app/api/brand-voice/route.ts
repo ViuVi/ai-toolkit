@@ -139,26 +139,26 @@ function analyzeTone(text: string, language: string) {
     }
   }
   
-  Object.keys(toneKeywords).forEach(tone => {
+  Object.keys(toneKeywords).forEach(function(tone: string) {
     const toneData = toneKeywords[tone as keyof typeof toneKeywords]
     const keywords = language === 'tr' ? toneData.tr : toneData.en
-    keywords.forEach(keyword => {
+    keywords.forEach(function(keyword: string) {
       const count = (text.match(new RegExp(keyword, 'gi')) || []).length
       toneScores[tone] += count * 10
     })
   })
   
   // Normalize scores
-  const total = Object.values(toneScores).reduce((a, b) => a + b, 0) || 1
+  const total = Object.values(toneScores).reduce(function(a: number, b: number) { return a + b }, 0) || 1
   const normalizedScores: {[key: string]: number} = {}
-  Object.keys(toneScores).forEach(key => {
+  Object.keys(toneScores).forEach(function(key: string) {
     normalizedScores[key] = Math.round((toneScores[key] / total) * 100)
   })
   
   // Dominant tone
-  const dominantTone = Object.keys(normalizedScores).reduce((a, b) => 
-    normalizedScores[a] > normalizedScores[b] ? a : b
-  )
+  const dominantTone = Object.keys(normalizedScores).reduce(function(a: string, b: string) { 
+    return normalizedScores[a] > normalizedScores[b] ? a : b 
+  })
   
   return {
     scores: normalizedScores,
@@ -168,11 +168,11 @@ function analyzeTone(text: string, language: string) {
 }
 
 function analyzeWordChoice(text: string, language: string) {
-  const words = text.split(/\s+/).filter(w => w.length > 3)
+  const words = text.split(/\s+/).filter(function(w: string) { return w.length > 3 })
   const uniqueWords = new Set(words)
   
   const complexity = uniqueWords.size / words.length
-  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length
+  const avgWordLength = words.reduce(function(sum: number, word: string) { return sum + word.length }, 0) / words.length
   
   let level = ''
   if (avgWordLength < 5) {
@@ -194,9 +194,9 @@ function analyzeWordChoice(text: string, language: string) {
 
 function calculateConsistency(texts: string[]) {
   // Her metnin uzunluğunu karşılaştır
-  const lengths = texts.map(t => t.length)
-  const avgLength = lengths.reduce((a, b) => a + b, 0) / lengths.length
-  const variance = lengths.reduce((sum, len) => sum + Math.pow(len - avgLength, 2), 0) / lengths.length
+  const lengths = texts.map(function(t: string) { return t.length })
+  const avgLength = lengths.reduce(function(a: number, b: number) { return a + b }, 0) / lengths.length
+  const variance = lengths.reduce(function(sum: number, len: number) { return sum + Math.pow(len - avgLength, 2) }, 0) / lengths.length
   const stdDev = Math.sqrt(variance)
   
   // Tutarlılık skoru (düşük std dev = yüksek tutarlılık)
@@ -222,11 +222,11 @@ function analyzeSentiment(text: string, language: string) {
   let positiveCount = 0
   let negativeCount = 0
   
-  posWords.forEach(word => {
+  posWords.forEach(function(word: string) {
     positiveCount += (text.match(new RegExp(word, 'gi')) || []).length
   })
   
-  negWords.forEach(word => {
+  negWords.forEach(function(word: string) {
     negativeCount += (text.match(new RegExp(word, 'gi')) || []).length
   })
   
@@ -313,17 +313,17 @@ function generateCompetitorComparison(industry: string, language: string) {
 }
 
 function extractKeyPhrases(text: string, language: string) {
-  const words = text.split(/\s+/).filter(w => w.length > 4)
+  const words = text.split(/\s+/).filter(function(w: string) { return w.length > 4 })
   const wordFreq: {[key: string]: number} = {}
   
-  words.forEach(word => {
+  words.forEach(function(word: string) {
     wordFreq[word] = (wordFreq[word] || 0) + 1
   })
   
   const sorted = Object.entries(wordFreq)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a: [string, number], b: [string, number]) { return b[1] - a[1] })
     .slice(0, 10)
-    .map(([word]) => word)
+    .map(function(entry: [string, number]) { return entry[0] })
   
   return sorted
 }

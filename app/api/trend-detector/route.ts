@@ -215,7 +215,7 @@ Now analyze 5 trending topics for ${niche} (make each completely different):`
 
 function parseTrends(text: string, language: string): any[] {
   const trends: any[] = []
-  const sections = text.split(/(?:KONU:|TOPIC:)/i).filter(s => s.trim())
+  const sections = text.split(/(?:KONU:|TOPIC:)/i).filter(function(s: string) { return s.trim() })
   
   for (const section of sections) {
     const topicMatch = section.match(/^([^\n]+)/i)
@@ -227,7 +227,7 @@ function parseTrends(text: string, language: string): any[] {
     
     if (topicMatch) {
       const ideas = ideasMatch 
-        ? ideasMatch[1].split('\n').map(l => l.replace(/^[-•*]\s*/, '').trim()).filter(l => l.length > 10).slice(0, 3)
+        ? ideasMatch[1].split('\n').map(function(l: string) { return l.replace(/^[-•*]\s*/, '').trim()).filter(function(l: string) { return l.length > 10 }).slice(0, 3)
         : []
       
       if (ideas.length >= 2) {
@@ -325,9 +325,9 @@ function getIntelligentTrends(niche: string, language: string, currentDate: stri
     
     // Shuffle and randomize
     return trendTemplates
-      .sort(() => Math.random() - 0.5)
+      .sort(function() { return Math.random() - 0.5)
       .slice(0, 5)
-      .map((template, idx) => ({
+      .map(function(template: any, idx: number) { return ({
         topic: template.topic,
         trendScore: scores[idx],
         contentIdeas: template.ideas,
@@ -387,9 +387,9 @@ function getIntelligentTrends(niche: string, language: string, currentDate: stri
   ]
   
   return trendTemplates
-    .sort(() => Math.random() - 0.5)
+    .sort(function() { return Math.random() - 0.5)
     .slice(0, 5)
-    .map((template, idx) => ({
+    .map(function(template: any, idx: number) { return ({
       topic: template.topic,
       trendScore: scores[idx],
       contentIdeas: template.ideas,
