@@ -337,7 +337,7 @@ function generateEnhancedCaptions(topic: string, platform: string, tone: string,
   // Get templates for platform and tone
   const platformTemplates = templates[platform] || templates.instagram
   const toneTemplates = platformTemplates[tone] || platformTemplates.casual
-  const langTemplates = toneTemplates[language] || toneTemplates.en
+  const langTemplates = language === 'tr' ? toneTemplates.tr : toneTemplates.en
 
   // Shuffle and select
   const shuffled = [...langTemplates].sort(() => Math.random() - 0.5)

@@ -161,7 +161,7 @@ function predictEngagement(caption: string, hashtags: string, postTime: string, 
             score >= 40 ? (language === 'tr' ? 'Orta' : 'Average') :
             (language === 'tr' ? 'Zayıf' : 'Poor'),
     metrics,
-    recommendations: (recommendations[language] || recommendations.en).filter(Boolean),
+    recommendations: (language === 'tr' ? recommendations.tr : recommendations.en).filter(Boolean),
     estimatedReach: {
       min: Math.floor(score * 10),
       max: Math.floor(score * 20),

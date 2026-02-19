@@ -31,40 +31,48 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
     en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   }
 
+  const dayNames = {
+    tr: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
+    en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  }
+
   const daysInMonth = new Date(year, month, 0).getDate()
-  const monthName = (language === 'tr' ? monthNames.tr : monthNames.en)[month - 1]
+  const monthNameList = language === 'tr' ? monthNames.tr : monthNames.en
+  const monthName = monthNameList[month - 1]
+  const currentDayNames = language === 'tr' ? dayNames.tr : dayNames.en
 
   // Özel günler ve bayramlar
-  const specialDays: {[key: string]: {[key: number]: string[]}} = {
-    tr: {
-      1: ['1 - Yılbaşı 🎉', '14 - Sevgililer Günü ❤️'],
-      2: ['8 - Dünya Kadınlar Günü 💐', '14 - Tıp Bayramı'],
-      3: ['18 - Çanakkale Zaferi 🇹🇷', '21 - Nevruz Bayramı'],
-      4: ['23 - Ulusal Egemenlik ve Çocuk Bayramı 🇹🇷'],
-      5: ['1 - İşçi Bayramı', '19 - Gençlik ve Spor Bayramı 🇹🇷'],
-      6: ['1 - Dünya Çocuk Günü 👶'],
-      7: ['15 - Demokrasi Bayramı 🇹🇷'],
-      8: ['30 - Zafer Bayramı 🇹🇷'],
-      9: ['Ramazan Bayramı 🌙'],
-      10: ['29 - Cumhuriyet Bayramı 🇹🇷'],
-      11: ['10 - Atatürk Günü 🇹🇷'],
-      12: ['Kurban Bayramı 🕌', '31 - Yılbaşı Gecesi 🎆']
-    },
-    en: {
-      1: ['1 - New Year 🎉', '14 - Valentine\'s Day ❤️'],
-      2: ['8 - Women\'s Day 💐', '14 - Valentine\'s Day ❤️'],
-      3: ['17 - St. Patrick\'s Day 🍀', '20 - Spring Equinox 🌸'],
-      4: ['1 - April Fools 🤡', '22 - Earth Day 🌍'],
-      5: ['1 - Labor Day', '12 - Mother\'s Day 👩'],
-      6: ['16 - Father\'s Day 👨', '21 - Summer Solstice ☀️'],
-      7: ['4 - Independence Day 🇺🇸'],
-      8: [],
-      9: ['22 - Autumn Equinox 🍂'],
-      10: ['31 - Halloween 🎃'],
-      11: ['28 - Thanksgiving 🦃'],
-      12: ['25 - Christmas 🎄', '31 - New Year\'s Eve 🎆']
-    }
+  const specialDaysTr: {[key: number]: string[]} = {
+    1: ['1 - Yılbaşı 🎉', '14 - Sevgililer Günü ❤️'],
+    2: ['8 - Dünya Kadınlar Günü 💐', '14 - Tıp Bayramı'],
+    3: ['18 - Çanakkale Zaferi 🇹🇷', '21 - Nevruz Bayramı'],
+    4: ['23 - Ulusal Egemenlik ve Çocuk Bayramı 🇹🇷'],
+    5: ['1 - İşçi Bayramı', '19 - Gençlik ve Spor Bayramı 🇹🇷'],
+    6: ['1 - Dünya Çocuk Günü 👶'],
+    7: ['15 - Demokrasi Bayramı 🇹🇷'],
+    8: ['30 - Zafer Bayramı 🇹🇷'],
+    9: ['Ramazan Bayramı 🌙'],
+    10: ['29 - Cumhuriyet Bayramı 🇹🇷'],
+    11: ['10 - Atatürk Günü 🇹🇷'],
+    12: ['Kurban Bayramı 🕌', '31 - Yılbaşı Gecesi 🎆']
   }
+
+  const specialDaysEn: {[key: number]: string[]} = {
+    1: ['1 - New Year 🎉', '14 - Valentines Day ❤️'],
+    2: ['8 - Womens Day 💐', '14 - Valentines Day ❤️'],
+    3: ['17 - St. Patricks Day 🍀', '20 - Spring Equinox 🌸'],
+    4: ['1 - April Fools 🤡', '22 - Earth Day 🌍'],
+    5: ['1 - Labor Day', '12 - Mothers Day 👩'],
+    6: ['16 - Fathers Day 👨', '21 - Summer Solstice ☀️'],
+    7: ['4 - Independence Day 🇺🇸'],
+    8: [],
+    9: ['22 - Autumn Equinox 🍂'],
+    10: ['31 - Halloween 🎃'],
+    11: ['28 - Thanksgiving 🦃'],
+    12: ['25 - Christmas 🎄', '31 - New Years Eve 🎆']
+  }
+
+  const currentSpecialDays = language === 'tr' ? specialDaysTr : specialDaysEn
 
   // Platform bazlı içerik önerileri
   const contentTypes = {
@@ -115,17 +123,15 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month - 1, day)
     const dayOfWeek = date.getDay()
-    const dayName = {
-      tr: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
-      en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    }[language][dayOfWeek]
+    const dayName = currentDayNames[dayOfWeek]
 
     // Rastgele içerik tipi ve konu seç
     const randomContent = platformContent[Math.floor(Math.random() * platformContent.length)]
     const randomTopic = topics[Math.floor(Math.random() * topics.length)]
 
     // Özel gün kontrolü
-    const specialDay = specialDays[language][month]?.find(sd => sd.startsWith(`${day} -`))
+    const monthSpecialDays = currentSpecialDays[month] || []
+    const specialDay = monthSpecialDays.find(sd => sd.startsWith(String(day) + ' -'))
 
     // Haftasonları farklı öneri
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
@@ -136,7 +142,7 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
     days.push({
       day,
       dayName,
-      date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+      date: year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0'),
       contentType: randomContent.type,
       icon: randomContent.icon,
       topic: randomTopic,
@@ -149,7 +155,7 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
 
   // Haftalık özet
   const weeklyPlan = {
-    totalPosts: Math.ceil(daysInMonth * 0.8), // %80 paylaşım oranı
+    totalPosts: Math.ceil(daysInMonth * 0.8),
     reels: days.filter(d => d.contentType.includes('Reel') || d.contentType.includes('Video')).length,
     posts: days.filter(d => d.contentType === 'Post').length,
     stories: days.filter(d => d.contentType === 'Story').length,
@@ -171,13 +177,13 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
 function getBestPostingTime(platform: string, dayOfWeek: number): string {
   const times: {[key: string]: string[][]} = {
     instagram: [
-      ['10:00', '14:00', '19:00'], // Sunday
-      ['09:00', '12:00', '18:00'], // Monday
-      ['09:00', '12:00', '18:00'], // Tuesday
-      ['09:00', '13:00', '18:00'], // Wednesday
-      ['09:00', '12:00', '19:00'], // Thursday
-      ['09:00', '12:00', '20:00'], // Friday
-      ['11:00', '15:00', '20:00']  // Saturday
+      ['10:00', '14:00', '19:00'],
+      ['09:00', '12:00', '18:00'],
+      ['09:00', '12:00', '18:00'],
+      ['09:00', '13:00', '18:00'],
+      ['09:00', '12:00', '19:00'],
+      ['09:00', '12:00', '20:00'],
+      ['11:00', '15:00', '20:00']
     ],
     youtube: [
       ['14:00', '18:00', '20:00'],
@@ -196,22 +202,21 @@ function getBestPostingTime(platform: string, dayOfWeek: number): string {
 }
 
 function generateTips(platform: string, language: string): string[] {
-  const tips = {
-    tr: [
-      `${platform} için tutarlı paylaşım yapın - haftada en az 3-4 içerik`,
-      'Özel günleri ve trendleri takip edin',
-      'Hafta sonları daha rahat, hafta içi daha profesyonel içerikler paylaşın',
-      'Her içeriği en az 24 saat önceden planlayın',
-      'Analitiklerinizi kontrol edin ve en iyi performans gösteren içerik tiplerini tekrarlayın'
-    ],
-    en: [
-      `Post consistently on ${platform} - at least 3-4 times per week`,
-      'Track special days and trends',
-      'Weekend content should be more casual, weekday more professional',
-      'Plan each post at least 24 hours in advance',
-      'Check your analytics and repeat best-performing content types'
-    ]
-  }
+  const tipsTr = [
+    platform + ' için tutarlı paylaşım yapın - haftada en az 3-4 içerik',
+    'Özel günleri ve trendleri takip edin',
+    'Hafta sonları daha rahat, hafta içi daha profesyonel içerikler paylaşın',
+    'Her içeriği en az 24 saat önceden planlayın',
+    'Analitiklerinizi kontrol edin ve en iyi performans gösteren içerik tiplerini tekrarlayın'
+  ]
+  
+  const tipsEn = [
+    'Post consistently on ' + platform + ' - at least 3-4 times per week',
+    'Track special days and trends',
+    'Weekend content should be more casual, weekday more professional',
+    'Plan each post at least 24 hours in advance',
+    'Check your analytics and repeat best-performing content types'
+  ]
 
-  return tips[language] || tips.en
+  return language === 'tr' ? tipsTr : tipsEn
 }

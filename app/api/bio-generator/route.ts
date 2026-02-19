@@ -143,7 +143,7 @@ function generateBios(name: string, profession: string, interests: string, platf
 
   const platformTemplates = templates[platform as keyof typeof templates] || templates.instagram
   const toneTemplates = (platformTemplates as any)[tone] || (platformTemplates as any).casual
-  const langTemplates = toneTemplates[language] || toneTemplates.en
+  const langTemplates = language === 'tr' ? toneTemplates.tr : toneTemplates.en
 
   // Rastgele 3 tane seç
   const shuffled = [...langTemplates].sort(() => Math.random() - 0.5)

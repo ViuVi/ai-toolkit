@@ -96,7 +96,7 @@ function generateSchedule(platform: string, contentType: string, userTimezone: s
     return `${String(newHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
   })
 
-  const dayNames = days[language] || days.en
+  const dayNames = language === 'tr' ? days.tr : days.en
   
   const schedule = [
     { day: dayNames[0], targetTimes: targetTimes.slice(0, 2), userTimes: convertedTimes.slice(0, 2), engagement: 'High', color: 'green' },
@@ -133,7 +133,7 @@ function generateSchedule(platform: string, contentType: string, userTimezone: s
     timeDifference: hourDifference,
     weeklySchedule: schedule,
     bestOverallTimes: convertedTimes,
-    tips: tips[language] || tips.en,
+    tips: (language === 'tr' ? tips.tr : tips.en) || tips.en,
     peakDays: [dayNames[1], dayNames[3], dayNames[4]]
   }
 }

@@ -334,9 +334,10 @@ function generateEnhancedFallback(topic: string, platform: string, duration: str
     ]
   }
   
-  const hookList = hooks[style]?.[language] || hooks.question[language] || hooks.question.en
-  const mainList = mainContents[language] || mainContents.en
-  const ctaList = ctas[language] || ctas.en
+  const styleHooks = hooks[style] || hooks.question
+  const hookList = language === 'tr' ? styleHooks.tr : styleHooks.en
+  const mainList = language === 'tr' ? mainContents.tr : mainContents.en
+  const ctaList = language === 'tr' ? ctas.tr : ctas.en
   
   const sections = [
     {

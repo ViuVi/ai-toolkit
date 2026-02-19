@@ -141,7 +141,7 @@ function analyzeTone(text: string, language: string) {
   
   Object.keys(toneKeywords).forEach(tone => {
     const toneData = toneKeywords[tone as keyof typeof toneKeywords]
-const keywords = (language === 'tr' ? toneData.tr : toneData.en) || toneData.en
+    const keywords = language === 'tr' ? toneData.tr : toneData.en
     keywords.forEach(keyword => {
       const count = (text.match(new RegExp(keyword, 'gi')) || []).length
       toneScores[tone] += count * 10
@@ -217,7 +217,7 @@ function analyzeSentiment(text: string, language: string) {
   }
   
   const posWords = language === 'tr' ? positiveWords.tr : positiveWords.en
-const negWords = language === 'tr' ? negativeWords.tr : negativeWords.en
+  const negWords = language === 'tr' ? negativeWords.tr : negativeWords.en
   
   let positiveCount = 0
   let negativeCount = 0
