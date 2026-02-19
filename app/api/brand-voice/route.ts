@@ -216,8 +216,8 @@ function analyzeSentiment(text: string, language: string) {
     en: ['bad', 'failed', 'difficult', 'problem', 'issue', 'weak', 'insufficient', 'poor']
   }
   
-  const posWords = positiveWords[language] || positiveWords.en
-  const negWords = negativeWords[language] || negativeWords.en
+  const posWords = language === 'tr' ? positiveWords.tr : positiveWords.en
+const negWords = language === 'tr' ? negativeWords.tr : negativeWords.en
   
   let positiveCount = 0
   let negativeCount = 0
