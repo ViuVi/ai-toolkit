@@ -140,7 +140,8 @@ function analyzeTone(text: string, language: string) {
   }
   
   Object.keys(toneKeywords).forEach(tone => {
-    const keywords = toneKeywords[tone as keyof typeof toneKeywords][language] || toneKeywords[tone as keyof typeof toneKeywords].en
+    const toneData = toneKeywords[tone as keyof typeof toneKeywords]
+const keywords = (language === 'tr' ? toneData.tr : toneData.en) || toneData.en
     keywords.forEach(keyword => {
       const count = (text.match(new RegExp(keyword, 'gi')) || []).length
       toneScores[tone] += count * 10
