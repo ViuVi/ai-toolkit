@@ -32,7 +32,7 @@ function generateCalendar(month: number, year: number, platform: string, niche: 
   }
 
   const daysInMonth = new Date(year, month, 0).getDate()
-  const monthName = monthNames[language][month - 1]
+  const monthName = (language === 'tr' ? monthNames.tr : monthNames.en)[month - 1]
 
   // Özel günler ve bayramlar
   const specialDays: {[key: string]: {[key: number]: string[]}} = {
