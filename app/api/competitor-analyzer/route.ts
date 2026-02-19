@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Competitor Analysis Error:', error)
     return NextResponse.json({ 
-      error: language === 'tr' ? 'Bir hata oluştu' : 'An error occurred' 
+      error: 'An error occurred' 
     }, { status: 500 })
   }
 }
