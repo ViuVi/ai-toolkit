@@ -33,7 +33,7 @@ export default function CompetitorAnalysisPage() {
     setAnalysis(null)
 
     try {
-      const response = await fetch('/api/competitor-analysis', {
+      const response = await fetch('/api/competitor-analyzer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ competitorUrl, platform, userId, language }),

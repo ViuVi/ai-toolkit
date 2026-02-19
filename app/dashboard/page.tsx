@@ -41,33 +41,33 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/')
   }
 
   const tools = [
     // Video Tools
     { name: language === 'tr' ? 'Alt Yazı Ekleyici' : 'Subtitle Generator', icon: '📹', path: '/tools/subtitle-generator', credits: 4, category: 'video', description: language === 'tr' ? 'Videolarınıza alt yazı ekleyin' : 'Add subtitles to videos' },
-    { name: language === 'tr' ? 'Video Script Writer' : 'Video Script Writer', icon: '🎬', path: '/tools/video-script-writer', credits: 4, category: 'video', description: language === 'tr' ? 'YouTube & TikTok için script' : 'Scripts for YouTube & TikTok' },
+    { name: language === 'tr' ? 'Video Script Yazarı' : 'Video Script Writer', icon: '🎬', path: '/tools/video-script', credits: 4, category: 'video', description: language === 'tr' ? 'YouTube & TikTok için script' : 'Scripts for YouTube & TikTok' },
     
     // Content Creation
-    { name: 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },
-    { name: 'Caption Writer', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content', description: language === 'tr' ? 'Profesyonel caption\'lar' : 'Professional captions' },
-    { name: 'Platform Adapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content', description: language === 'tr' ? 'İçeriği platformlara uyarla' : 'Adapt content to platforms' },
-    { name: 'Summarize', icon: '📝', path: '/tools/summarize', credits: 2, category: 'content', description: language === 'tr' ? 'Metinleri özetle' : 'Summarize texts' },
+    { name: language === 'tr' ? 'Hook Üretici' : 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },
+    { name: language === 'tr' ? 'Caption Yazarı' : 'Caption Writer', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content', description: language === 'tr' ? 'Profesyonel caption\'lar' : 'Professional captions' },
+    { name: language === 'tr' ? 'Platform Uyarlayıcı' : 'Platform Adapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content', description: language === 'tr' ? 'İçeriği platformlara uyarla' : 'Adapt content to platforms' },
+    { name: language === 'tr' ? 'Metin Özetleyici' : 'Summarizer', icon: '📝', path: '/tools/summarize', credits: 2, category: 'content', description: language === 'tr' ? 'Metinleri özetle' : 'Summarize texts' },
     
     // Analysis & Strategy
-    { name: language === 'tr' ? 'Rakip Analizi' : 'Competitor Analysis', icon: '🔍', path: '/tools/competitor-analysis', credits: 8, category: 'analysis', description: language === 'tr' ? 'Rakiplerinizi analiz edin' : 'Analyze competitors' },
+    { name: language === 'tr' ? 'Rakip Analizi' : 'Competitor Analysis', icon: '🔍', path: '/tools/competitor-analyzer', credits: 8, category: 'analysis', description: language === 'tr' ? 'Rakiplerinizi analiz edin' : 'Analyze competitors' },
     { name: language === 'tr' ? 'Trend Dedektörü' : 'Trend Detector', icon: '📊', path: '/tools/trend-detector', credits: 5, category: 'analysis', description: language === 'tr' ? 'Güncel trendleri keşfet' : 'Discover trends' },
-    { name: 'Engagement Predictor', icon: '📈', path: '/tools/engagement-predictor', credits: 5, category: 'analysis', description: language === 'tr' ? 'Etkileşim tahmini' : 'Predict engagement' },
-    { name: 'Brand Voice Analyzer', icon: '🎯', path: '/tools/brand-voice', credits: 2, category: 'analysis', description: language === 'tr' ? 'Marka sesinizi analiz edin' : 'Analyze brand voice', new: true },
+    { name: language === 'tr' ? 'Etkileşim Tahmini' : 'Engagement Predictor', icon: '📈', path: '/tools/engagement-predictor', credits: 5, category: 'analysis', description: language === 'tr' ? 'Etkileşim tahmini' : 'Predict engagement' },
+    { name: language === 'tr' ? 'Marka Sesi Analizi' : 'Brand Voice Analyzer', icon: '🎯', path: '/tools/brand-voice', credits: 2, category: 'analysis', description: language === 'tr' ? 'Marka sesinizi analiz edin' : 'Analyze brand voice' },
     
     // Optimization
-    { name: 'Hashtag Generator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 3, category: 'optimization', description: language === 'tr' ? 'Viral hashtag\'ler' : 'Viral hashtags' },
-    { name: 'Bio Generator', icon: '👤', path: '/tools/bio-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'Profil bio\'ları' : 'Profile bios', free: true },
-    { name: language === 'tr' ? 'QR Kod' : 'QR Code', icon: '📱', path: '/tools/qr-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'QR kod oluştur' : 'Generate QR codes', free: true },
+    { name: language === 'tr' ? 'Hashtag Üretici' : 'Hashtag Generator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 3, category: 'optimization', description: language === 'tr' ? 'Viral hashtag\'ler' : 'Viral hashtags' },
+    { name: language === 'tr' ? 'Bio Üretici' : 'Bio Generator', icon: '👤', path: '/tools/bio-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'Profil bio\'ları' : 'Profile bios', free: true },
+    { name: language === 'tr' ? 'QR Kod' : 'QR Code', icon: '📱', path: '/tools/qr-code-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'QR kod oluştur' : 'Generate QR codes', free: true },
     
     // Helper Tools
-    { name: 'Post Scheduler', icon: '📅', path: '/tools/post-scheduler', credits: 0, category: 'helper', description: language === 'tr' ? 'En iyi paylaşım saatleri' : 'Best posting times', free: true },
+    { name: language === 'tr' ? 'Paylaşım Zamanlayıcı' : 'Post Scheduler', icon: '📅', path: '/tools/post-scheduler', credits: 0, category: 'helper', description: language === 'tr' ? 'En iyi paylaşım saatleri' : 'Best posting times', free: true },
     { name: language === 'tr' ? 'İçerik Takvimi' : 'Content Calendar', icon: '🗓️', path: '/tools/content-calendar', credits: 0, category: 'helper', description: language === 'tr' ? 'Aylık içerik planı' : 'Monthly content plan', free: true, new: true },
     { name: language === 'tr' ? 'Viral Skor' : 'Viral Score', icon: '🚀', path: '/tools/viral-score', credits: 0, category: 'helper', description: language === 'tr' ? 'Viral potansiyel tahmini' : 'Predict viral potential', free: true, new: true },
   ]

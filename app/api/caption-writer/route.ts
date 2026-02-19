@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('✍️ Caption Writer - Topic:', topic, 'Platform:', platform, 'Tone:', tone, 'Lang:', language)
+    console.log('✍️ Caption Writer AI - Topic:', topic, 'Platform:', platform, 'Tone:', tone, 'Lang:', language)
 
-    // DİNAMİK caption oluştur
-    const captions = generateDynamicCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+    // AI İLE CAPTİON OLUŞTUR
+    const captions = await generateCaptionsWithAI(topic, platform, tone, includeEmojis, includeHashtags, language)
 
     // Kredi düşür
     if (userId) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
             tool_display_name: language === 'tr' ? 'Caption Writer' : 'Caption Writer',
             credits_used: 2,
             input_preview: `${topic} - ${platform}`,
-            output_preview: `${captions.length} captions`,
+            output_preview: `${captions.length} captions generated`,
           })
       }
     }
@@ -77,297 +77,287 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateDynamicCaptions(topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string) {
+async function generateCaptionsWithAI(topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string): Promise<string[]> {
   
-  // DİL BAZLI TEMPLATE'LER (Her seferinde farklı kombinasyonlar)
-  const templates = {
+  const toneDescriptions: {[key: string]: {tr: string, en: string}} = {
+    casual: { tr: 'samimi ve rahat', en: 'casual and friendly' },
+    professional: { tr: 'profesyonel ve ciddi', en: 'professional and serious' },
+    inspirational: { tr: 'ilham verici ve motive edici', en: 'inspirational and motivating' },
+    funny: { tr: 'komik ve eğlenceli', en: 'funny and entertaining' }
+  }
+
+  const platformGuidelines: {[key: string]: {tr: string, en: string}} = {
+    instagram: { 
+      tr: 'Instagram için 150-200 karakter, görsel odaklı, etkileşim çağrısı ile', 
+      en: 'For Instagram: 150-200 chars, visual-focused, with engagement call' 
+    },
+    tiktok: { 
+      tr: 'TikTok için kısa, enerjik, trend odaklı, 80-100 karakter', 
+      en: 'For TikTok: short, energetic, trend-focused, 80-100 chars' 
+    },
+    twitter: { 
+      tr: 'Twitter için özlü, 240 karakterin altında', 
+      en: 'For Twitter: concise, under 240 chars' 
+    },
+    linkedin: { 
+      tr: 'LinkedIn için profesyonel, değer odaklı, 200-300 karakter', 
+      en: 'For LinkedIn: professional, value-focused, 200-300 chars' 
+    },
+    youtube: { 
+      tr: 'YouTube için açıklayıcı, anahtar kelime içeren', 
+      en: 'For YouTube: descriptive, keyword-rich' 
+    }
+  }
+
+  const toneDesc = toneDescriptions[tone] || toneDescriptions.casual
+  const platformGuide = platformGuidelines[platform] || platformGuidelines.instagram
+
+  const prompt = language === 'tr'
+    ? `Sen yaratıcı bir sosyal medya uzmanısın. "${topic}" konusu için ${platform} platformuna uygun 3 farklı caption yaz.
+
+TON: ${toneDesc.tr}
+PLATFORM: ${platformGuide.tr}
+${includeEmojis ? 'Her caption\'a uygun emojiler ekle' : 'Emoji kullanma'}
+${includeHashtags ? 'Her caption\'a 3-5 alakalı hashtag ekle' : 'Hashtag kullanma'}
+
+Her caption\'ı ayrı bir satırda yaz. Her biri tamamen farklı ve özgün olsun.
+Sonunda bir Call-to-Action (yorum yap, kaydet, paylaş vb.) olsun.
+
+3 caption yaz (her biri yeni satırda):`
+    : `You are a creative social media expert. Write 3 different captions for "${topic}" suitable for ${platform}.
+
+TONE: ${toneDesc.en}
+PLATFORM: ${platformGuide.en}
+${includeEmojis ? 'Include appropriate emojis in each caption' : 'Do not use emojis'}
+${includeHashtags ? 'Add 3-5 relevant hashtags to each caption' : 'Do not use hashtags'}
+
+Write each caption on a separate line. Each should be completely different and unique.
+End with a Call-to-Action (comment, save, share, etc.)
+
+Write 3 captions (each on a new line):`
+
+  try {
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 800,
+            temperature: 0.9,
+            top_p: 0.95,
+            do_sample: true,
+            return_full_text: false
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      console.error('Llama API failed, using enhanced fallback')
+      return generateEnhancedCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+    }
+
+    const result = await response.json()
+    
+    if (result.error && result.error.includes('loading')) {
+      console.log('Model loading, using fallback')
+      return generateEnhancedCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+    }
+
+    const generatedText = result[0]?.generated_text || result.generated_text || ''
+    console.log('AI Generated Captions (first 300):', generatedText.substring(0, 300))
+    
+    // Parse captions
+    const captions = parseCaptions(generatedText, topic, platform, tone, includeEmojis, includeHashtags, language)
+    
+    if (captions.length < 2) {
+      return generateEnhancedCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+    }
+
+    return captions.slice(0, 3)
+
+  } catch (error) {
+    console.error('AI caption generation failed:', error)
+    return generateEnhancedCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+  }
+}
+
+function parseCaptions(text: string, topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string): string[] {
+  // Split by numbered items, newlines, or dashes
+  let lines = text.split(/\n+/)
+    .map(l => l.replace(/^\d+[\.\)]\s*|^[-•]\s*/, '').trim())
+    .filter(l => l.length > 30 && l.length < 500)
+  
+  // Filter out lines that look like instructions
+  lines = lines.filter(l => 
+    !l.toLowerCase().includes('caption') && 
+    !l.toLowerCase().includes('write') &&
+    !l.toLowerCase().includes('here are')
+  )
+  
+  // Ensure each caption has proper structure
+  const processedCaptions = lines.slice(0, 3).map(caption => {
+    let processed = caption
+    
+    // Add hashtags if needed and not present
+    if (includeHashtags && !processed.includes('#')) {
+      const topicHash = topic.toLowerCase().replace(/\s+/g, '')
+      const platformHashes = {
+        instagram: ['instagood', 'explore', 'viral'],
+        tiktok: ['fyp', 'viral', 'trending'],
+        youtube: ['youtube', 'subscribe', 'video'],
+        twitter: ['trending', 'viral', 'thread'],
+        linkedin: ['business', 'success', 'growth']
+      }
+      const hashes = platformHashes[platform as keyof typeof platformHashes] || platformHashes.instagram
+      const selectedHashes = hashes.sort(() => Math.random() - 0.5).slice(0, 3)
+      processed += `\n\n#${topicHash} #${selectedHashes.join(' #')}`
+    }
+    
+    return processed
+  })
+  
+  return processedCaptions
+}
+
+function generateEnhancedCaptions(topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string): string[] {
+  
+  const topicLower = topic.toLowerCase()
+  
+  // Çok daha zengin ve dinamik template sistemi
+  const templates: {[key: string]: {[key: string]: {[key: string]: string[]}}} = {
     instagram: {
       casual: {
         tr: [
-          `${topic} ile ilgili bu anı sizlerle paylaşmak istedim`,
-          `Bugün ${topic} keşfettim ve bayıldım`,
-          `${topic} hakkında düşüncelerinizi merak ediyorum`,
-          `Hayatımda ${topic} olmasına çok şükrediyorum`,
-          `${topic} beni her zaman mutlu ediyor`,
-          `Kim ${topic} sevdalısı burada?`,
-          `${topic} anlarım >>> Her şey`,
-          `Bi' ${topic} bi' ben, mükemmel kombinasyon`,
-          `${topic} enerjisiyle güne başlamak`,
-          `Siz de ${topic} tutkunu musunuz?`
+          `${topic} ile günümü renklendirdim ${includeEmojis ? '✨' : ''}\n\nBu kadar güzel bir an paylaşmadan geçemezdim. Sizin ${topic} deneyimleriniz nasıl?\n\n${includeEmojis ? '💬' : ''} Yorumlarda buluşalım!`,
+          `Bugün ${topic} hakkında fark ettiğim şey: Küçük detaylar büyük fark yaratıyor ${includeEmojis ? '🌟' : ''}\n\nSiz de bunu deneyimlediniz mi?\n\n${includeEmojis ? '👇' : ''} Düşüncelerinizi merak ediyorum`,
+          `${topic} ${includeEmojis ? '💫' : ''}\n\nHer gün yeni bir şey öğreniyorum ve bunu sizlerle paylaşmak istiyorum.\n\n${includeEmojis ? '🔖' : ''} Kaydetmeyi unutmayın!`
         ],
         en: [
-          `Sharing this ${topic} moment with you all`,
-          `Just discovered ${topic} and I'm obsessed`,
-          `Curious about your thoughts on ${topic}`,
-          `So grateful for ${topic} in my life`,
-          `${topic} always brings me joy`,
-          `Who else is a ${topic} enthusiast?`,
-          `${topic} moments >>> everything`,
-          `Me and ${topic}, perfect combo`,
-          `Starting my day with ${topic} energy`,
-          `Are you a ${topic} lover too?`
+          `${topic} made my day ${includeEmojis ? '✨' : ''}\n\nCouldn't pass without sharing this beautiful moment. How's your ${topic} experience?\n\n${includeEmojis ? '💬' : ''} Let's chat in the comments!`,
+          `What I noticed about ${topic} today: Small details make a big difference ${includeEmojis ? '🌟' : ''}\n\nHave you experienced this too?\n\n${includeEmojis ? '👇' : ''} I'm curious about your thoughts`,
+          `${topic} ${includeEmojis ? '💫' : ''}\n\nLearning something new every day and I want to share it with you.\n\n${includeEmojis ? '🔖' : ''} Don't forget to save!`
         ]
       },
       professional: {
         tr: [
-          `${topic} alanında edindiğim deneyimlerimi paylaşıyorum`,
-          `${topic} konusunda bilmeniz gereken 3 önemli nokta`,
-          `${topic} stratejilerini derinlemesine inceliyoruz`,
-          `${topic} ile ilgili uzman görüşleri`,
-          `${topic} trendleri ve gelecek öngörüleri`,
-          `Başarılı ${topic} için ipuçları`,
-          `${topic} dünyasında yenilikler`,
-          `${topic} hakkında sık sorulan sorular`,
-          `${topic} ile profesyonel gelişim`,
-          `${topic} alanında uzmanlaşma yolculuğum`
+          `${topic} konusunda profesyonel yaklaşım ${includeEmojis ? '📊' : ''}\n\nBu alanda başarılı olmak için dikkat edilmesi gereken 3 temel faktör var.\n\nDetaylar için kaydedin ${includeEmojis ? '💼' : ''}`,
+          `${topic} sektöründe oyunun kuralları değişiyor ${includeEmojis ? '🎯' : ''}\n\nAdaptasyon yeteneğiniz başarınızı belirleyecek.\n\n${includeEmojis ? '🔗' : ''} Bio'daki linkten daha fazlasına ulaşın`,
+          `${topic} ile ilgili stratejik düşünceler ${includeEmojis ? '💡' : ''}\n\nDoğru planlama ile hedeflerinize daha hızlı ulaşabilirsiniz.\n\n${includeEmojis ? '📈' : ''} Takipte kalın`
         ],
         en: [
-          `Sharing my experience in ${topic}`,
-          `3 crucial points you need to know about ${topic}`,
-          `Deep dive into ${topic} strategies`,
-          `Expert insights on ${topic}`,
-          `${topic} trends and future predictions`,
-          `Tips for successful ${topic}`,
-          `Innovation in the world of ${topic}`,
-          `Frequently asked questions about ${topic}`,
-          `Professional growth through ${topic}`,
-          `My journey to mastering ${topic}`
+          `Professional approach to ${topic} ${includeEmojis ? '📊' : ''}\n\nThere are 3 key factors to pay attention to for success in this field.\n\nSave for details ${includeEmojis ? '💼' : ''}`,
+          `The rules of the game are changing in ${topic} ${includeEmojis ? '🎯' : ''}\n\nYour adaptability will determine your success.\n\n${includeEmojis ? '🔗' : ''} Find more at the link in bio`,
+          `Strategic thoughts on ${topic} ${includeEmojis ? '💡' : ''}\n\nWith proper planning, you can reach your goals faster.\n\n${includeEmojis ? '📈' : ''} Stay tuned`
         ]
       },
       inspirational: {
         tr: [
-          `${topic} hayallerinizin peşinden gitmenizi sağlasın`,
-          `Her gün ${topic} ile daha güçlü oluyorum`,
-          `${topic} bana imkansızı mümkün kıldı`,
-          `Siz de ${topic} ile hayatınızı değiştirebilirsiniz`,
-          `${topic} yolculuğum beni bugünlere getirdi`,
-          `Asla vazgeçme, ${topic} seni bekliyor`,
-          `${topic} ile her şey mümkün`,
-          `Başarı ${topic} ile başlar`,
-          `${topic} tutkunu olduğum için şanslıyım`,
-          `${topic} ile sınırları zorla`
+          `${topic} yolculuğunda her adım değerli ${includeEmojis ? '🚀' : ''}\n\nBugün attığın küçük adım, yarının büyük başarısının temelidir.\n\n${includeEmojis ? '💪' : ''} Asla vazgeçme!`,
+          `${topic} ile hayallerinin peşinden git ${includeEmojis ? '⭐' : ''}\n\nSınırlar sadece zihninde var. Onları aş ve parlak geleceğini inşa et.\n\n${includeEmojis ? '✨' : ''} Sen bunu hak ediyorsun`,
+          `Her gün ${topic} konusunda biraz daha ileri ${includeEmojis ? '🌟' : ''}\n\nİlerleme mükemmellikten daha önemli. Adım adım devam et.\n\n${includeEmojis ? '🙌' : ''} Seninle gurur duyuyorum`
         ],
         en: [
-          `Let ${topic} inspire you to chase your dreams`,
-          `Growing stronger with ${topic} every day`,
-          `${topic} showed me nothing is impossible`,
-          `You can transform your life with ${topic} too`,
-          `My ${topic} journey brought me here`,
-          `Never give up, ${topic} is waiting for you`,
-          `Everything is possible with ${topic}`,
-          `Success begins with ${topic}`,
-          `Grateful to be passionate about ${topic}`,
-          `Push boundaries with ${topic}`
+          `Every step in the ${topic} journey matters ${includeEmojis ? '🚀' : ''}\n\nThe small step you take today is the foundation of tomorrow's great success.\n\n${includeEmojis ? '💪' : ''} Never give up!`,
+          `Chase your dreams with ${topic} ${includeEmojis ? '⭐' : ''}\n\nLimits exist only in your mind. Break them and build your bright future.\n\n${includeEmojis ? '✨' : ''} You deserve this`,
+          `Getting better at ${topic} every single day ${includeEmojis ? '🌟' : ''}\n\nProgress matters more than perfection. Keep moving forward.\n\n${includeEmojis ? '🙌' : ''} I'm proud of you`
         ]
       },
       funny: {
         tr: [
-          `${topic} planım: Yok`,
-          `Ben: ${topic} yapmayacağım. Also ben: ${topic}`,
-          `${topic} beklenti vs gerçeklik`,
-          `Arkadaşlarıma ${topic} anlatmaya çalışırken ben`,
-          `${topic} dedikleri tam da böyle bir şey olmalı`,
-          `POV: ${topic} keşfettin ve hayatın değişti`,
-          `Kimse: ... Ben: ${topic}!`,
-          `${topic} sevgisi gerçek mi değil mi tartışması`,
-          `${topic} yaparken ben vs normalde ben`,
-          `Neden ${topic} bu kadar ilişkilendirilebilir ki?`
+          `${topic} planım: Yok ${includeEmojis ? '😅' : ''}\n\nAma yine de bir şekilde hallolacak... değil mi?\n\n${includeEmojis ? '🤷‍♂️' : ''} Siz de böyle misiniz?`,
+          `Ben: ${topic} ile uğraşmayacağım\nAlso ben: *${topic}* ${includeEmojis ? '😂' : ''}\n\nKendimi kandırmakta üstüme yok.\n\n${includeEmojis ? '👇' : ''} Beni anlayan var mı?`,
+          `${topic} deneyimim: Beklenti vs Gerçeklik ${includeEmojis ? '🤡' : ''}\n\nHiçbir şey planlandığı gibi gitmiyor ama en azından eğlenceli.\n\n${includeEmojis ? '💀' : ''} Relate eden etiketlesin`
         ],
         en: [
-          `My ${topic} plan: Nonexistent`,
-          `Me: Won't do ${topic}. Also me: Does ${topic}`,
-          `${topic} expectations vs reality`,
-          `Me trying to explain ${topic} to my friends`,
-          `${topic} really be like that`,
-          `POV: You discovered ${topic} and life changed`,
-          `Nobody: ... Me: ${topic}!`,
-          `The ${topic} love is real debate`,
-          `Me doing ${topic} vs me normally`,
-          `Why is ${topic} so relatable though?`
+          `My ${topic} plan: Non-existent ${includeEmojis ? '😅' : ''}\n\nBut somehow it'll work out... right?\n\n${includeEmojis ? '🤷‍♂️' : ''} Anyone else like this?`,
+          `Me: I won't deal with ${topic}\nAlso me: *does ${topic}* ${includeEmojis ? '😂' : ''}\n\nI'm a pro at fooling myself.\n\n${includeEmojis ? '👇' : ''} Anyone relate?`,
+          `My ${topic} experience: Expectation vs Reality ${includeEmojis ? '🤡' : ''}\n\nNothing goes as planned but at least it's fun.\n\n${includeEmojis ? '💀' : ''} Tag someone who relates`
         ]
       }
     },
     tiktok: {
       casual: {
         tr: [
-          `${topic} trendine atlıyorum`,
-          `Siz de ${topic} denediniz mi?`,
-          `${topic} challenge kabul edildi`,
-          `Beklediğiniz ${topic} içeriği`,
-          `${topic} ama eğlenceli versiyonu`,
-          `Keşfet'e düşsün diye ${topic}`,
-          `Viral ${topic} denemesi`,
-          `${topic} ile günümü kurtarıyorum`,
-          `Part 2 gelsin mi? ${topic} edition`,
-          `${topic} hakkında kimsenin söylemediği gerçek`
+          `${topic} check ${includeEmojis ? '✨' : ''} Beklediğiniz içerik geldi!`,
+          `POV: ${topic} keşfettin ${includeEmojis ? '🔥' : ''} Part 2 gelsin mi?`,
+          `${topic} ama farklı ${includeEmojis ? '💫' : ''} Beğen + kaydet = part 2`
         ],
         en: [
-          `Jumping on the ${topic} trend`,
-          `Have you tried ${topic} yet?`,
-          `${topic} challenge accepted`,
-          `The ${topic} content you've been waiting for`,
-          `${topic} but make it fun`,
-          `${topic} for the algorithm`,
-          `Viral ${topic} attempt`,
-          `Saving my day with ${topic}`,
-          `Part 2? ${topic} edition`,
-          `The truth about ${topic} nobody tells you`
+          `${topic} check ${includeEmojis ? '✨' : ''} The content you've been waiting for!`,
+          `POV: You discovered ${topic} ${includeEmojis ? '🔥' : ''} Want part 2?`,
+          `${topic} but different ${includeEmojis ? '💫' : ''} Like + save = part 2`
         ]
       },
       professional: {
         tr: [
-          `${topic} hakkında bilmeniz gereken 5 şey`,
-          `${topic} ile 60 saniyede başarı`,
-          `Herkesin yaptığı ${topic} hatası`,
-          `${topic} ile oyunun kurallarını değiştir`,
-          `${topic} 101: Başlangıç rehberi`,
-          `${topic} stratejinizi seviyeye taşıyın`,
-          `${topic} uzmanlığına giden yol`,
-          `${topic} ile para kazanma yolları`,
-          `${topic} trendlerini kaçırmayın`,
-          `${topic} ile profesyonelleşin`
+          `${topic} hakkında bilmeniz gereken tek şey ${includeEmojis ? '📚' : ''} Kaydet!`,
+          `3 saniyede ${topic} öğren ${includeEmojis ? '⚡' : ''} Takip et`,
+          `${topic} masterclass ${includeEmojis ? '🎯' : ''} Daha fazlası için takipte kal`
         ],
         en: [
-          `5 things you must know about ${topic}`,
-          `Master ${topic} in 60 seconds`,
-          `The ${topic} mistake everyone makes`,
-          `Change the game with ${topic}`,
-          `${topic} 101: Beginner's guide`,
-          `Level up your ${topic} strategy`,
-          `Path to ${topic} mastery`,
-          `Ways to monetize ${topic}`,
-          `Don't miss ${topic} trends`,
-          `Go pro with ${topic}`
+          `The one thing you need to know about ${topic} ${includeEmojis ? '📚' : ''} Save this!`,
+          `Learn ${topic} in 3 seconds ${includeEmojis ? '⚡' : ''} Follow for more`,
+          `${topic} masterclass ${includeEmojis ? '🎯' : ''} Follow for more tips`
         ]
       },
       inspirational: {
         tr: [
-          `${topic} yolculuğunuz bugün başlıyor`,
-          `${topic} ile hayallerinize ulaşın`,
-          `${topic} denemek için işaret bu`,
-          `${topic} gücüne inanın`,
-          `${topic} ile sınırları aşın`,
-          `Başarıya ${topic} ile ulaş`,
-          `${topic} tutkunu ol, başarılı ol`,
-          `${topic} ile imkansız diye bir şey yok`,
-          `${topic} seni bekliyor, harekete geç`,
-          `${topic} ile değişim zamanı`
+          `${topic} ile başarı ${includeEmojis ? '🚀' : ''} Bunu denemelisin!`,
+          `${topic} yolculuğun bugün başlıyor ${includeEmojis ? '✨' : ''} Yapabilirsin!`,
+          `${topic} güç veriyor ${includeEmojis ? '💪' : ''} Devam et!`
         ],
         en: [
-          `Your ${topic} journey starts today`,
-          `Reach your dreams through ${topic}`,
-          `This is your sign to try ${topic}`,
-          `Believe in the power of ${topic}`,
-          `Break limits with ${topic}`,
-          `Achieve success with ${topic}`,
-          `Be passionate about ${topic}, be successful`,
-          `Nothing is impossible with ${topic}`,
-          `${topic} is waiting, take action`,
-          `Time to transform with ${topic}`
+          `Success with ${topic} ${includeEmojis ? '🚀' : ''} You need to try this!`,
+          `Your ${topic} journey starts today ${includeEmojis ? '✨' : ''} You got this!`,
+          `${topic} gives you power ${includeEmojis ? '💪' : ''} Keep going!`
         ]
       },
       funny: {
         tr: [
-          `${topic} enerjisiyle geliyorum`,
-          `Ben ${topic} hakkında dramatik olmuyorum değil mi?`,
-          `${topic} ama kaotik yap`,
-          `${topic} neden böyle ya`,
-          `Ben ${topic} anladığımı sanıyorum`,
-          `${topic} farklı vuruyor`,
-          `${topic} beni şaşırtmayı bırakmıyor`,
-          `${topic} açıklaması ama komik`,
-          `${topic} seven var mı burda?`,
-          `Plot twist: ${topic}`
+          `${topic} ama kaotik ${includeEmojis ? '😭' : ''} Anlayan anladı`,
+          `Ben ${topic} anladığımı sanıyorum ${includeEmojis ? '🤡' : ''}`,
+          `${topic} neden böyle ${includeEmojis ? '💀' : ''} Birisi açıklasın`
         ],
         en: [
-          `Coming in with ${topic} energy`,
-          `I'm not being dramatic about ${topic} right?`,
-          `${topic} but make it chaotic`,
-          `Why is ${topic} like this`,
-          `Thinking I understand ${topic}`,
-          `${topic} hits different`,
-          `${topic} never stops surprising me`,
-          `Explaining ${topic} but funny`,
-          `${topic} lovers where you at?`,
-          `Plot twist: ${topic}`
+          `${topic} but chaotic ${includeEmojis ? '😭' : ''} IYKYK`,
+          `Me thinking I understand ${topic} ${includeEmojis ? '🤡' : ''}`,
+          `Why is ${topic} like this ${includeEmojis ? '💀' : ''} Someone explain`
         ]
       }
     }
   }
 
-  // CTA'lar (Call to Action)
-  const ctas = {
-    tr: [
-      'Katılıyor musun? 💭',
-      'Düşüncelerini yaz! 👇',
-      'Etiketle arkadaşını',
-      'Kaydet sonra için',
-      'Takipte kal daha fazlası için',
-      'Beğenmeyi unutma ❤️',
-      'Paylaş sevdiklerinle',
-      'Senin fikrin ne?',
-      'Deneyimlerini paylaş',
-      'Bu sana göre mi?'
-    ],
-    en: [
-      'Do you agree? 💭',
-      'Drop your thoughts! 👇',
-      'Tag a friend',
-      'Save for later',
-      'Follow for more',
-      "Don't forget to like ❤️",
-      'Share with friends',
-      "What's your take?",
-      'Share your experience',
-      'Is this you?'
-    ]
-  }
+  // Get templates for platform and tone
+  const platformTemplates = templates[platform] || templates.instagram
+  const toneTemplates = platformTemplates[tone] || platformTemplates.casual
+  const langTemplates = toneTemplates[language] || toneTemplates.en
 
-  // Emoji pool
-  const emojisByTone: {[key: string]: string[]} = {
-    casual: ['✨', '💫', '🌟', '⭐', '💭', '🔥', '💯', '👀', '💬', '✌️'],
-    professional: ['📊', '💼', '🎯', '📈', '✅', '💡', '🔍', '📚', '🎓', '🏆'],
-    inspirational: ['🌟', '💪', '🚀', '✨', '🌈', '💫', '🔮', '⚡', '🎯', '💎'],
-    funny: ['😂', '🤣', '😅', '😆', '💀', '🤪', '😭', '🤡', '🙃', '😬']
-  }
-
-  const platformTemplates = templates[platform.toLowerCase()] || templates['instagram']
-  const toneTemplates = platformTemplates[tone.toLowerCase()] || platformTemplates['casual']
-  const langTemplates = toneTemplates[language] || toneTemplates['en']
-  
-  // RASTGELE SEÇ (her seferinde farklı)
+  // Shuffle and select
   const shuffled = [...langTemplates].sort(() => Math.random() - 0.5)
-  const selected = shuffled.slice(0, 3)
-
-  const ctaList = ctas[language] || ctas['en']
-  const emojis = emojisByTone[tone.toLowerCase()] || emojisByTone['casual']
-
-  return selected.map(template => {
-    // Rastgele CTA
-    const randomCTA = ctaList[Math.floor(Math.random() * ctaList.length)]
+  
+  // Add hashtags if needed
+  if (includeHashtags) {
+    const topicHash = topic.toLowerCase().replace(/\s+/g, '')
+    const platformHashes: {[key: string]: string[]} = {
+      instagram: ['instagood', 'explore', 'viral', 'trending', 'reels'],
+      tiktok: ['fyp', 'foryou', 'viral', 'trending', 'xyzbca'],
+      twitter: ['trending', 'viral', 'mustread'],
+      linkedin: ['business', 'success', 'growth', 'professional'],
+      youtube: ['youtube', 'subscribe', 'video', 'shorts']
+    }
     
-    // Rastgele emoji (eğer isteniyorsa)
-    let caption = template
-    if (includeEmojis && !template.includes('✨') && !template.includes('💫')) {
-      const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
-      caption = `${randomEmoji} ${template}`
-    }
-
-    // Hashtag ekle (eğer isteniyorsa)
-    let hashtags = ''
-    if (includeHashtags) {
-      const topicHash = topic.toLowerCase().replace(/\s+/g, '')
-      const extraHashes = language === 'tr'
-        ? ['keşfet', 'viral', 'trend', 'instagram', 'tiktok']
-        : ['explore', 'viral', 'trending', 'fyp', 'foryou']
-      
-      const selectedHashes = extraHashes
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
-      
-      hashtags = `\n\n#${topicHash} #${selectedHashes.join(' #')}`
-    }
-
-    return `${caption}\n\n${randomCTA}${hashtags}`
-  })
+    const hashes = platformHashes[platform] || platformHashes.instagram
+    const selectedHashes = hashes.sort(() => Math.random() - 0.5).slice(0, 3)
+    
+    return shuffled.map(caption => `${caption}\n\n#${topicHash} #${selectedHashes.join(' #')}`)
+  }
+  
+  return shuffled
 }

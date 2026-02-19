@@ -7,8 +7,8 @@ import { ToastProvider } from "@/components/Toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Clarity AI - AI Tools for Everyone",
-  description: "Powerful AI tools to boost your productivity.",
+  title: "Media Tool Kit - İçerik Üreticileri için AI Araçları",
+  description: "Sosyal medya içerik üreticileri için güçlü AI araçları. Hook, caption, hashtag, video script ve daha fazlası.",
 };
 
 export default function RootLayout({

@@ -8,12 +8,22 @@ import { useLanguage } from '@/lib/LanguageContext'
 
 export default function LandingPage() {
   const [user, setUser] = useState<any>(null)
+  const [activeModal, setActiveModal] = useState<'about' | 'contact' | 'privacy' | null>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
 
   useEffect(() => {
     checkUser()
   }, [])
+
+  // Smooth scroll function
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault()
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -97,13 +107,13 @@ export default function LandingPage() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-300 hover:text-white transition">
+              <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-gray-300 hover:text-white transition">
                 {language === 'tr' ? 'Özellikler' : 'Features'}
               </a>
-              <a href="#tools" className="text-gray-300 hover:text-white transition">
+              <a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-300 hover:text-white transition">
                 {language === 'tr' ? 'Araçlar' : 'Tools'}
               </a>
-              <a href="#pricing" className="text-gray-300 hover:text-white transition">
+              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-300 hover:text-white transition">
                 {language === 'tr' ? 'Fiyatlandırma' : 'Pricing'}
               </a>
             </nav>
@@ -496,6 +506,214 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Modal */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setActiveModal(null)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-gray-800 rounded-2xl border border-gray-700 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+            {/* Close Button */}
+            <button 
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 transition"
+            >
+              ✕
+            </button>
+            
+            {/* About Modal */}
+            {activeModal === 'about' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl">🚀</span>
+                  </div>
+                  <h2 className="text-2xl font-bold">
+                    {language === 'tr' ? 'Hakkımda' : 'About'}
+                  </h2>
+                </div>
+                
+                <div className="space-y-4 text-gray-300">
+                  <p>
+                    {language === 'tr' 
+                      ? 'Media Tool Kit, içerik üreticilerinin işini kolaylaştırmak için geliştirdiğim bireysel bir projedir. Sosyal medya içerik üretimini herkes için daha kolay, hızlı ve etkili hale getirmek amacıyla bu platformu oluşturdum.'
+                      : 'Media Tool Kit is a personal project I developed to make content creators\' work easier. I created this platform to make social media content creation easier, faster, and more effective for everyone.'
+                    }
+                  </p>
+                  <p>
+                    {language === 'tr'
+                      ? '16+ farklı AI destekli araçla hook oluşturmadan hashtag optimizasyonuna, video script yazımından rakip analizine kadar tüm ihtiyaçlarınızı tek bir platformda karşılıyorum.'
+                      : 'With 16+ different AI-powered tools, I cover all your needs from hook generation to hashtag optimization, video script writing to competitor analysis - all in one platform.'
+                    }
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-gray-700/50 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-purple-400">16+</div>
+                      <div className="text-sm text-gray-400">{language === 'tr' ? 'AI Araç' : 'AI Tools'}</div>
+                    </div>
+                    <div className="bg-gray-700/50 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-pink-400">7/24</div>
+                      <div className="text-sm text-gray-400">{language === 'tr' ? 'Erişim' : 'Access'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+                    <p className="text-sm">
+                      {language === 'tr'
+                        ? '💡 Bu proje sürekli geliştirilmektedir. Önerileriniz ve geri bildirimleriniz için her zaman açığım!'
+                        : '💡 This project is continuously being developed. I\'m always open to your suggestions and feedback!'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Contact Modal */}
+            {activeModal === 'contact' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl">📬</span>
+                  </div>
+                  <h2 className="text-2xl font-bold">
+                    {language === 'tr' ? 'İletişim' : 'Contact'}
+                  </h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <p className="text-gray-300">
+                    {language === 'tr'
+                      ? 'Sorularınız, önerileriniz veya geri bildirimleriniz için benimle iletişime geçebilirsiniz.'
+                      : 'Feel free to reach out to me for questions, suggestions, or feedback.'
+                    }
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <a 
+                      href="mailto:ahmetemresozer@gmail.com"
+                      className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-xl hover:bg-gray-700 transition"
+                    >
+                      <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">
+                        📧
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400">{language === 'tr' ? 'E-posta' : 'Email'}</div>
+                        <div className="font-medium">ahmetemresozer@gmail.com</div>
+                      </div>
+                    </a>
+                    
+                    <a 
+                      href="https://instagram.com/emreesozeer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-xl hover:bg-gray-700 transition"
+                    >
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center text-2xl">
+                        📸
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400">Instagram</div>
+                        <div className="font-medium">@emreesozeer</div>
+                      </div>
+                    </a>
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+                    <p className="text-sm text-gray-300">
+                      {language === 'tr'
+                        ? '💡 Geri bildirimleriniz projenin gelişmesi için çok değerli. Teşekkürler!'
+                        : '💡 Your feedback is valuable for improving this project. Thank you!'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Privacy Modal */}
+            {activeModal === 'privacy' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl">🔒</span>
+                  </div>
+                  <h2 className="text-2xl font-bold">
+                    {language === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}
+                  </h2>
+                </div>
+                
+                <div className="space-y-6 text-gray-300 text-sm">
+                  <div>
+                    <h3 className="font-bold text-white mb-2">{language === 'tr' ? '1. Veri Toplama' : '1. Data Collection'}</h3>
+                    <p>
+                      {language === 'tr'
+                        ? 'Hizmetleri sunmak için yalnızca gerekli veriler toplanmaktadır: e-posta adresi, kullanım istatistikleri ve oluşturulan içerikler. Verileriniz asla üçüncü taraflarla paylaşılmaz veya satılmaz.'
+                        : 'Only necessary data is collected to provide services: email address, usage statistics, and created content. Your data is never shared with or sold to third parties.'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold text-white mb-2">{language === 'tr' ? '2. Veri Güvenliği' : '2. Data Security'}</h3>
+                    <p>
+                      {language === 'tr'
+                        ? 'Verileriniz SSL şifrelemesi ile korunmaktadır. Güvenli sunucularda saklanan verileriniz en üst düzey güvenlik önlemleriyle muhafaza edilir.'
+                        : 'Your data is protected with SSL encryption. Your data stored on secure servers is maintained with the highest security measures.'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold text-white mb-2">{language === 'tr' ? '3. Çerezler' : '3. Cookies'}</h3>
+                    <p>
+                      {language === 'tr'
+                        ? 'Daha iyi bir kullanıcı deneyimi sunmak için çerezler kullanılmaktadır. Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz.'
+                        : 'Cookies are used to provide a better user experience. You can manage cookies through your browser settings.'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold text-white mb-2">{language === 'tr' ? '4. Haklarınız' : '4. Your Rights'}</h3>
+                    <p>
+                      {language === 'tr'
+                        ? 'KVKK kapsamında verilerinize erişim, düzeltme ve silme hakkına sahipsiniz. Bu haklarınızı kullanmak için iletişim adresinden ulaşabilirsiniz.'
+                        : 'Under GDPR, you have the right to access, correct, and delete your data. Contact me to exercise these rights.'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold text-white mb-2">{language === 'tr' ? '5. İçerik Kullanımı' : '5. Content Usage'}</h3>
+                    <p>
+                      {language === 'tr'
+                        ? 'AI araçlarıyla oluşturduğunuz içerikler tamamen size aittir. Bu içerikleri ticari veya kişisel amaçlarla özgürce kullanabilirsiniz.'
+                        : 'Content created with AI tools belongs entirely to you. You can freely use this content for commercial or personal purposes.'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-gray-700/50 rounded-xl">
+                    <p className="text-xs text-gray-400">
+                      {language === 'tr'
+                        ? 'Son güncelleme: Ocak 2025. Sorularınız için ahmetemresozer@gmail.com adresine yazabilirsiniz.'
+                        : 'Last updated: January 2025. For questions, email ahmetemresozer@gmail.com'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="border-t border-gray-800 py-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -527,19 +745,19 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold mb-4">{language === 'tr' ? 'Ürün' : 'Product'}</h4>
               <ul className="space-y-2">
-                <li><a href="#features" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Özellikler' : 'Features'}</a></li>
-                <li><a href="#tools" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Araçlar' : 'Tools'}</a></li>
-                <li><a href="#pricing" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Fiyatlandırma' : 'Pricing'}</a></li>
+                <li><a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Özellikler' : 'Features'}</a></li>
+                <li><a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Araçlar' : 'Tools'}</a></li>
+                <li><a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Fiyatlandırma' : 'Pricing'}</a></li>
               </ul>
             </div>
 
             {/* Company */}
             <div>
-              <h4 className="font-bold mb-4">{language === 'tr' ? 'Şirket' : 'Company'}</h4>
+              <h4 className="font-bold mb-4">{language === 'tr' ? 'Bilgi' : 'Info'}</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Hakkımızda' : 'About'}</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'İletişim' : 'Contact'}</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Gizlilik' : 'Privacy'}</a></li>
+                <li><button onClick={() => setActiveModal('about')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Hakkımızda' : 'About'}</button></li>
+                <li><button onClick={() => setActiveModal('contact')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'İletişim' : 'Contact'}</button></li>
+                <li><button onClick={() => setActiveModal('privacy')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Gizlilik' : 'Privacy'}</button></li>
               </ul>
             </div>
           </div>
