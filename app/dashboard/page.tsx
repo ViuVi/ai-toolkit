@@ -113,7 +113,7 @@ export default function DashboardPage() {
   const tools = [
     // Video Tools
     { name: language === 'tr' ? 'Video Script Yazarı' : 'Video Script Writer', icon: '🎬', path: '/tools/video-script', credits: 4, category: 'video', description: language === 'tr' ? 'YouTube & TikTok için script' : 'Scripts for YouTube & TikTok' },
-    { name: language === 'tr' ? 'Seslendirme' : 'Text to Speech', icon: '🔊', path: '/tools/text-to-speech', credits: 0, category: 'video', description: language === 'tr' ? 'Metni sese dönüştür' : 'Convert text to speech', free: true, new: true },
+    { name: language === 'tr' ? 'Seslendirme' : 'Text to Speech', icon: '🔊', path: '/tools/text-to-speech', credits: 3, category: 'video', description: language === 'tr' ? 'Metni sese dönüştür' : 'Convert text to speech', new: true },
     
     // Content Creation
     { name: language === 'tr' ? 'Hook Üretici' : 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },

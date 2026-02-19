@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,9 +12,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    console.log('💫 Bio Generator - Name:', name, 'Profession:', profession, 'Platform:', platform)
+    console.log('💫 Bio Generator AI - Name:', name, 'Profession:', profession, 'Platform:', platform)
 
-    const bios = generateBios(name, profession, interests, platform, tone, language)
+    const bios = await generateBiosWithAI(name, profession, interests, platform, tone, language)
 
     return NextResponse.json({ bios })
 
@@ -30,122 +26,129 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateBios(name: string, profession: string, interests: string, platform: string, tone: string, language: string) {
+async function generateBiosWithAI(name: string, profession: string, interests: string, platform: string, tone: string, language: string): Promise<string[]> {
   
+  const platformLimits: {[key: string]: number} = {
+    instagram: 150,
+    tiktok: 80,
+    twitter: 160,
+    linkedin: 220,
+    youtube: 200
+  }
+
+  const charLimit = platformLimits[platform] || 150
+
+  const toneDescriptions: {[key: string]: string} = {
+    casual: language === 'tr' ? 'rahat, samimi, emoji kullanarak' : 'casual, friendly, using emojis',
+    professional: language === 'tr' ? 'profesyonel, ciddi, iş odaklı' : 'professional, serious, business-focused',
+    creative: language === 'tr' ? 'yaratıcı, eğlenceli, benzersiz' : 'creative, playful, unique'
+  }
+
+  const toneDesc = toneDescriptions[tone] || toneDescriptions.casual
+
+  const prompt = language === 'tr'
+    ? `${name} için ${platform} profil biyografisi yaz.
+Meslek: ${profession}
+İlgi alanları: ${interests || 'belirtilmemiş'}
+Ton: ${toneDesc}
+Karakter limiti: ${charLimit}
+
+3 farklı bio önerisi yaz. Her biri ${charLimit} karakterden kısa olsun. Sadece biyografileri yaz, açıklama yapma. Her biyografiyi yeni satırda yaz.`
+    : `Write ${platform} profile bio for ${name}.
+Profession: ${profession}
+Interests: ${interests || 'not specified'}
+Tone: ${toneDesc}
+Character limit: ${charLimit}
+
+Write 3 different bio suggestions. Each should be under ${charLimit} characters. Only write the bios, no explanations. Write each bio on a new line.`
+
+  try {
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 400,
+            temperature: 0.9,
+            top_p: 0.95,
+            do_sample: true,
+            return_full_text: false
+          }
+        })
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      const text = data[0]?.generated_text || ''
+      
+      const bios = text
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter((line: string) => line.length > 20 && line.length < charLimit + 50)
+        .map((line: string) => line.replace(/^\d+[\.\)]\s*/, '').trim())
+        .filter((line: string) => !line.toLowerCase().includes('bio') && !line.toLowerCase().includes('here'))
+        .slice(0, 3)
+
+      if (bios.length >= 2) {
+        return bios
+      }
+    }
+  } catch (error) {
+    console.log('AI bio generation failed, using fallback')
+  }
+
+  return generateFallbackBios(name, profession, interests, platform, tone, language)
+}
+
+function generateFallbackBios(name: string, profession: string, interests: string, platform: string, tone: string, language: string): string[] {
   const templates = {
-    instagram: {
-      casual: {
-        tr: [
-          `${profession} 🎯 | ${interests ? interests + ' tutkunu' : 'Hayat severim'} ✨`,
-          `${name} | ${profession} 💼 | ${interests || 'Macera peşinde'} 🌍`,
-          `${profession} & ${interests || 'İçerik üreticisi'} 📱 | Hikayem burada başlıyor`,
-          `✨ ${profession} | ${interests ? interests + ' ile yaşıyorum' : 'Hayallerimin peşindeyim'}`,
-          `${name} 🌟 | ${profession} | ${interests || 'Anı kolleksiyoncusu'} 📸`
-        ],
-        en: [
-          `${profession} 🎯 | ${interests ? interests + ' enthusiast' : 'Life lover'} ✨`,
-          `${name} | ${profession} 💼 | ${interests || 'Adventure seeker'} 🌍`,
-          `${profession} & ${interests || 'Content creator'} 📱 | My story starts here`,
-          `✨ ${profession} | ${interests ? 'Living for ' + interests : 'Chasing dreams'}`,
-          `${name} 🌟 | ${profession} | ${interests || 'Moment collector'} 📸`
-        ]
-      },
-      professional: {
-        tr: [
-          `${profession} | ${interests ? interests + ' uzmanı' : 'Profesyonel'} | İş birliği için DM 📧`,
-          `${name} - ${profession} 💼 | ${interests || 'Strateji & İnovasyon'} | Şirket: @yourcompany`,
-          `${profession} 🎯 | ${interests ? interests + ' danışmanı' : 'Sektör lideri'} | info@email.com`,
-          `Sertifikalı ${profession} | ${interests || 'Eğitim & Mentorluk'} | Linkedin: ${name}`,
-          `${profession} & ${interests || 'Girişimci'} | 10+ yıl deneyim | Konuşmalar için iletişime geçin`
-        ],
-        en: [
-          `${profession} | ${interests ? interests + ' specialist' : 'Professional'} | DM for collaborations 📧`,
-          `${name} - ${profession} 💼 | ${interests || 'Strategy & Innovation'} | Company: @yourcompany`,
-          `${profession} 🎯 | ${interests ? interests + ' consultant' : 'Industry leader'} | info@email.com`,
-          `Certified ${profession} | ${interests || 'Education & Mentorship'} | LinkedIn: ${name}`,
-          `${profession} & ${interests || 'Entrepreneur'} | 10+ years experience | DM for speaking engagements`
-        ]
-      },
-      creative: {
-        tr: [
-          `${profession} ✨ | ${interests ? interests + ' ile sınırları zorluyorum' : 'Yaratıcılık benim tutkum'}`,
-          `🎨 ${name} | ${profession} | ${interests || 'Hayal gücünün peşinde'}`,
-          `${profession} & ${interests || 'Sanatçı'} | Hayatı renklerle boyuyorum 🌈`,
-          `Yaratıcı ${profession} 💡 | ${interests ? interests + ' tutkunu' : 'İlham kaynağı'} | Hikayeler anlatıyorum`,
-          `${name} ✨ ${profession} | ${interests || 'Rüyaları gerçeğe dönüştürüyorum'}`
-        ],
-        en: [
-          `${profession} ✨ | ${interests ? 'Pushing boundaries with ' + interests : 'Creativity is my passion'}`,
-          `🎨 ${name} | ${profession} | ${interests || 'Chasing imagination'}`,
-          `${profession} & ${interests || 'Artist'} | Painting life with colors 🌈`,
-          `Creative ${profession} 💡 | ${interests ? interests + ' lover' : 'Inspiration source'} | Storyteller`,
-          `${name} ✨ ${profession} | ${interests || 'Turning dreams into reality'}`
-        ]
-      }
+    casual: {
+      tr: [
+        `${profession} 🎯 | ${interests ? interests + ' tutkunu' : 'Hayat severim'} ✨`,
+        `${name} | ${profession} 💼 | ${interests || 'Macera peşinde'} 🌍`,
+        `✨ ${profession} | ${interests ? interests + ' ile yaşıyorum' : 'Hayallerimin peşindeyim'}`
+      ],
+      en: [
+        `${profession} 🎯 | ${interests ? interests + ' enthusiast' : 'Life lover'} ✨`,
+        `${name} | ${profession} 💼 | ${interests || 'Adventure seeker'} 🌍`,
+        `✨ ${profession} | ${interests ? 'Living for ' + interests : 'Chasing dreams'}`
+      ]
     },
-    twitter: {
-      casual: {
-        tr: [
-          `${profession} 🎯 ${interests ? '| ' + interests + ' hakkında tweet atıyorum' : ''}`,
-          `${name} | ${profession} | ${interests || 'Düşüncelerimi paylaşıyorum'} 💭`,
-          `${profession} & ${interests || 'sosyal medya'} meraklısı 📱`,
-          `Günlük ${profession} hikayeleri | ${interests || 'Trend takipçisi'} ✨`
-        ],
-        en: [
-          `${profession} 🎯 ${interests ? '| Tweeting about ' + interests : ''}`,
-          `${name} | ${profession} | ${interests || 'Sharing thoughts'} 💭`,
-          `${profession} & ${interests || 'social media'} enthusiast 📱`,
-          `Daily ${profession} stories | ${interests || 'Trend watcher'} ✨`
-        ]
-      },
-      professional: {
-        tr: [
-          `${profession} | ${interests || 'Sektör içgörüleri'} | Görüşler benimdir`,
-          `${name} - ${profession} 💼 | ${interests ? interests + ' uzmanı' : 'Lider'} | DM açık`,
-          `${profession} 🎯 | ${interests || 'Teknoloji & İnovasyon'} | Konuşmacı`
-        ],
-        en: [
-          `${profession} | ${interests || 'Industry insights'} | Opinions are my own`,
-          `${name} - ${profession} 💼 | ${interests ? interests + ' expert' : 'Leader'} | DM open`,
-          `${profession} 🎯 | ${interests || 'Tech & Innovation'} | Speaker`
-        ]
-      },
-      creative: {
-        tr: [
-          `Yaratıcı ${profession} ✨ | ${interests || 'Hikaye anlatıcısı'}`,
-          `${name} 🎨 ${profession} | ${interests ? interests + ' ile ilham veriyorum' : 'İlham peşinde'}`,
-          `${profession} & ${interests || 'Sanat'} | Fikirleri hayata geçiriyorum 💡`
-        ],
-        en: [
-          `Creative ${profession} ✨ | ${interests || 'Storyteller'}`,
-          `${name} 🎨 ${profession} | ${interests ? 'Inspiring through ' + interests : 'Seeking inspiration'}`,
-          `${profession} & ${interests || 'Art'} | Bringing ideas to life 💡`
-        ]
-      }
+    professional: {
+      tr: [
+        `${profession} | ${interests ? interests + ' uzmanı' : 'Profesyonel'} | İş birliği için DM 📧`,
+        `${name} - ${profession} | ${interests || 'Strateji & İnovasyon'}`,
+        `Sertifikalı ${profession} | ${interests || 'Eğitim & Mentorluk'}`
+      ],
+      en: [
+        `${profession} | ${interests ? interests + ' specialist' : 'Professional'} | DM for collaborations 📧`,
+        `${name} - ${profession} | ${interests || 'Strategy & Innovation'}`,
+        `Certified ${profession} | ${interests || 'Education & Mentorship'}`
+      ]
     },
-    linkedin: {
-      professional: {
-        tr: [
-          `${profession} | ${interests || 'Liderlik & Strateji'} | 10+ yıl sektör deneyimi`,
-          `${name} - ${profession} 💼 | ${interests ? interests + ' uzmanı' : 'Sektör lideri'} | MBA`,
-          `Kıdemli ${profession} | ${interests || 'Dijital Dönüşüm'} | Sertifikalı Eğitmen`,
-          `${profession} 🎯 | ${interests || 'İnovasyon & Teknoloji'} | Fortune 500 deneyimi`
-        ],
-        en: [
-          `${profession} | ${interests || 'Leadership & Strategy'} | 10+ years industry experience`,
-          `${name} - ${profession} 💼 | ${interests ? interests + ' specialist' : 'Industry leader'} | MBA`,
-          `Senior ${profession} | ${interests || 'Digital Transformation'} | Certified Trainer`,
-          `${profession} 🎯 | ${interests || 'Innovation & Technology'} | Fortune 500 experience`
-        ]
-      }
+    creative: {
+      tr: [
+        `${profession} ✨ | ${interests ? interests + ' ile sınırları zorluyorum' : 'Yaratıcılık benim tutkum'}`,
+        `🎨 ${name} | ${profession} | ${interests || 'Hayal gücünün peşinde'}`,
+        `Yaratıcı ${profession} 💡 | ${interests ? interests + ' tutkunu' : 'İlham kaynağı'}`
+      ],
+      en: [
+        `${profession} ✨ | ${interests ? 'Pushing boundaries with ' + interests : 'Creativity is my passion'}`,
+        `🎨 ${name} | ${profession} | ${interests || 'Chasing imagination'}`,
+        `Creative ${profession} 💡 | ${interests ? interests + ' lover' : 'Inspiration source'}`
+      ]
     }
   }
 
-  const platformTemplates = templates[platform as keyof typeof templates] || templates.instagram
-  const toneTemplates = (platformTemplates as any)[tone] || (platformTemplates as any).casual
+  const toneTemplates = templates[tone as keyof typeof templates] || templates.casual
   const langTemplates = language === 'tr' ? toneTemplates.tr : toneTemplates.en
 
-  // Rastgele 3 tane seç
-  const shuffled = [...langTemplates].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 3)
+  return langTemplates
 }

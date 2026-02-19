@@ -1,35 +1,51 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 import { supabase } from '@/lib/supabase'
 
 export default function TextToSpeechPage() {
   const [text, setText] = useState('')
-  const [voiceLanguage, setVoiceLanguage] = useState('en')
+  const [selectedVoice, setSelectedVoice] = useState('Joanna')
+  const [voices, setVoices] = useState<{[key: string]: any[]}>({})
   const [loading, setLoading] = useState(false)
-  const [audioUrls, setAudioUrls] = useState<string[]>([])
-  const [currentChunk, setCurrentChunk] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
+  const [credits, setCredits] = useState<number>(0)
   const audioRef = useRef<HTMLAudioElement>(null)
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
 
-  const voices = [
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'pt', name: 'Português', flag: '🇵🇹' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-  ]
+  useEffect(() => {
+    fetchVoices()
+    getUser()
+  }, [])
+
+  const getUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUserId(user.id)
+      const { data: creditsData } = await supabase
+        .from('credits')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single()
+      if (creditsData) setCredits(creditsData.balance)
+    }
+  }
+
+  const fetchVoices = async () => {
+    try {
+      const response = await fetch('/api/text-to-speech')
+      const data = await response.json()
+      if (data.voices) {
+        setVoices(data.voices)
+      }
+    } catch (err) {
+      console.error('Error fetching voices:', err)
+    }
+  }
 
   const handleGenerate = async () => {
     if (!text.trim()) {
@@ -37,10 +53,14 @@ export default function TextToSpeechPage() {
       return
     }
 
+    if (text.length > 3000) {
+      setError(language === 'tr' ? 'Metin çok uzun (max 3000 karakter)' : 'Text too long (max 3000 characters)')
+      return
+    }
+
     setLoading(true)
     setError('')
-    setAudioUrls([])
-    setCurrentChunk(0)
+    setAudioUrl(null)
 
     try {
       const response = await fetch('/api/text-to-speech', {
@@ -48,7 +68,9 @@ export default function TextToSpeechPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: text.trim(),
-          language: voiceLanguage
+          voice: selectedVoice,
+          userId,
+          language
         })
       })
 
@@ -56,8 +78,16 @@ export default function TextToSpeechPage() {
 
       if (data.error) {
         setError(data.error)
-      } else {
-        setAudioUrls(data.audioUrls)
+      } else if (data.audioUrl) {
+        setAudioUrl(data.audioUrl)
+        setCredits(prev => prev - 3)
+        
+        // Otomatik çal
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play()
+          }
+        }, 500)
       }
     } catch (err) {
       setError(language === 'tr' ? 'Bir hata oluştu' : 'An error occurred')
@@ -66,46 +96,23 @@ export default function TextToSpeechPage() {
     }
   }
 
-  const playAudio = () => {
-    if (audioUrls.length > 0 && audioRef.current) {
-      audioRef.current.src = audioUrls[currentChunk]
-      audioRef.current.play()
-      setIsPlaying(true)
+  const handleDownload = () => {
+    if (audioUrl) {
+      const link = document.createElement('a')
+      link.href = audioUrl
+      link.download = `speech-${Date.now()}.mp3`
+      link.click()
     }
   }
 
-  const pauseAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      setIsPlaying(false)
-    }
-  }
-
-  const handleAudioEnded = () => {
-    if (currentChunk < audioUrls.length - 1) {
-      setCurrentChunk(prev => prev + 1)
-    } else {
-      setIsPlaying(false)
-      setCurrentChunk(0)
-    }
-  }
-
-  useEffect(() => {
-    if (isPlaying && audioUrls.length > 0 && audioRef.current) {
-      audioRef.current.src = audioUrls[currentChunk]
-      audioRef.current.play()
-    }
-  }, [currentChunk])
-
-  const downloadAudio = async () => {
-    if (audioUrls.length === 0) return
-    
-    // İlk chunk'ı indir (tam metin için tüm chunk'ları birleştirmek daha karmaşık)
-    const link = document.createElement('a')
-    link.href = audioUrls[0]
-    link.download = `speech-${Date.now()}.mp3`
-    link.click()
-  }
+  // Ses listesi sıralama
+  const languageOrder = [
+    'Turkish', 'US English', 'British English', 'Australian English', 'Indian English',
+    'German', 'French', 'Canadian French', 'Castilian Spanish', 'Mexican Spanish', 'US Spanish',
+    'Italian', 'Brazilian Portuguese', 'Portuguese', 'Russian', 'Japanese', 'Korean',
+    'Chinese Mandarin', 'Arabic', 'Dutch', 'Polish', 'Danish', 'Norwegian', 'Swedish',
+    'Romanian', 'Icelandic', 'Welsh', 'Welsh English'
+  ]
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -120,54 +127,65 @@ export default function TextToSpeechPage() {
             <span>🔊</span>
             {language === 'tr' ? 'Seslendirme' : 'Text to Speech'}
           </h1>
-          <div className="w-20"></div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-gray-800 rounded-lg p-1">
+              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>EN</button>
+              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>TR</button>
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Free Badge */}
+        {/* Credits Badge */}
         <div className="text-center mb-6">
-          <span className="px-4 py-2 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
-            ✨ {language === 'tr' ? 'Ücretsiz Araç' : 'Free Tool'}
+          <span className="px-4 py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">
+            💰 3 {language === 'tr' ? 'Kredi' : 'Credits'} | {language === 'tr' ? 'Bakiye' : 'Balance'}: {credits}
           </span>
         </div>
 
         <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+          {/* Voice Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-3">
+              {language === 'tr' ? 'Ses Seçin' : 'Select Voice'}
+            </label>
+            <select
+              value={selectedVoice}
+              onChange={(e) => setSelectedVoice(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500"
+            >
+              {languageOrder.map(lang => (
+                voices[lang] && (
+                  <optgroup key={lang} label={lang}>
+                    {voices[lang].map((voice: any) => (
+                      <option key={voice.id} value={voice.id}>
+                        {voice.name} ({voice.gender})
+                      </option>
+                    ))}
+                  </optgroup>
+                )
+              ))}
+            </select>
+          </div>
+
           {/* Text Input */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">
               {language === 'tr' ? 'Metin' : 'Text'} 
-              <span className="text-gray-400 ml-2">({text.length}/5000)</span>
+              <span className="text-gray-400 ml-2">({text.length}/3000)</span>
             </label>
             <textarea
               value={text}
-              onChange={(e) => setText(e.target.value.slice(0, 5000))}
+              onChange={(e) => setText(e.target.value.slice(0, 3000))}
               placeholder={language === 'tr' ? 'Seslendirmek istediğiniz metni yazın...' : 'Enter the text you want to convert to speech...'}
-              className="w-full h-40 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 resize-none"
+              className="w-full h-48 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 resize-none font-mono"
             />
-          </div>
-
-          {/* Voice Language Selection */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">
-              {language === 'tr' ? 'Ses Dili' : 'Voice Language'}
-            </label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {voices.map((voice) => (
-                <button
-                  key={voice.code}
-                  onClick={() => setVoiceLanguage(voice.code)}
-                  className={`p-3 rounded-xl border transition text-center ${
-                    voiceLanguage === voice.code
-                      ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                      : 'bg-gray-700 border-gray-600 hover:border-gray-500'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{voice.flag}</div>
-                  <div className="text-xs">{voice.name}</div>
-                </button>
-              ))}
-            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {language === 'tr' 
+                ? 'İpucu: Daha iyi telaffuz için cümle sonlarında nokta ve boşluk bırakın.'
+                : 'Hint: Leave a space after the dot for better pronunciation.'}
+            </p>
           </div>
 
           {/* Error */}
@@ -180,13 +198,18 @@ export default function TextToSpeechPage() {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !text.trim()}
+            disabled={loading || !text.trim() || credits < 3}
             className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-lg transition flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
                 <span className="animate-spin">⏳</span>
                 {language === 'tr' ? 'Oluşturuluyor...' : 'Generating...'}
+              </>
+            ) : credits < 3 ? (
+              <>
+                <span>⚠️</span>
+                {language === 'tr' ? 'Yetersiz Kredi' : 'Insufficient Credits'}
               </>
             ) : (
               <>
@@ -198,7 +221,7 @@ export default function TextToSpeechPage() {
         </div>
 
         {/* Audio Player */}
-        {audioUrls.length > 0 && (
+        {audioUrl && (
           <div className="mt-8 bg-gray-800 rounded-2xl p-6 border border-gray-700">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <span>🎧</span>
@@ -207,71 +230,74 @@ export default function TextToSpeechPage() {
 
             <audio
               ref={audioRef}
-              onEnded={handleAudioEnded}
-              className="hidden"
+              src={audioUrl}
+              controls
+              className="w-full mb-4"
+              style={{ filter: 'invert(1)' }}
             />
-
-            {/* Player Controls */}
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <button
-                onClick={() => setCurrentChunk(Math.max(0, currentChunk - 1))}
-                disabled={currentChunk === 0}
-                className="p-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded-full transition"
-              >
-                ⏮️
-              </button>
-              
-              <button
-                onClick={isPlaying ? pauseAudio : playAudio}
-                className="p-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full transition text-2xl"
-              >
-                {isPlaying ? '⏸️' : '▶️'}
-              </button>
-              
-              <button
-                onClick={() => setCurrentChunk(Math.min(audioUrls.length - 1, currentChunk + 1))}
-                disabled={currentChunk >= audioUrls.length - 1}
-                className="p-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded-full transition"
-              >
-                ⏭️
-              </button>
-            </div>
-
-            {/* Progress */}
-            {audioUrls.length > 1 && (
-              <div className="text-center text-gray-400 text-sm mb-4">
-                {language === 'tr' ? 'Parça' : 'Part'} {currentChunk + 1} / {audioUrls.length}
-              </div>
-            )}
-
-            {/* Text Preview */}
-            <div className="bg-gray-700/50 rounded-xl p-4 mb-4 max-h-32 overflow-y-auto">
-              <p className="text-gray-300 text-sm">{text}</p>
-            </div>
 
             {/* Download Button */}
             <button
-              onClick={downloadAudio}
-              className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition flex items-center justify-center gap-2"
+              onClick={handleDownload}
+              className="w-full py-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-xl transition flex items-center justify-center gap-2"
             >
               <span>⬇️</span>
-              {language === 'tr' ? 'Ses Dosyasını İndir' : 'Download Audio'}
+              {language === 'tr' ? 'MP3 İndir' : 'Download MP3'}
             </button>
           </div>
         )}
 
-        {/* Info */}
+        {/* SSML Tips */}
         <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-          <h3 className="font-bold mb-3 flex items-center gap-2">
+          <h3 className="font-bold mb-4 flex items-center gap-2">
             <span>💡</span>
-            {language === 'tr' ? 'İpuçları' : 'Tips'}
+            {language === 'tr' ? 'Gelişmiş Özellikler' : 'Advanced Features'}
           </h3>
-          <ul className="space-y-2 text-gray-400 text-sm">
-            <li>• {language === 'tr' ? 'Maksimum 5000 karakter desteklenir' : 'Maximum 5000 characters supported'}</li>
-            <li>• {language === 'tr' ? '12 farklı dilde seslendirme yapabilirsiniz' : 'Text to speech available in 12 languages'}</li>
-            <li>• {language === 'tr' ? 'Uzun metinler otomatik olarak parçalara bölünür' : 'Long texts are automatically split into chunks'}</li>
-            <li>• {language === 'tr' ? 'Video içerikleri, podcast ve sunumlar için idealdir' : 'Perfect for video content, podcasts and presentations'}</li>
-          </ul>
+          
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="text-purple-400 font-medium mb-1">{language === 'tr' ? 'Duraklama ekle:' : 'Add a break:'}</p>
+              <code className="bg-gray-700 px-2 py-1 rounded text-gray-300">
+                {'Mary had a little lamb <break time="1s"/> Whose fleece was white as snow.'}
+              </code>
+            </div>
+            
+            <div>
+              <p className="text-purple-400 font-medium mb-1">{language === 'tr' ? 'Vurgulama:' : 'Emphasizing words:'}</p>
+              <code className="bg-gray-700 px-2 py-1 rounded text-gray-300">
+                {'I <emphasis level="strong">really like</emphasis> that.'}
+              </code>
+            </div>
+            
+            <div>
+              <p className="text-purple-400 font-medium mb-1">{language === 'tr' ? 'Hız ayarı:' : 'Speed control:'}</p>
+              <code className="bg-gray-700 px-2 py-1 rounded text-gray-300">
+                {'<prosody rate="slow">Slow speech</prosody>'}
+              </code>
+            </div>
+            
+            <div>
+              <p className="text-purple-400 font-medium mb-1">{language === 'tr' ? 'Fısıltı:' : 'Whisper:'}</p>
+              <code className="bg-gray-700 px-2 py-1 rounded text-gray-300">
+                {'<amazon:effect name="whispered">This is a secret</amazon:effect>'}
+              </code>
+            </div>
+          </div>
+        </div>
+
+        {/* Supported Languages */}
+        <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+          <h3 className="font-bold mb-4 flex items-center gap-2">
+            <span>🌍</span>
+            {language === 'tr' ? 'Desteklenen Diller' : 'Supported Languages'}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {Object.keys(voices).map(lang => (
+              <span key={lang} className="px-3 py-1 bg-gray-700 rounded-full text-sm text-gray-300">
+                {lang}
+              </span>
+            ))}
+          </div>
         </div>
       </main>
     </div>
