@@ -127,17 +127,17 @@ export default function HashtagGeneratorPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-blue-400 text-sm font-medium">
-              {language === 'en' ? '🏷️ 3 CREDITS - HASHTAG TOOL' : '🏷️ 3 KREDİ - HASHTAG ARACI'}
+          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-4">
+            <span className="text-green-400 text-sm font-medium">
+              {language === 'en' ? '✨ FREE - AI-POWERED HASHTAGS' : '✨ ÜCRETSİZ - AI DESTEKLİ HASHTAG'}
             </span>
           </div>
           <h1 className="text-4xl font-bold mb-2">
-            {language === 'en' ? 'Hashtag Generator' : 'Hashtag Generator'}
+            {language === 'en' ? 'AI Hashtag Generator' : 'AI Hashtag Üretici'}
           </h1>
           <p className="text-gray-400">
             {language === 'en' 
-              ? 'Generate trending hashtags for maximum reach' 
+              ? 'AI-powered viral hashtags for maximum reach' 
               : 'Maksimum erişim için trend hashtagler oluştur'}
           </p>
         </div>

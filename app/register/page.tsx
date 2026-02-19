@@ -54,12 +54,10 @@ export default function RegisterPage() {
           balance: 50, // Başlangıç kredisi
           total_used: 0
         })
+        
+        // Direkt dashboard'a yönlendir
+        router.push('/dashboard')
       }
-
-      setSuccess(true)
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
     } catch (err: any) {
       setError(err.message || (language === 'tr' ? 'Kayıt başarısız' : 'Registration failed'))
     } finally {

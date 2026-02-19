@@ -16,9 +16,55 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Kredi kontrolü
+    if (userId) {
+      const { data: credits } = await supabase
+        .from('credits')
+        .select('balance, total_used')
+        .eq('user_id', userId)
+        .single()
+
+      if (!credits || credits.balance < 3) {
+        return NextResponse.json({ 
+          error: language === 'tr' ? 'Yetersiz kredi (3 kredi gerekli)' : 'Insufficient credits (3 credits required)' 
+        }, { status: 403 })
+      }
+    }
+
     console.log('🚀 Viral Score - Platform:', platform)
 
     const analysis = analyzeViralPotential(caption, hashtags, media, platform, postTime, targetAudience, language)
+
+    // Kredi düşür
+    if (userId) {
+      const { data: currentCredits } = await supabase
+        .from('credits')
+        .select('balance, total_used')
+        .eq('user_id', userId)
+        .single()
+
+      if (currentCredits) {
+        await supabase
+          .from('credits')
+          .update({
+            balance: currentCredits.balance - 3,
+            total_used: currentCredits.total_used + 3,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+
+        await supabase
+          .from('usage_history')
+          .insert({
+            user_id: userId,
+            tool_name: 'viral-score',
+            tool_display_name: language === 'tr' ? 'Viral Skor' : 'Viral Score',
+            credits_used: 3,
+            input_preview: caption.substring(0, 50) + '...',
+            output_preview: `Score: ${analysis.viralScore}%`,
+          })
+      }
+    }
 
     return NextResponse.json({ analysis })
 

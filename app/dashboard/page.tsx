@@ -12,12 +12,78 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [adWatching, setAdWatching] = useState(false)
+  const [adProgress, setAdProgress] = useState(0)
+  const [dailyAdsWatched, setDailyAdsWatched] = useState(0)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
 
+  const MAX_DAILY_ADS = 5
+
   useEffect(() => {
     checkUser()
+    checkDailyAds()
   }, [])
+
+  const checkDailyAds = () => {
+    const today = new Date().toDateString()
+    const storedDate = localStorage.getItem('adWatchDate')
+    const storedCount = localStorage.getItem('adWatchCount')
+    
+    if (storedDate === today && storedCount) {
+      setDailyAdsWatched(parseInt(storedCount))
+    } else {
+      localStorage.setItem('adWatchDate', today)
+      localStorage.setItem('adWatchCount', '0')
+      setDailyAdsWatched(0)
+    }
+  }
+
+  const handleWatchAd = async () => {
+    if (dailyAdsWatched >= MAX_DAILY_ADS) return
+    
+    setAdWatching(true)
+    setAdProgress(0)
+    
+    // 15 saniyelik reklam simülasyonu
+    const interval = setInterval(() => {
+      setAdProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          return 100
+        }
+        return prev + (100 / 15) // 15 saniyede 100%
+      })
+    }, 1000)
+
+    // 15 saniye sonra kredi ekle
+    setTimeout(async () => {
+      clearInterval(interval)
+      setAdProgress(100)
+      
+      // Kredi ekle
+      if (user && credits) {
+        await supabase
+          .from('credits')
+          .update({
+            balance: credits.balance + 5,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+        
+        setCredits({ ...credits, balance: credits.balance + 5 })
+      }
+      
+      // Günlük sayacı güncelle
+      const newCount = dailyAdsWatched + 1
+      setDailyAdsWatched(newCount)
+      localStorage.setItem('adWatchCount', newCount.toString())
+      
+      setAdWatching(false)
+      setShowAdModal(false)
+    }, 15000)
+  }
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -46,8 +112,8 @@ export default function DashboardPage() {
 
   const tools = [
     // Video Tools
-    { name: language === 'tr' ? 'Alt Yazı Ekleyici' : 'Subtitle Generator', icon: '📹', path: '/tools/subtitle-generator', credits: 4, category: 'video', description: language === 'tr' ? 'Videolarınıza alt yazı ekleyin' : 'Add subtitles to videos' },
     { name: language === 'tr' ? 'Video Script Yazarı' : 'Video Script Writer', icon: '🎬', path: '/tools/video-script', credits: 4, category: 'video', description: language === 'tr' ? 'YouTube & TikTok için script' : 'Scripts for YouTube & TikTok' },
+    { name: language === 'tr' ? 'Seslendirme' : 'Text to Speech', icon: '🔊', path: '/tools/text-to-speech', credits: 0, category: 'video', description: language === 'tr' ? 'Metni sese dönüştür' : 'Convert text to speech', free: true, new: true },
     
     // Content Creation
     { name: language === 'tr' ? 'Hook Üretici' : 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },
@@ -60,16 +126,16 @@ export default function DashboardPage() {
     { name: language === 'tr' ? 'Trend Dedektörü' : 'Trend Detector', icon: '📊', path: '/tools/trend-detector', credits: 5, category: 'analysis', description: language === 'tr' ? 'Güncel trendleri keşfet' : 'Discover trends' },
     { name: language === 'tr' ? 'Etkileşim Tahmini' : 'Engagement Predictor', icon: '📈', path: '/tools/engagement-predictor', credits: 5, category: 'analysis', description: language === 'tr' ? 'Etkileşim tahmini' : 'Predict engagement' },
     { name: language === 'tr' ? 'Marka Sesi Analizi' : 'Brand Voice Analyzer', icon: '🎯', path: '/tools/brand-voice', credits: 2, category: 'analysis', description: language === 'tr' ? 'Marka sesinizi analiz edin' : 'Analyze brand voice' },
+    { name: language === 'tr' ? 'Viral Skor' : 'Viral Score', icon: '🚀', path: '/tools/viral-score', credits: 3, category: 'analysis', description: language === 'tr' ? 'Viral potansiyel tahmini' : 'Predict viral potential' },
     
     // Optimization
-    { name: language === 'tr' ? 'Hashtag Üretici' : 'Hashtag Generator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 3, category: 'optimization', description: language === 'tr' ? 'Viral hashtag\'ler' : 'Viral hashtags' },
+    { name: language === 'tr' ? 'Hashtag Üretici' : 'Hashtag Generator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'AI ile viral hashtag\'ler' : 'AI-powered viral hashtags', free: true },
     { name: language === 'tr' ? 'Bio Üretici' : 'Bio Generator', icon: '👤', path: '/tools/bio-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'Profil bio\'ları' : 'Profile bios', free: true },
     { name: language === 'tr' ? 'QR Kod' : 'QR Code', icon: '📱', path: '/tools/qr-code-generator', credits: 0, category: 'optimization', description: language === 'tr' ? 'QR kod oluştur' : 'Generate QR codes', free: true },
     
     // Helper Tools
     { name: language === 'tr' ? 'Paylaşım Zamanlayıcı' : 'Post Scheduler', icon: '📅', path: '/tools/post-scheduler', credits: 0, category: 'helper', description: language === 'tr' ? 'En iyi paylaşım saatleri' : 'Best posting times', free: true },
-    { name: language === 'tr' ? 'İçerik Takvimi' : 'Content Calendar', icon: '🗓️', path: '/tools/content-calendar', credits: 0, category: 'helper', description: language === 'tr' ? 'Aylık içerik planı' : 'Monthly content plan', free: true, new: true },
-    { name: language === 'tr' ? 'Viral Skor' : 'Viral Score', icon: '🚀', path: '/tools/viral-score', credits: 0, category: 'helper', description: language === 'tr' ? 'Viral potansiyel tahmini' : 'Predict viral potential', free: true, new: true },
+    { name: language === 'tr' ? 'İçerik Takvimi' : 'Content Calendar', icon: '🗓️', path: '/tools/content-calendar', credits: 0, category: 'helper', description: language === 'tr' ? 'Aylık içerik planı' : 'Monthly content plan', free: true },
   ]
 
   const categories = [
@@ -153,6 +219,16 @@ export default function DashboardPage() {
                   <p className="text-lg font-bold text-yellow-400">{credits?.balance || 0}</p>
                 </div>
               </div>
+
+              {/* Watch Ad for Credits Button */}
+              <button
+                onClick={() => setShowAdModal(true)}
+                className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:border-green-400 rounded-lg px-3 py-2 transition"
+                title={language === 'tr' ? 'Reklam izle, kredi kazan!' : 'Watch ad, earn credits!'}
+              >
+                <span className="text-xl">🎬</span>
+                <span className="text-sm text-green-400 font-medium">+5</span>
+              </button>
 
               {/* User Menu */}
               <div className="flex items-center gap-3">
@@ -304,6 +380,92 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Watch Ad Modal */}
+      {showAdModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-2xl max-w-md w-full p-6 border border-gray-700">
+            {!adWatching ? (
+              <>
+                <div className="text-center mb-6">
+                  <div className="text-6xl mb-4">🎬</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    {language === 'tr' ? 'Reklam İzle, Kredi Kazan!' : 'Watch Ad, Earn Credits!'}
+                  </h3>
+                  <p className="text-gray-400">
+                    {language === 'tr' 
+                      ? '15 saniyelik bir reklam izleyerek 5 kredi kazanabilirsiniz.'
+                      : 'Watch a 15-second ad to earn 5 credits.'}
+                  </p>
+                </div>
+
+                <div className="bg-gray-700/50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">{language === 'tr' ? 'Günlük kalan hak' : 'Daily remaining'}</span>
+                    <span className="text-white font-bold">{MAX_DAILY_ADS - dailyAdsWatched} / {MAX_DAILY_ADS}</span>
+                  </div>
+                  <div className="w-full bg-gray-600 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all"
+                      style={{ width: `${((MAX_DAILY_ADS - dailyAdsWatched) / MAX_DAILY_ADS) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {dailyAdsWatched >= MAX_DAILY_ADS ? (
+                  <div className="text-center text-yellow-400 mb-4">
+                    ⚠️ {language === 'tr' ? 'Günlük limitinize ulaştınız. Yarın tekrar deneyin!' : 'Daily limit reached. Try again tomorrow!'}
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleWatchAd}
+                    className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2"
+                  >
+                    <span>▶️</span>
+                    {language === 'tr' ? 'Reklam İzle (+5 Kredi)' : 'Watch Ad (+5 Credits)'}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowAdModal(false)}
+                  className="w-full py-3 mt-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition"
+                >
+                  {language === 'tr' ? 'Kapat' : 'Close'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-center">
+                  <div className="text-6xl mb-4 animate-pulse">📺</div>
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    {language === 'tr' ? 'Reklam İzleniyor...' : 'Watching Ad...'}
+                  </h3>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-700 rounded-full h-4 mb-4">
+                    <div 
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-4 rounded-full transition-all duration-1000"
+                      style={{ width: `${adProgress}%` }}
+                    ></div>
+                  </div>
+                  
+                  <p className="text-gray-400 mb-2">
+                    {Math.ceil(15 - (adProgress / 100 * 15))} {language === 'tr' ? 'saniye kaldı' : 'seconds left'}
+                  </p>
+                  
+                  <div className="mt-6 p-4 bg-gray-700/50 rounded-xl">
+                    <p className="text-sm text-gray-400">
+                      {language === 'tr' 
+                        ? '💡 İpucu: Premium planla sınırsız kredi ve reklamsız deneyim!'
+                        : '💡 Tip: Go Premium for unlimited credits and ad-free experience!'}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

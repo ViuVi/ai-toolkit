@@ -1,200 +1,209 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, niche, userId, language = 'en' } = await request.json()
+    const { topic, platform, count = 20, language = 'en' } = await request.json()
 
-    if (!topic || !platform) {
+    if (!topic) {
       return NextResponse.json({ 
-        error: language === 'tr' ? 'Konu ve platform gerekli' : 'Topic and platform required' 
+        error: language === 'tr' ? 'Konu gerekli' : 'Topic required' 
       }, { status: 400 })
     }
 
-    // Kredi kontrolü
-    if (userId) {
-      const { data: credits } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
+    console.log('🏷️ Hashtag Generator AI - Topic:', topic, 'Platform:', platform, 'Lang:', language)
 
-      if (!credits || credits.balance < 3) {
-        return NextResponse.json({ 
-          error: language === 'tr' ? 'Yetersiz kredi (3 kredi gerekli)' : 'Insufficient credits (3 credits required)' 
-        }, { status: 403 })
-      }
-    }
+    // AI ile hashtag oluştur
+    const hashtags = await generateHashtagsWithAI(topic, platform, count, language)
 
-    console.log('🏷️ Hashtag Generator - Topic:', topic, 'Platform:', platform, 'Lang:', language)
-
-    // DİNAMİK hashtag oluştur (her seferinde farklı)
-    const hashtags = generateDynamicHashtags(topic, platform, niche, language)
-
-    // Kredi düşür
-    if (userId) {
-      const { data: currentCredits } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
-
-      if (currentCredits) {
-        await supabase
-          .from('credits')
-          .update({
-            balance: currentCredits.balance - 3,
-            total_used: currentCredits.total_used + 3,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-
-        await supabase
-          .from('usage_history')
-          .insert({
-            user_id: userId,
-            tool_name: 'hashtag-generator',
-            tool_display_name: language === 'tr' ? 'Hashtag Generator' : 'Hashtag Generator',
-            credits_used: 3,
-            input_preview: `${topic} - ${platform}`,
-            output_preview: `${hashtags.trending.length} trending hashtags`,
-          })
-      }
-    }
-
-    return NextResponse.json({ hashtags })
+    return NextResponse.json({ 
+      hashtags,
+      topic,
+      platform,
+      generatedAt: new Date().toISOString()
+    })
 
   } catch (error) {
-    console.error('❌ Hashtag Generator Error:', error)
+    console.error('Hashtag Generator Error:', error)
     return NextResponse.json({ 
       error: 'An error occurred' 
     }, { status: 500 })
   }
 }
 
-function generateDynamicHashtags(topic: string, platform: string, nicheInput: string, language: string) {
+async function generateHashtagsWithAI(topic: string, platform: string, count: number, language: string): Promise<{
+  main: string[],
+  trending: string[],
+  niche: string[],
+  related: string[]
+}> {
   
-  const topicLower = topic.toLowerCase().trim()
-  const nicheLower = (nicheInput || topic).toLowerCase().trim()
-  
-  // GERÇEK POPÜLER HASHTAGLER (Konu bazlı)
-  const topicHashtags: {[key: string]: {tr: string[], en: string[]}} = {
-    fitness: {
-      tr: ['fitness', 'spor', 'antrenman', 'saglikli', 'motivasyon', 'vucut', 'gym', 'kas', 'diyet', 'form', 'egzersiz', 'fit', 'health', 'wellness', 'training'],
-      en: ['fitness', 'gym', 'workout', 'fit', 'training', 'health', 'motivation', 'bodybuilding', 'fitfam', 'exercise', 'muscle', 'fitlife', 'wellness', 'strong', 'gains']
-    },
-    travel: {
-      tr: ['seyahat', 'gezi', 'tatil', 'kesfet', 'dunya', 'turkey', 'istanbul', 'gezgin', 'macera', 'yolculuk', 'travel', 'ucak', 'otel', 'deniz', 'fotograf'],
-      en: ['travel', 'wanderlust', 'explore', 'adventure', 'traveling', 'travelphotography', 'instatravel', 'travelgram', 'vacation', 'trip', 'tourism', 'world', 'discover', 'journey', 'explore']
-    },
-    food: {
-      tr: ['yemek', 'lezzet', 'mutfak', 'tarif', 'tatlı', 'kahvalti', 'pizza', 'burger', 'pasta', 'food', 'yummy', 'delicious', 'homemade', 'cooking', 'chef'],
-      en: ['food', 'foodie', 'foodporn', 'instafood', 'yummy', 'delicious', 'foodstagram', 'cooking', 'foodphotography', 'homemade', 'tasty', 'foodlover', 'chef', 'recipe', 'dinner']
-    },
-    fashion: {
-      tr: ['moda', 'stil', 'kombin', 'trend', 'elbise', 'ayakkabi', 'aksesuar', 'fashion', 'style', 'ootd', 'giyim', 'tasarim', 'butik', 'shopping', 'look'],
-      en: ['fashion', 'style', 'ootd', 'fashionista', 'instafashion', 'outfit', 'fashionblogger', 'streetstyle', 'trendy', 'fashionstyle', 'model', 'clothing', 'stylish', 'chic', 'design']
-    },
-    tech: {
-      tr: ['teknoloji', 'yazilim', 'kod', 'programlama', 'dijital', 'innovation', 'ai', 'tech', 'coding', 'developer', 'bilgisayar', 'internet', 'mobil', 'uygulama', 'startup'],
-      en: ['tech', 'technology', 'innovation', 'gadgets', 'programming', 'coding', 'developer', 'software', 'ai', 'techie', 'digital', 'computer', 'startup', 'app', 'code']
-    },
-    gaming: {
-      tr: ['oyun', 'gaming', 'gamer', 'esports', 'twitch', 'ps5', 'xbox', 'pc', 'mobile', 'valorant', 'pubg', 'game', 'streamer', 'gameplay', 'wins'],
-      en: ['gaming', 'gamer', 'game', 'videogames', 'twitch', 'streamer', 'gameplay', 'esports', 'gamingcommunity', 'pcgaming', 'ps5', 'xbox', 'nintendo', 'mobilegaming', 'wins']
-    },
+  const platformContext = {
+    instagram: 'Instagram posts, reels, stories',
+    tiktok: 'TikTok videos, trends',
+    twitter: 'Twitter/X tweets, threads',
+    youtube: 'YouTube videos, shorts',
+    linkedin: 'LinkedIn professional posts'
   }
 
-  // Platform bazlı popüler hashtagler
-  const platformHashtags: {[key: string]: {tr: string[], en: string[]}} = {
-    instagram: {
-      tr: ['instagram', 'instagood', 'foto', 'gununkaresin', 'turkiye', 'istanbul', 'ankara', 'izmir', 'love', 'photography', 'like', 'follow', 'instalike', 'instadaily', 'beautiful'],
-      en: ['instagood', 'photooftheday', 'instadaily', 'picoftheday', 'love', 'instalike', 'instamood', 'follow', 'like4like', 'beautiful', 'photography', 'art', 'instagram', 'photo', 'followme']
-    },
-    tiktok: {
-      tr: ['tiktok', 'kesfet', 'fyp', 'viral', 'trend', 'video', 'eglence', 'komedi', 'mizah', 'turkiye', 'foryou', 'trending', 'funny', 'dance', 'music'],
-      en: ['fyp', 'foryou', 'viral', 'foryoupage', 'trending', 'viralvideo', 'fypシ', 'tiktok', 'trend', 'fy', 'funny', 'comedy', 'dance', 'music', 'entertainment']
-    },
-    youtube: {
-      tr: ['youtube', 'youtuber', 'video', 'vlog', 'abone', 'turkiye', 'egitim', 'eglence', 'oyun', 'muzik', 'komedi', 'tutorial', 'inceleme', 'tanitim', 'gaming'],
-      en: ['youtube', 'youtuber', 'subscribe', 'video', 'vlog', 'youtubevideo', 'sub', 'youtubers', 'gaming', 'tutorial', 'review', 'entertainment', 'music', 'comedy', 'educational']
-    },
-    twitter: {
-      tr: ['twitter', 'gundem', 'haber', 'turkiye', 'son', 'dakika', 'trend', 'takip', 'retweet', 'viral', 'tweet', 'gunun', 'sozluk', 'siyaset', 'spor'],
-      en: ['twitter', 'tweet', 'trending', 'news', 'breaking', 'viral', 'follow', 'retweet', 'rt', 'followme', 'twittertrends', 'socialmedia', 'politics', 'sports', 'tech']
-    },
-    linkedin: {
-      tr: ['linkedin', 'kariyer', 'is', 'profesyonel', 'network', 'basvuru', 'ilan', 'cv', 'girisim', 'basari', 'egitim', 'liderlik', 'startup', 'teknoloji', 'dijital'],
-      en: ['linkedin', 'business', 'career', 'professional', 'networking', 'jobs', 'leadership', 'success', 'entrepreneur', 'motivation', 'corporatelife', 'startup', 'technology', 'innovation', 'marketing']
+  const platformInfo = platformContext[platform as keyof typeof platformContext] || 'social media'
+
+  const prompt = language === 'tr' 
+    ? `${topic} konusu için ${platformInfo} platformunda kullanılacak ${count} adet viral hashtag öner. Hashtagler popüler, alakalı ve keşfedilebilir olmalı. Sadece hashtag listesi ver, açıklama yapma. Her satıra bir hashtag yaz.`
+    : `Generate ${count} viral hashtags for the topic "${topic}" optimized for ${platformInfo}. Hashtags should be popular, relevant, and discoverable. Only list hashtags, no explanations. One hashtag per line.`
+
+  try {
+    // Llama 3.2 ile hashtag oluştur
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 500,
+            temperature: 0.8,
+            top_p: 0.9,
+            do_sample: true,
+            return_full_text: false
+          }
+        })
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      const text = data[0]?.generated_text || ''
+      
+      // Hashtagleri parse et
+      const allHashtags = text
+        .split(/[\n,]/)
+        .map((h: string) => h.trim())
+        .filter((h: string) => h.startsWith('#') || h.length > 2)
+        .map((h: string) => h.startsWith('#') ? h : `#${h}`)
+        .map((h: string) => h.replace(/[^\w#ğüşıöçĞÜŞİÖÇ]/gi, '').toLowerCase())
+        .filter((h: string) => h.length > 2 && h.length < 30)
+        .slice(0, count)
+
+      if (allHashtags.length >= 8) {
+        return categorizeHashtags(allHashtags, topic, platform)
+      }
     }
+  } catch (error) {
+    console.log('AI hashtag generation failed, using smart fallback')
   }
 
-  // Konu hashtaglerini bul
-  let topicTags = {tr: [] as string[], en: [] as string[]}
-  for (const [key, tags] of Object.entries(topicHashtags)) {
-    if (topicLower.includes(key) || key.includes(topicLower)) {
-      topicTags = tags
+  // Fallback: Akıllı hashtag oluşturma
+  return generateSmartHashtags(topic, platform, count, language)
+}
+
+function categorizeHashtags(hashtags: string[], topic: string, platform: string): {
+  main: string[],
+  trending: string[],
+  niche: string[],
+  related: string[]
+} {
+  const topicWords = topic.toLowerCase().split(' ')
+  
+  // Ana hashtagler (topic içerenler)
+  const main = hashtags.filter(h => 
+    topicWords.some(word => h.toLowerCase().includes(word))
+  ).slice(0, 5)
+  
+  // Trending (kısa ve genel)
+  const trending = hashtags.filter(h => 
+    h.length < 15 && !main.includes(h)
+  ).slice(0, 5)
+  
+  // Niche (uzun ve spesifik)
+  const niche = hashtags.filter(h => 
+    h.length >= 15 && !main.includes(h) && !trending.includes(h)
+  ).slice(0, 5)
+  
+  // Related (geri kalanlar)
+  const related = hashtags.filter(h => 
+    !main.includes(h) && !trending.includes(h) && !niche.includes(h)
+  ).slice(0, 5)
+
+  return { main, trending, niche, related }
+}
+
+function generateSmartHashtags(topic: string, platform: string, count: number, language: string): {
+  main: string[],
+  trending: string[],
+  niche: string[],
+  related: string[]
+} {
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '')
+  const topicWords = topic.toLowerCase().split(' ')
+  
+  // Platform bazlı trending hashtagler
+  const platformTrending: {[key: string]: string[]} = {
+    instagram: ['#instagood', '#photooftheday', '#instadaily', '#explore', '#viral', '#reels', '#trending', '#fyp', '#instalike', '#picoftheday'],
+    tiktok: ['#fyp', '#foryou', '#viral', '#trending', '#foryoupage', '#tiktok', '#xyzbca', '#trend', '#viralvideo', '#duet'],
+    twitter: ['#trending', '#viral', '#breaking', '#news', '#thread', '#mustread', '#followback', '#retweet'],
+    youtube: ['#youtube', '#subscribe', '#viral', '#shorts', '#youtubeshorts', '#video', '#trending', '#vlog'],
+    linkedin: ['#business', '#success', '#leadership', '#entrepreneur', '#professional', '#career', '#growth', '#innovation', '#networking', '#motivation']
+  }
+
+  // Niche hashtagler (kategori bazlı)
+  const nicheCategories: {[key: string]: string[]} = {
+    fitness: ['#fitnessmotivation', '#workout', '#gym', '#healthylifestyle', '#fitlife', '#training', '#bodybuilding', '#fitfam'],
+    food: ['#foodie', '#foodporn', '#yummy', '#delicious', '#homemade', '#cooking', '#recipe', '#foodlover'],
+    tech: ['#technology', '#innovation', '#ai', '#coding', '#programming', '#developer', '#startup', '#digital'],
+    fashion: ['#fashion', '#style', '#ootd', '#fashionista', '#streetstyle', '#outfitoftheday', '#fashionblogger'],
+    travel: ['#travel', '#wanderlust', '#adventure', '#explore', '#vacation', '#travelphotography', '#travelgram'],
+    beauty: ['#beauty', '#makeup', '#skincare', '#beautytips', '#cosmetics', '#beautyblogger', '#glam'],
+    business: ['#business', '#entrepreneur', '#success', '#marketing', '#startup', '#hustle', '#businessowner'],
+    music: ['#music', '#musician', '#song', '#newmusic', '#singer', '#producer', '#beats', '#musicproducer'],
+    art: ['#art', '#artist', '#artwork', '#creative', '#illustration', '#design', '#digitalart', '#drawing'],
+    gaming: ['#gaming', '#gamer', '#videogames', '#twitch', '#esports', '#gameplay', '#streamer']
+  }
+
+  // Topic'e en yakın kategoriyi bul
+  let bestCategory = 'business'
+  for (const [category, tags] of Object.entries(nicheCategories)) {
+    if (topic.toLowerCase().includes(category) || tags.some(t => topic.toLowerCase().includes(t.replace('#', '')))) {
+      bestCategory = category
       break
     }
   }
 
-  const platformTags = platformHashtags[platform.toLowerCase()] || platformHashtags['instagram']
-  
-  // RASTGELE KARIŞTIR (her seferinde farklı sıra)
-  const shuffleArray = (arr: string[]) => {
-    const shuffled = [...arr]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-    return shuffled
-  }
+  // Main hashtagler
+  const main = [
+    `#${topicSlug}`,
+    ...topicWords.filter(w => w.length > 3).map(w => `#${w}`),
+    `#${topicSlug}tips`,
+    `#${topicSlug}${new Date().getFullYear()}`,
+    `#best${topicSlug}`
+  ].slice(0, 5)
 
-  const lang = language === 'tr' ? 'tr' : 'en'
-  
-  // Trending: Topic + Platform karışık (her seferinde farklı)
-  const trendingPool = [...(topicTags[lang] || topicTags['en']), ...platformTags[lang]]
-  const trending = shuffleArray(trendingPool).slice(0, 10)
+  // Trending hashtagler
+  const platformTags = platformTrending[platform] || platformTrending.instagram
+  const trending = platformTags.sort(() => Math.random() - 0.5).slice(0, 5)
 
-  // Niche: Topic-based özel kombinasyonlar
-  const topicWord = topicLower.replace(/\s+/g, '')
-  const nicheWord = nicheLower.replace(/\s+/g, '')
-  
-  const nicheSuffixes = language === 'tr'
-    ? ['turkiye', 'tr', 'gunluk', 'sevgisi', 'dunyasi', 'hayati', 'haber', 'bilgi', 'ipucu', 'rehber']
-    : ['community', 'daily', 'life', 'lover', 'world', 'tips', 'guide', 'passion', 'journey', 'goals']
-  
-  const nicheHashtags = shuffleArray([
-    nicheWord,
-    topicWord,
-    `${nicheWord}${shuffleArray(nicheSuffixes)[0]}`,
-    `${topicWord}${shuffleArray(nicheSuffixes)[1]}`,
-    `${nicheWord}${shuffleArray(nicheSuffixes)[2]}`,
-    language === 'tr' ? `${topicWord}sevdalilari` : `${topicWord}lovers`,
-    language === 'tr' ? `${nicheWord}rehberi` : `${nicheWord}guide`,
-    language === 'tr' ? `${topicWord}ile` : `with${topicWord}`,
-    `${nicheWord}2026`,
-    language === 'tr' ? `ben${topicWord}` : `my${topicWord}`
-  ]).slice(0, 10)
+  // Niche hashtagler
+  const nicheTags = nicheCategories[bestCategory] || nicheCategories.business
+  const niche = nicheTags.sort(() => Math.random() - 0.5).slice(0, 5)
 
-  // Branded: Yaratıcı kombinasyonlar
-  const currentYear = new Date().getFullYear()
-  const branded = shuffleArray([
-    `${topicWord}${currentYear}`,
-    language === 'tr' ? `benim${topicWord}` : `my${topicWord}`,
-    `${topicWord}${language === 'tr' ? 'yolculugu' : 'journey'}`,
-    `${topicWord}${language === 'tr' ? 'zamani' : 'time'}`,
-    language === 'tr' ? `${topicWord}aski` : `the${topicWord}`,
-  ])
+  // Related hashtagler
+  const relatedPrefixes = language === 'tr' 
+    ? ['günlük', 'türkiye', 'keşfet', 'paylaş', 'takip']
+    : ['daily', 'life', 'love', 'best', 'top']
+  
+  const related = [
+    ...relatedPrefixes.map(p => `#${p}${topicSlug}`),
+    `#${topicSlug}lover`,
+    `#${topicSlug}community`,
+    `#${topicSlug}life`,
+    `#learn${topicSlug}`,
+    `#${topicSlug}goals`
+  ].slice(0, 5)
 
-  return {
-    trending,
-    niche: nicheHashtags,
-    branded
-  }
+  return { main, trending, niche, related }
 }
