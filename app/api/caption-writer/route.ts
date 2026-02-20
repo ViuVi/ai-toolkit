@@ -358,9 +358,14 @@ function generateEnhancedCaptions(topic: string, platform: string, tone: string,
     }
     
     const hashes = platformHashes[platform] || platformHashes.instagram
-    const selectedHashes = hashes.sort(function() { return Math.random() - 0.5 }).slice(0, 3)
+    const shuffledHashes = hashes.sort(function() { return Math.random() - 0.5 })
+    const selectedHashes = shuffledHashes.slice(0, 3)
     
-    return shuffled.map(function(caption: string) { return `${caption}\n\n#${topicHash} #${selectedHashes.join(' #')}`)
+    const result: string[] = []
+    for (let i = 0; i < shuffled.length; i++) {
+      result.push(shuffled[i] + '\n\n#' + topicHash + ' #' + selectedHashes.join(' #'))
+    }
+    return result
   }
   
   return shuffled
