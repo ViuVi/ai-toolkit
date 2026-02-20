@@ -226,9 +226,13 @@ function parseTrends(text: string, language: string): any[] {
     const whyMatch = section.match(/(?:NEDEN TREND:|WHY TRENDING:)\s*([^\n]+)/i)
     
     if (topicMatch) {
-      const ideas = ideasMatch 
-        ? ideasMatch[1].split('\n').map(function(l: string) { return l.replace(/^[-•*]\s*/, '').trim()).filter(function(l: string) { return l.length > 10 }).slice(0, 3)
-        : []
+      let ideas: string[] = []
+      if (ideasMatch && ideasMatch[1]) {
+        const splitIdeas = ideasMatch[1].split('\n')
+        const cleanedIdeas = splitIdeas.map(function(l: string) { return l.replace(/^[-•*]\s*/, '').trim() })
+        const filteredIdeas = cleanedIdeas.filter(function(l: string) { return l.length > 10 })
+        ideas = filteredIdeas.slice(0, 3)
+      }
       
       if (ideas.length >= 2) {
         trends.push({
@@ -324,17 +328,21 @@ function getIntelligentTrends(niche: string, language: string, currentDate: stri
     ]
     
     // Shuffle and randomize
-    return trendTemplates
-      .sort(function() { return Math.random() - 0.5)
-      .slice(0, 5)
-      .map(function(template: any, idx: number) { return ({
+    const shuffled = trendTemplates.sort(function() { return Math.random() - 0.5 })
+    const selected = shuffled.slice(0, 5)
+    const result: any[] = []
+    for (let idx = 0; idx < selected.length; idx++) {
+      const template = selected[idx]
+      result.push({
         topic: template.topic,
         trendScore: scores[idx],
         contentIdeas: template.ideas,
         platforms: platformSets[Math.floor(Math.random() * platformSets.length)],
-        bestTime: `${days[Math.floor(Math.random() * days.length)]} ${timeSlots[Math.floor(Math.random() * timeSlots.length)]}`,
+        bestTime: days[Math.floor(Math.random() * days.length)] + ' ' + timeSlots[Math.floor(Math.random() * timeSlots.length)],
         whyTrending: template.why
-      }))
+      })
+    }
+    return result
   }
   
   // English trends
@@ -378,23 +386,27 @@ function getIntelligentTrends(niche: string, language: string, currentDate: stri
     {
       topic: `${niche} case studies and real results`,
       ideas: [
-        `We changed our ${niche} strategy, results we got in 90 days`,
-        `${niche} success story: How we grew from zero (with numbers)`,
-        `5 critical lessons from our ${niche} experience (data-driven)`
+        'We changed our ' + niche + ' strategy, results we got in 90 days',
+        niche + ' success story: How we grew from zero (with numbers)',
+        '5 critical lessons from our ' + niche + ' experience (data-driven)'
       ],
-      why: `In ${currentYear}, people want real results and proof, not just theory`
+      why: 'In ' + currentYear + ', people want real results and proof, not just theory'
     }
   ]
   
-  return trendTemplates
-    .sort(function() { return Math.random() - 0.5)
-    .slice(0, 5)
-    .map(function(template: any, idx: number) { return ({
+  const shuffledEn = trendTemplates.sort(function() { return Math.random() - 0.5 })
+  const selectedEn = shuffledEn.slice(0, 5)
+  const resultEn: any[] = []
+  for (let idx = 0; idx < selectedEn.length; idx++) {
+    const template = selectedEn[idx]
+    resultEn.push({
       topic: template.topic,
       trendScore: scores[idx],
       contentIdeas: template.ideas,
       platforms: platformSets[Math.floor(Math.random() * platformSets.length)],
-      bestTime: `${days[Math.floor(Math.random() * days.length)]} ${timeSlots[Math.floor(Math.random() * timeSlots.length)]}`,
+      bestTime: days[Math.floor(Math.random() * days.length)] + ' ' + timeSlots[Math.floor(Math.random() * timeSlots.length)],
       whyTrending: template.why
-    }))
+    })
+  }
+  return resultEn
 }

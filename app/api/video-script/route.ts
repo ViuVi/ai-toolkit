@@ -178,7 +178,7 @@ Now write the script for "${topic}":`
     }
 
     // Kelime ve süre hesapla
-    const totalWords = sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0)
+    const totalWords = sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length }, 0)
     
     return {
       topic,
@@ -231,7 +231,8 @@ function parseAIScript(text: string, duration: string, language: string): Array<
   
   // If parsing failed, try splitting by newlines
   if (sections.length < 2) {
-    const lines = text.split('\n').filter(function(l: string) { return l.trim().length > 20)
+    const allLines = text.split('\n')
+    const lines = allLines.filter(function(l: string) { return l.trim().length > 20 })
     if (lines.length >= 3) {
       sections.push({
         timestamp: '0:00',
@@ -360,11 +361,19 @@ function generateEnhancedFallback(topic: string, platform: string, duration: str
   return {
     topic,
     platform,
-    duration: `${duration}s`,
+    duration: duration + 's',
     style,
     sections,
-    totalWords: sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0),
-    estimatedReadingTime: `${Math.ceil(sections.reduce(function(acc: number, s: any) { return acc + s.content.split(' ').length, 0) / 150)} min`,
+    totalWords: calculateTotalWords(sections),
+    estimatedReadingTime: Math.ceil(calculateTotalWords(sections) / 150) + ' min',
     generatedBy: 'Enhanced Template'
   }
+}
+
+function calculateTotalWords(sections: any[]): number {
+  let total = 0
+  for (let i = 0; i < sections.length; i++) {
+    total += sections[i].content.split(' ').length
+  }
+  return total
 }

@@ -190,38 +190,42 @@ Write 3 captions (each on a new line):`
 
 function parseCaptions(text: string, topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string): string[] {
   // Split by numbered items, newlines, or dashes
-  let lines = text.split(/\n+/)
-    .map(function(l: string) { return l.replace(/^\d+[\.\)]\s*|^[-•]\s*/, '').trim())
-    .filter(function(l: string) { return l.length > 30 && l.length < 500)
+  const splitLines = text.split(/\n+/)
+  const mappedLines = splitLines.map(function(l: string) { return l.replace(/^\d+[\.\)]\s*|^[-•]\s*/, '').trim() })
+  let lines = mappedLines.filter(function(l: string) { return l.length > 30 && l.length < 500 })
   
   // Filter out lines that look like instructions
-  lines = lines.filter(function(l: string) { return 
-    !l.toLowerCase().includes('caption') && 
-    !l.toLowerCase().includes('write') &&
-    !l.toLowerCase().includes('here are')
-  )
+  lines = lines.filter(function(l: string) { 
+    return !l.toLowerCase().includes('caption') && 
+           !l.toLowerCase().includes('write') &&
+           !l.toLowerCase().includes('here are')
+  })
   
   // Ensure each caption has proper structure
-  const processedCaptions = lines.slice(0, 3).map(function(caption: string) { return {
-    let processed = caption
+  const processedCaptions: string[] = []
+  const captionsToProcess = lines.slice(0, 3)
+  
+  for (let i = 0; i < captionsToProcess.length; i++) {
+    let processed = captionsToProcess[i]
     
     // Add hashtags if needed and not present
     if (includeHashtags && !processed.includes('#')) {
       const topicHash = topic.toLowerCase().replace(/\s+/g, '')
-      const platformHashes = {
+      const platformHashes: {[key: string]: string[]} = {
         instagram: ['instagood', 'explore', 'viral'],
         tiktok: ['fyp', 'viral', 'trending'],
         youtube: ['youtube', 'subscribe', 'video'],
         twitter: ['trending', 'viral', 'thread'],
         linkedin: ['business', 'success', 'growth']
       }
-      const hashes = platformHashes[platform as keyof typeof platformHashes] || platformHashes.instagram
-      const selectedHashes = hashes.sort(function() { return Math.random() - 0.5 }).slice(0, 3)
-      processed += `\n\n#${topicHash} #${selectedHashes.join(' #')}`
+      const hashes = platformHashes[platform] || platformHashes.instagram
+      const shuffledHashes = hashes.sort(function() { return Math.random() - 0.5 })
+      const selectedHashes = shuffledHashes.slice(0, 3)
+      processed += '\n\n#' + topicHash + ' #' + selectedHashes.join(' #')
     }
     
-    return processed
-  })
+    processedCaptions.push(processed)
+  }
   
   return processedCaptions
 }
