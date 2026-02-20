@@ -85,9 +85,19 @@ export default function PricingPage() {
             <span className="text-xl font-bold">Media Tool Kit</span>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={'px-2 py-1 rounded text-xs transition ' + (language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400')}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={'px-2 py-1 rounded text-xs transition ' + (language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400')}>TR</button>
+            {/* Language Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition border border-gray-700">
+                <span>🌐</span>
+                <span>{language.toUpperCase()}</span>
+              </button>
+              <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <button onClick={() => setLanguage('en')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 rounded-t-lg ' + (language === 'en' ? 'text-purple-400' : 'text-gray-300')}>🇺🇸 English</button>
+                <button onClick={() => setLanguage('tr')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'tr' ? 'text-purple-400' : 'text-gray-300')}>🇹🇷 Türkçe</button>
+                <button onClick={() => setLanguage('ru')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'ru' ? 'text-purple-400' : 'text-gray-300')}>🇷🇺 Русский</button>
+                <button onClick={() => setLanguage('de')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'de' ? 'text-purple-400' : 'text-gray-300')}>🇩🇪 Deutsch</button>
+                <button onClick={() => setLanguage('fr')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 rounded-b-lg ' + (language === 'fr' ? 'text-purple-400' : 'text-gray-300')}>🇫🇷 Français</button>
+              </div>
             </div>
             {user ? (
               <Link href="/dashboard" className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition">
@@ -95,7 +105,7 @@ export default function PricingPage() {
               </Link>
             ) : (
               <Link href="/login" className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition">
-                {language === 'tr' ? 'Giriş Yap' : 'Sign In'}
+                {language === 'tr' ? 'Giriş Yap' : language === 'ru' ? 'Войти' : language === 'de' ? 'Anmelden' : language === 'fr' ? 'Connexion' : 'Sign In'}
               </Link>
             )}
           </div>

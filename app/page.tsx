@@ -120,24 +120,29 @@ export default function LandingPage() {
 
             {/* Auth Buttons */}
             <div className="flex items-center gap-3">
-              {/* Language Switcher */}
-              <div className="flex items-center bg-gray-800/80 backdrop-blur-sm rounded-lg p-1 border border-gray-700">
-                <button
-                  onClick={() => setLanguage('en')}
-                  className={`px-3 py-1 rounded text-xs font-medium transition ${
-                    language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  EN
+              {/* Language Switcher - Dropdown */}
+              <div className="relative group">
+                <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800/80 backdrop-blur-sm rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition border border-gray-700">
+                  <span>🌐</span>
+                  <span>{language.toUpperCase()}</span>
                 </button>
-                <button
-                  onClick={() => setLanguage('tr')}
-                  className={`px-3 py-1 rounded text-xs font-medium transition ${
-                    language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  TR
-                </button>
+                <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <button onClick={() => setLanguage('en')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 rounded-t-lg ' + (language === 'en' ? 'text-purple-400' : 'text-gray-300')}>
+                    🇺🇸 English
+                  </button>
+                  <button onClick={() => setLanguage('tr')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'tr' ? 'text-purple-400' : 'text-gray-300')}>
+                    🇹🇷 Türkçe
+                  </button>
+                  <button onClick={() => setLanguage('ru')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'ru' ? 'text-purple-400' : 'text-gray-300')}>
+                    🇷🇺 Русский
+                  </button>
+                  <button onClick={() => setLanguage('de')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ' + (language === 'de' ? 'text-purple-400' : 'text-gray-300')}>
+                    🇩🇪 Deutsch
+                  </button>
+                  <button onClick={() => setLanguage('fr')} className={'w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 rounded-b-lg ' + (language === 'fr' ? 'text-purple-400' : 'text-gray-300')}>
+                    🇫🇷 Français
+                  </button>
+                </div>
               </div>
 
               {user ? (
@@ -371,115 +376,91 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              {language === 'tr' ? 'Basit, Şeffaf' : 'Simple, Transparent'}
+              {language === 'tr' ? 'Basit, Şeffaf' : language === 'ru' ? 'Простые, прозрачные' : language === 'de' ? 'Einfache, transparente' : language === 'fr' ? 'Tarifs simples,' : 'Simple, Transparent'}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                {language === 'tr' ? ' Fiyatlandırma' : ' Pricing'}
+                {language === 'tr' ? ' Fiyatlandırma' : language === 'ru' ? ' цены' : language === 'de' ? ' Preise' : language === 'fr' ? ' transparents' : ' Pricing'}
               </span>
             </h2>
             <p className="text-xl text-gray-400">
               {language === 'tr' 
                 ? 'Ücretsiz başla, ihtiyacın olduğunda yükselt'
+                : language === 'ru'
+                ? 'Начните бесплатно, обновите когда понадобится'
+                : language === 'de'
+                ? 'Kostenlos starten, upgraden wenn nötig'
+                : language === 'fr'
+                ? 'Commencez gratuitement, améliorez quand vous en avez besoin'
                 : 'Start free, upgrade when you need more'
               }
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
             <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold mb-2">{language === 'tr' ? 'Ücretsiz' : 'Free'}</h3>
-              <div className="text-4xl font-bold mb-6">
+              <h3 className="text-2xl font-bold mb-2">{language === 'tr' ? 'Ücretsiz' : language === 'ru' ? 'Бесплатно' : language === 'de' ? 'Kostenlos' : language === 'fr' ? 'Gratuit' : 'Free'}</h3>
+              <div className="text-4xl font-bold mb-2">
                 $0
-                <span className="text-lg text-gray-400">/{language === 'tr' ? 'ay' : 'month'}</span>
+                <span className="text-lg text-gray-400">/{language === 'tr' ? 'ay' : language === 'ru' ? 'мес' : language === 'de' ? 'Monat' : language === 'fr' ? 'mois' : 'month'}</span>
               </div>
+              <p className="text-gray-400 mb-6">50 {language === 'tr' ? 'kredi/ay' : language === 'ru' ? 'кредитов/мес' : language === 'de' ? 'Credits/Monat' : language === 'fr' ? 'crédits/mois' : 'credits/month'}</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-green-400">✓</span>
-                  {language === 'tr' ? '50 kredi/ay' : '50 credits/month'}
+                  {language === 'tr' ? 'Ücretsiz araçlara erişim' : language === 'ru' ? 'Доступ к бесплатным инструментам' : language === 'de' ? 'Zugang zu kostenlosen Tools' : language === 'fr' ? 'Accès aux outils gratuits' : 'Access to free tools'}
                 </li>
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-green-400">✓</span>
-                  {language === 'tr' ? '5 ücretsiz araç' : '5 free tools'}
+                  {language === 'tr' ? 'Temel destek' : language === 'ru' ? 'Базовая поддержка' : language === 'de' ? 'Basis-Support' : language === 'fr' ? 'Support basique' : 'Basic support'}
                 </li>
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-green-400">✓</span>
-                  {language === 'tr' ? 'Temel destek' : 'Basic support'}
+                  {language === 'tr' ? 'Reklam izle kredi kazan' : language === 'ru' ? 'Смотрите рекламу за кредиты' : language === 'de' ? 'Werbung für Credits ansehen' : language === 'fr' ? 'Regardez des pubs pour des crédits' : 'Watch ads for credits'}
                 </li>
               </ul>
               <Link
                 href="/register"
                 className="block w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 text-center rounded-lg font-semibold transition"
               >
-                {language === 'tr' ? 'Başla' : 'Get Started'}
+                {language === 'tr' ? 'Ücretsiz Başla' : language === 'ru' ? 'Начать бесплатно' : language === 'de' ? 'Kostenlos starten' : language === 'fr' ? 'Commencer gratuitement' : 'Start Free'}
               </Link>
             </div>
 
             {/* Pro Plan */}
             <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500 rounded-2xl p-8 relative">
               <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
-                {language === 'tr' ? 'POPÜLER' : 'POPULAR'}
+                {language === 'tr' ? 'ÖNERİLEN' : language === 'ru' ? 'РЕКОМЕНДУЕТСЯ' : language === 'de' ? 'EMPFOHLEN' : language === 'fr' ? 'RECOMMANDÉ' : 'RECOMMENDED'}
               </div>
               <h3 className="text-2xl font-bold mb-2">Pro</h3>
-              <div className="text-4xl font-bold mb-6">
-                $29
-                <span className="text-lg text-gray-400">/{language === 'tr' ? 'ay' : 'month'}</span>
+              <div className="text-4xl font-bold mb-2">
+                $4.99
+                <span className="text-lg text-gray-400">/{language === 'tr' ? 'ay' : language === 'ru' ? 'мес' : language === 'de' ? 'Monat' : language === 'fr' ? 'mois' : 'month'}</span>
               </div>
+              <p className="text-gray-400 mb-6">1000 {language === 'tr' ? 'kredi/ay' : language === 'ru' ? 'кредитов/мес' : language === 'de' ? 'Credits/Monat' : language === 'fr' ? 'crédits/mois' : 'credits/month'}</p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-purple-400">✓</span>
-                  {language === 'tr' ? '500 kredi/ay' : '500 credits/month'}
+                  {language === 'tr' ? 'Tüm AI araçlarına erişim' : language === 'ru' ? 'Все AI инструменты' : language === 'de' ? 'Alle AI-Tools' : language === 'fr' ? 'Tous les outils AI' : 'All AI tools'}
                 </li>
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-purple-400">✓</span>
-                  {language === 'tr' ? 'Tüm 16 araç' : 'All 16 tools'}
+                  {language === 'tr' ? 'Öncelikli destek' : language === 'ru' ? 'Приоритетная поддержка' : language === 'de' ? 'Prioritäts-Support' : language === 'fr' ? 'Support prioritaire' : 'Priority support'}
                 </li>
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-purple-400">✓</span>
-                  {language === 'tr' ? 'Öncelikli destek' : 'Priority support'}
+                  {language === 'tr' ? 'Reklamsız kullanım' : language === 'ru' ? 'Без рекламы' : language === 'de' ? 'Keine Werbung' : language === 'fr' ? 'Sans publicité' : 'No ads'}
                 </li>
                 <li className="flex items-center gap-2 text-gray-300">
                   <span className="text-purple-400">✓</span>
-                  {language === 'tr' ? 'API erişimi' : 'API access'}
+                  {language === 'tr' ? 'Sınırsız üretim' : language === 'ru' ? 'Безлимитная генерация' : language === 'de' ? 'Unbegrenzte Generierung' : language === 'fr' ? 'Génération illimitée' : 'Unlimited generations'}
                 </li>
               </ul>
               <Link
-                href="/register"
+                href="/pricing"
                 className="block w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-center rounded-lg font-semibold transition shadow-lg"
               >
-                {language === 'tr' ? 'Ücretsiz Dene' : 'Start Free Trial'}
+                {language === 'tr' ? "Pro'ya Geç" : language === 'ru' ? 'Перейти на Pro' : language === 'de' ? 'Auf Pro upgraden' : language === 'fr' ? 'Passer à Pro' : 'Upgrade to Pro'}
               </Link>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold mb-2">{language === 'tr' ? 'Kurumsal' : 'Enterprise'}</h3>
-              <div className="text-4xl font-bold mb-6">
-                {language === 'tr' ? 'Özel' : 'Custom'}
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2 text-gray-300">
-                  <span className="text-blue-400">✓</span>
-                  {language === 'tr' ? 'Sınırsız kredi' : 'Unlimited credits'}
-                </li>
-                <li className="flex items-center gap-2 text-gray-300">
-                  <span className="text-blue-400">✓</span>
-                  {language === 'tr' ? 'Özel entegrasyonlar' : 'Custom integrations'}
-                </li>
-                <li className="flex items-center gap-2 text-gray-300">
-                  <span className="text-blue-400">✓</span>
-                  {language === 'tr' ? 'Özel destek' : 'Dedicated support'}
-                </li>
-                <li className="flex items-center gap-2 text-gray-300">
-                  <span className="text-blue-400">✓</span>
-                  {language === 'tr' ? 'Takım yönetimi' : 'Team management'}
-                </li>
-              </ul>
-              <a
-                href="mailto:contact@mediatoolkit.com"
-                className="block w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 text-center rounded-lg font-semibold transition"
-              >
-                {language === 'tr' ? 'İletişime Geç' : 'Contact Sales'}
-              </a>
             </div>
           </div>
         </div>
