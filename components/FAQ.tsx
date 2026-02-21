@@ -3,26 +3,31 @@
 import { useLanguage } from '@/lib/LanguageContext'
 import { useState } from 'react'
 
+interface FAQItem {
+  question: string
+  answer: string
+}
+
 export default function FAQ() {
   const { t } = useLanguage()
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
+  const items: FAQItem[] = t.faq?.items || []
+
   return (
     <section id="faq" className="py-20 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {t.faq.title}
+            {t.faq?.title || 'FAQ'}
           </h2>
           <p className="text-xl text-gray-400">
-            {t.faq.subtitle}
+            {t.faq?.subtitle || ''}
           </p>
         </div>
 
-        {/* FAQ Items */}
         <div className="space-y-4">
-          {t.faq.items.map((item, index) => (
+          {items.map((item: FAQItem, index: number) => (
             <div 
               key={index}
               className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden"

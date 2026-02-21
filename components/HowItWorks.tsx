@@ -2,44 +2,40 @@
 
 import { useLanguage } from '@/lib/LanguageContext'
 
+interface Step {
+  number: string
+  title: string
+  description: string
+}
+
 export default function HowItWorks() {
   const { t } = useLanguage()
+
+  const steps: Step[] = t.howItWorks?.steps || []
 
   return (
     <section className="py-20 px-4 bg-gray-800/30">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {t.howItWorks.title}
+            {t.howItWorks?.title || 'How It Works'}
           </h2>
           <p className="text-xl text-gray-400">
-            {t.howItWorks.subtitle}
+            {t.howItWorks?.subtitle || ''}
           </p>
         </div>
 
-        {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {t.howItWorks.steps.map((step, index) => (
-            <div key={index} className="relative">
-              {/* Connector Line */}
-              {index < t.howItWorks.steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 left-[60%] w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500" />
-              )}
-              
-              <div className="text-center">
-                {/* Number */}
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-3xl font-bold mb-6">
-                  {step.number}
-                </div>
-                
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  {step.title}
-                </h3>
-                <p className="text-gray-400">
-                  {step.description}
-                </p>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+          {steps.map((step: Step, index: number) => (
+            <div key={index} className="flex flex-col items-center text-center max-w-xs relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-4">
+                {step.number}
               </div>
+              <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
+              <p className="text-gray-400">{step.description}</p>
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-8 left-full w-16 text-gray-600 text-2xl">→</div>
+              )}
             </div>
           ))}
         </div>
