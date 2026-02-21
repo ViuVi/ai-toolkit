@@ -602,5 +602,5 @@ export const translations = {
   }
 }
 
-export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
+// Language type is now in LanguageContext.tsx
 export type TranslationKey = keyof typeof translations.en
