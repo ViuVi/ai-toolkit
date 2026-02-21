@@ -58,7 +58,7 @@ export default function CaptionWriterPage() {
         )
       }
     } catch (err) {
-      showToast(t.common.error, 'error')
+      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
       console.error('Caption generation error:', err)
     }
 
@@ -93,7 +93,7 @@ export default function CaptionWriterPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
@@ -206,7 +206,7 @@ export default function CaptionWriterPage() {
           className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
         >
           {loading ? (
-            <><span className="animate-spin">⏳</span> {t.common.loading}</>
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
           ) : (
             <>✍️ {language === 'en' ? 'Generate Captions' : 'Caption Oluştur'}</>
           )}

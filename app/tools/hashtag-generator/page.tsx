@@ -56,7 +56,7 @@ export default function HashtagGeneratorPage() {
         )
       }
     } catch (err) {
-      showToast(t.common.error, 'error')
+      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
       console.error('Hashtag generation error:', err)
     }
 
@@ -113,7 +113,7 @@ export default function HashtagGeneratorPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
@@ -208,7 +208,7 @@ export default function HashtagGeneratorPage() {
           className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
         >
           {loading ? (
-            <><span className="animate-spin">⏳</span> {t.common.loading}</>
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
           ) : (
             <>🏷️ {language === 'en' ? 'Generate Hashtags' : 'Hashtag Oluştur'}</>
           )}

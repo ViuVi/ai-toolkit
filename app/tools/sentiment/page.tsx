@@ -50,7 +50,7 @@ export default function SentimentPage() {
         setResult(data)
       }
     } catch (err) {
-      setError(t.common.error)
+      setError((language === 'tr' ? 'Hata oluştu' : 'An error occurred'))
     }
 
     setLoading(false)
@@ -68,7 +68,7 @@ export default function SentimentPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
@@ -83,19 +83,19 @@ export default function SentimentPage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-purple-400 text-sm">{t.tools.sentiment.credits}</span>
+            <span className="text-purple-400 text-sm">{(language === 'tr' ? '2 Kredi' : '2 Credits')}</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">{t.tools.sentiment.title}</h1>
-          <p className="text-gray-400">{t.tools.sentiment.description}</p>
+          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Duygu Analizi' : 'Sentiment Analysis')}</h1>
+          <p className="text-gray-400">{(language === 'tr' ? 'Metninizin duygusunu analiz edin' : 'Analyze the sentiment of your text')}</p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{t.tools.sentiment.inputLabel}</label>
+          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'Metin' : 'Text')}</label>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             className="w-full h-36 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-purple-500 focus:outline-none resize-none transition"
-            placeholder={t.tools.sentiment.inputPlaceholder}
+            placeholder={(language === 'tr' ? 'Metninizi girin...' : 'Enter your text...')}
           />
           <div className="mt-4 flex flex-wrap gap-2">
             {exampleTexts.map((ex, i) => (
@@ -111,7 +111,7 @@ export default function SentimentPage() {
           disabled={loading}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-6"
         >
-          {loading ? <><span className="animate-spin">⏳</span> {t.common.loading}</> : <>🎭 {t.tools.sentiment.button}</>}
+          {loading ? <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</> : <>🎭 {(language === 'tr' ? 'Analiz Et' : 'Analyze')}</>}
         </button>
 
         {error && <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-6">{error}</div>}
@@ -122,7 +122,7 @@ export default function SentimentPage() {
               <div className="text-7xl mb-4">{result.emoji}</div>
               <div className="text-3xl font-bold mb-2">{result.sentiment}</div>
               <div className="text-gray-400">
-                {t.tools.sentiment.confidence}: <span className={`font-semibold ml-2 ${result.confidence >= 70 ? 'text-green-400' : result.confidence >= 50 ? 'text-yellow-400' : 'text-orange-400'}`}>{result.confidence}%</span>
+                {(language === 'tr' ? 'Güven' : 'Confidence')}: <span className={`font-semibold ml-2 ${result.confidence >= 70 ? 'text-green-400' : result.confidence >= 50 ? 'text-yellow-400' : 'text-orange-400'}`}>{result.confidence}%</span>
               </div>
             </div>
             <div className="bg-gray-900 rounded-xl p-4">

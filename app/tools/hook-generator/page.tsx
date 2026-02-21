@@ -49,7 +49,7 @@ export default function HookGeneratorPage() {
         showToast(language === 'en' ? 'Hooks generated!' : 'Hook\'lar üretildi!', 'success')
       }
     } catch (err) {
-      showToast(t.common.error, 'error')
+      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
     }
 
     setLoading(false)
@@ -58,7 +58,7 @@ export default function HookGeneratorPage() {
   const handleCopy = (index: number, text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(index)
-    showToast(t.common.copied, 'success')
+    showToast((language === 'tr' ? 'Kopyalandı!' : 'Copied!'), 'success')
     setTimeout(() => setCopied(null), 2000)
   }
 
@@ -86,7 +86,7 @@ export default function HookGeneratorPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
@@ -101,19 +101,19 @@ export default function HookGeneratorPage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-yellow-400 text-sm">{t.tools.hookGenerator.credits}</span>
+            <span className="text-yellow-400 text-sm">{(language === 'tr' ? '2 Kredi' : '2 Credits')}</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">{t.tools.hookGenerator.title}</h1>
-          <p className="text-gray-400">{t.tools.hookGenerator.description}</p>
+          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Hook Oluşturucu' : 'Hook Generator')}</h1>
+          <p className="text-gray-400">{(language === 'tr' ? 'Viral hooklar oluşturun' : 'Generate viral hooks')}</p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{t.tools.hookGenerator.inputLabel}</label>
+          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'Konu' : 'Topic')}</label>
           <textarea
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             className="w-full h-24 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-yellow-500 focus:outline-none resize-none transition"
-            placeholder={t.tools.hookGenerator.inputPlaceholder}
+            placeholder={(language === 'tr' ? 'Konunuzu girin...' : 'Enter your topic...')}
           />
           
           <div className="mt-4">
@@ -138,9 +138,9 @@ export default function HookGeneratorPage() {
           className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg text-black mb-6"
         >
           {loading ? (
-            <><span className="animate-spin">⏳</span> {t.common.loading}</>
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
           ) : (
-            <>🎣 {t.tools.hookGenerator.button}</>
+            <>🎣 {(language === 'tr' ? 'Hook Oluştur' : 'Generate Hooks')}</>
           )}
         </button>
 
@@ -163,7 +163,7 @@ export default function HookGeneratorPage() {
               ))}
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">{t.tools.hookGenerator.resultLabel}</h2>
+            <h2 className="text-xl font-semibold mb-4">{(language === 'tr' ? 'Sonuçlar' : 'Results')}</h2>
             
             <div className="space-y-4">
               {filteredHooks.map((hook, index) => (

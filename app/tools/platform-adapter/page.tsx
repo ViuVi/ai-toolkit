@@ -48,7 +48,7 @@ export default function PlatformAdapterPage() {
         showToast(language === 'en' ? 'Content adapted!' : 'İçerik uyarlandı!', 'success')
       }
     } catch (err) {
-      showToast(t.common.error, 'error')
+      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
     }
 
     setLoading(false)
@@ -57,7 +57,7 @@ export default function PlatformAdapterPage() {
   const handleCopy = (platform: string, text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(platform)
-    showToast(t.common.copied, 'success')
+    showToast((language === 'tr' ? 'Kopyalandı!' : 'Copied!'), 'success')
     setTimeout(() => setCopied(null), 2000)
   }
 
@@ -76,7 +76,7 @@ export default function PlatformAdapterPage() {
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
@@ -91,19 +91,19 @@ export default function PlatformAdapterPage() {
       <main className="max-w-5xl mx-auto px-4 py-8">
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-pink-400 text-sm">{t.tools.platformAdapter.credits}</span>
+            <span className="text-pink-400 text-sm">{(language === 'tr' ? '3 Kredi' : '3 Credits')}</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">{t.tools.platformAdapter.title}</h1>
-          <p className="text-gray-400">{t.tools.platformAdapter.description}</p>
+          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Platform Adaptörü' : 'Platform Adapter')}</h1>
+          <p className="text-gray-400">{(language === 'tr' ? 'İçeriği farklı platformlara uyarlayın' : 'Adapt content to different platforms')}</p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{t.tools.platformAdapter.inputLabel}</label>
+          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'İçerik' : 'Content')}</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="w-full h-48 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-pink-500 focus:outline-none resize-none transition"
-            placeholder={t.tools.platformAdapter.inputPlaceholder}
+            placeholder={(language === 'tr' ? 'İçeriğinizi girin...' : 'Enter your content...')}
           />
           <button
             onClick={() => setContent(exampleContent)}
@@ -119,15 +119,15 @@ export default function PlatformAdapterPage() {
           className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
         >
           {loading ? (
-            <><span className="animate-spin">⏳</span> {t.common.loading}</>
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
           ) : (
-            <>🔄 {t.tools.platformAdapter.button}</>
+            <>🔄 {(language === 'tr' ? 'Adapte Et' : 'Adapt')}</>
           )}
         </button>
 
         {result && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-xl font-semibold">{t.tools.platformAdapter.resultLabel}</h2>
+            <h2 className="text-xl font-semibold">{(language === 'tr' ? 'Sonuçlar' : 'Results')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {platforms.map(platform => (

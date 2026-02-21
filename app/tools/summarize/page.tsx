@@ -51,7 +51,7 @@ export default function SummarizePage() {
         setSummary(data.summary)
       }
     } catch (err) {
-      setError(t.common.error)
+      setError((language === 'tr' ? 'Hata oluştu' : 'An error occurred'))
     }
 
     setLoading(false)
@@ -72,7 +72,7 @@ export default function SummarizePage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
           </Link>
           
           <div className="flex items-center gap-4">
@@ -103,19 +103,19 @@ export default function SummarizePage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-blue-400 text-sm">{t.tools.summarize.credits}</span>
+            <span className="text-blue-400 text-sm">{(language === 'tr' ? '2 Kredi' : '2 Credits')}</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">{t.tools.summarize.title}</h1>
-          <p className="text-gray-400">{t.tools.summarize.description}</p>
+          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Metin Özetleyici' : 'Text Summarizer')}</h1>
+          <p className="text-gray-400">{(language === 'tr' ? 'Metninizi özetleyin' : 'Summarize your text')}</p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{t.tools.summarize.inputLabel}</label>
+          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'Metin' : 'Text')}</label>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             className="w-full h-48 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none resize-none transition"
-            placeholder={t.tools.summarize.inputPlaceholder}
+            placeholder={(language === 'tr' ? 'Metninizi girin...' : 'Enter your text...')}
           />
           <button
             onClick={() => setInputText(exampleText)}
@@ -131,9 +131,9 @@ export default function SummarizePage() {
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-6"
         >
           {loading ? (
-            <><span className="animate-spin">⏳</span> {t.common.loading}</>
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
           ) : (
-            <>✨ {t.tools.summarize.button}</>
+            <>✨ {(language === 'tr' ? 'Özetle' : 'Summarize')}</>
           )}
         </button>
 
@@ -146,9 +146,9 @@ export default function SummarizePage() {
         {summary && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium">{t.tools.summarize.resultLabel}</label>
+              <label className="text-sm font-medium">{(language === 'tr' ? 'Özet' : 'Summary')}</label>
               <button onClick={handleCopy} className="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg transition">
-                {copied ? <>✓ {t.common.copied}</> : <>📋 {t.common.copy}</>}
+                {copied ? <>✓ {(language === 'tr' ? 'Kopyalandı!' : 'Copied!')}</> : <>📋 {(language === 'tr' ? 'Kopyala' : 'Copy')}</>}
               </button>
             </div>
             <div className="bg-gray-900 rounded-xl p-4">
