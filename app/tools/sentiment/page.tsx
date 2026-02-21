@@ -11,7 +11,7 @@ export default function SentimentPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
 
   useEffect(() => {
     async function getUser() {

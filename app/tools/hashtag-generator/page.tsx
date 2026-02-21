@@ -14,7 +14,7 @@ export default function HashtagGeneratorPage() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [copiedCategory, setCopiedCategory] = useState<string | null>(null)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   useEffect(() => {
