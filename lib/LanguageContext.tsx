@@ -9,21 +9,19 @@ import { fr } from '@/locales/fr'
 
 export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
 
-const translations = { en, tr, ru, de, fr }
-
-type TranslationType = typeof en
+const translations: Record<Language, any> = { en, tr, ru, de, fr }
 
 type LanguageContextType = {
   language: Language
   setLanguage: (lang: Language) => void
-  t: TranslationType
+  t: any
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en')
-  const [t, setT] = useState<TranslationType>(en)
+  const [t, setT] = useState<any>(en)
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language') as Language
