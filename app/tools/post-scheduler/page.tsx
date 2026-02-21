@@ -12,7 +12,7 @@ export default function PostSchedulerPage() {
   const [targetTimezone, setTargetTimezone] = useState('Europe/London')
   const [schedule, setSchedule] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   const timezones = [

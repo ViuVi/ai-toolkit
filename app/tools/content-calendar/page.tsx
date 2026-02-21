@@ -12,7 +12,7 @@ export default function ContentCalendarPage() {
   const [niche, setNiche] = useState('business')
   const [calendar, setCalendar] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   const handleGenerate = async () => {
