@@ -12,7 +12,7 @@ export default function PlatformAdapterPage() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   useEffect(() => {

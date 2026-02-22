@@ -12,7 +12,7 @@ export default function SummarizePage() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
 
   useEffect(() => {
     async function getUser() {

@@ -14,7 +14,7 @@ export default function BioGeneratorPage() {
   const [bios, setBios] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const { t, language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   const handleGenerate = async () => {
