@@ -91,7 +91,7 @@ export default function SubtitleGeneratorPage() {
         )
       }
     } catch (err) {
-      showToast(t.common.error, 'error')
+      showToast(language === 'en' ? 'An error occurred' : 'Bir hata oluştu', 'error')
       console.error('Subtitle generation error:', err)
     }
 
@@ -147,7 +147,7 @@ export default function SubtitleGeneratorPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{t.common.backToDashboard}</span>
+            <span>{language === 'en' ? '← Back to Dashboard' : '← Panele Dön'}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">

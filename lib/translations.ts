@@ -1,606 +1,287 @@
 // Multi-language translations
 
-export const translations = {
+export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
+
+export const translations: Record<Language, any> = {
   en: {
     // Common
-    loading: 'Loading...',
-    credits: 'Credits',
-    free: 'Free',
-    upgrade: 'Upgrade',
-    save: 'Save',
-    cancel: 'Cancel',
-    back: 'Back',
-    signIn: 'Sign In',
-    signUp: 'Sign Up',
-    signOut: 'Sign Out',
-    dashboard: 'Dashboard',
-    pricing: 'Pricing',
+    common: {
+      loading: 'Loading...',
+      error: 'Something went wrong',
+      success: 'Success!',
+      copy: 'Copy',
+      copied: 'Copied!',
+      generate: 'Generate',
+      credits: 'credits',
+      back: 'Back',
+      backToDashboard: '← Back to Dashboard',
+      close: 'Close'
+    },
     
-    // Header
-    contentPlatform: 'Content Creation Platform',
-    watchAd: 'Watch Ad',
-    adsRemaining: 'ads remaining today',
+    // Navigation
+    nav: {
+      features: 'Features',
+      pricing: 'Pricing',
+      faq: 'FAQ',
+      login: 'Login',
+      signup: 'Sign Up',
+      dashboard: 'Dashboard',
+      logout: 'Logout'
+    },
     
-    // Dashboard
-    welcomeBack: 'Welcome back',
-    totalCredits: 'Total Credits',
-    toolsUsed: 'Tools Used',
-    searchTools: 'Search tools...',
-    allTools: 'All Tools',
-    freeTools: 'Free',
-    paidTools: 'Paid',
-    noToolsFound: 'No tools found',
+    // Hero Section
+    hero: {
+      badge: '🚀 AI-Powered Productivity',
+      title: 'Clear Your Mind.',
+      titleHighlight: 'Amplify Your Work.',
+      subtitle: 'Stop wasting hours on repetitive tasks. Our AI tools help you write better, decide faster, and communicate clearer.',
+      cta: 'Start Free',
+      ctaSecondary: 'See How It Works',
+      stats: {
+        users: '10K+',
+        tools: '17+',
+        requests: '500K+'
+      }
+    },
     
-    // Categories
-    categories: {
-      all: 'All',
-      content: 'Content',
-      video: 'Video',
-      social: 'Social',
-      analysis: 'Analysis',
-      helper: 'Helper'
+    // Features Section
+    features: {
+      title: 'Tools That Actually Matter',
+      subtitle: 'Not just another AI tool. Real solutions for real problems.',
+      items: [
+        { icon: '⚡', title: 'Save Hours Daily', description: 'Turn one piece of content into 4 platform-ready posts in seconds.' },
+        { icon: '💰', title: 'Boost Your Sales', description: 'Analyze and improve your sales copy with proven persuasion frameworks.' },
+        { icon: '🎯', title: 'Simplify Complexity', description: 'Transform jargon-filled text into clear, simple language anyone can understand.' },
+        { icon: '🛡️', title: 'Prevent Mistakes', description: 'Check your content for errors, bias, and tone issues before publishing.' },
+        { icon: '⚖️', title: 'Decide Confidently', description: 'Analyze options with pros and cons to make better decisions.' },
+        { icon: '🧘', title: 'Clear Your Thoughts', description: 'Organize chaotic thoughts into structured, actionable clarity.' }
+      ]
+    },
+    
+    // How It Works
+    howItWorks: {
+      title: 'How It Works',
+      subtitle: 'Get results in 3 simple steps',
+      steps: [
+        { number: '1', title: 'Paste Your Content', description: 'Drop in your text, idea, or problem.' },
+        { number: '2', title: 'Choose Your Tool', description: 'Select what you need: adapt, analyze, simplify, or decide.' },
+        { number: '3', title: 'Get Instant Results', description: 'Receive polished output ready to use immediately.' }
+      ]
     },
     
     // Pricing
-    simplePricing: 'Simple Pricing',
-    choosePlan: 'Choose the plan that fits your needs',
-    monthly: 'Monthly',
-    yearly: 'Yearly',
-    currentPlan: 'Current Plan',
-    upgradeToPro: 'Upgrade to Pro',
-    recommended: 'Recommended',
-    monthsFree: '2 months free!',
-    perMonth: '/mo',
-    perYear: '/year',
-    creditsPerMonth: 'credits/mo',
-    
-    // Plan Features
-    features: {
-      freeCredits: '50 credits/month',
-      proCredits: '1000 credits/month',
-      freeTools: 'Access to free tools',
-      allTools: 'All AI tools',
-      basicSupport: 'Basic support',
-      prioritySupport: 'Priority support',
-      watchAdsCredits: 'Watch ads for credits',
-      noAds: 'No ads',
-      unlimited: 'Unlimited generations'
+    pricing: {
+      title: 'Simple, Honest Pricing',
+      subtitle: 'Start free. Upgrade when you need more.',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      save: 'Save 17%',
+      plans: {
+        free: { name: 'Free', price: '$0', period: '/month', description: 'For getting started', features: ['50 credits/month', 'Basic tools', 'Email support'], cta: 'Start Free', popular: false },
+        starter: { name: 'Starter', price: '$2.99', period: '/month', description: 'For hobbyists', features: ['200 credits/month', 'All AI tools', 'Standard support'], cta: 'Get Started', popular: false },
+        pro: { name: 'Pro', price: '$4.99', period: '/month', description: 'For professionals', features: ['1000 credits/month', 'All AI tools', 'Priority support', 'No ads'], cta: 'Upgrade to Pro', popular: true }
+      }
     },
     
     // FAQ
-    faq: 'FAQ',
-    faqCredits: 'What are credits?',
-    faqCreditsAnswer: 'Credits are units you spend to use AI tools. Each tool uses different amounts of credits.',
-    faqCancel: 'Can I cancel anytime?',
-    faqCancelAnswer: "Yes! You can cancel your subscription anytime. You'll retain access until the end of your billing period.",
-    faqPayment: 'What payment methods do you accept?',
-    faqPaymentAnswer: 'We accept credit cards, debit cards, and PayPal.',
+    faq: {
+      title: 'Frequently Asked Questions',
+      subtitle: 'Everything you need to know',
+      items: [
+        { question: 'What are credits?', answer: 'Credits are units used for AI tools. Each tool uses a different amount of credits based on complexity.' },
+        { question: 'Can I cancel anytime?', answer: 'Yes! You can cancel your subscription at any time. Your access will continue until the end of your billing period.' },
+        { question: 'What payment methods do you accept?', answer: 'We accept all major credit cards, debit cards, and PayPal.' },
+        { question: 'How long is the free plan available?', answer: 'The free plan is available forever. You get 50 credits every month to use our tools.' }
+      ]
+    },
     
-    // Feature Comparison
-    featureComparison: 'Feature Comparison',
-    feature: 'Feature',
-    monthlyCredits: 'Monthly Credits',
-    aiTools: 'AI Tools',
-    ads: 'Ads',
-    support: 'Support',
-    basic: 'Basic',
-    all: 'All',
-    yes: 'Yes',
-    none: 'None',
-    priority: 'Priority',
-    
-    // Ad Modal
-    watchAdTitle: 'Watch Ad & Earn Credits',
-    watchAdDesc: 'Watch a 15-second ad to earn 5 free credits!',
-    adPlaying: 'Ad playing...',
-    earnCredits: 'Earn 5 Credits',
-    close: 'Close',
+    // Testimonials
+    testimonials: {
+      title: 'What Our Users Say',
+      subtitle: 'Thousands of content creators trust us',
+      items: [
+        { name: 'Sarah K.', role: 'Content Creator', text: 'These tools have cut my content creation time in half!', avatar: '👩‍💼', rating: 5 },
+        { name: 'Mike R.', role: 'Social Media Manager', text: 'The hook generator is incredibly effective. My engagement went up 200%.', avatar: '👨‍💻', rating: 5 },
+        { name: 'Emma L.', role: 'YouTuber', text: 'Perfect for video scripts. No more spending hours thinking about what to say.', avatar: '👩‍🎤', rating: 5 }
+      ]
+    },
     
     // Footer
-    allRightsReserved: 'All rights reserved.',
+    footer: {
+      description: 'AI tools that actually make your life easier.',
+      product: 'Product',
+      company: 'Company',
+      legal: 'Legal',
+      links: { features: 'Features', pricing: 'Pricing', api: 'API', about: 'About', blog: 'Blog', careers: 'Careers', privacy: 'Privacy Policy', terms: 'Terms of Service' },
+      copyright: '© 2024 Media Tool Kit. All rights reserved.'
+    },
     
-    // Home Page
-    heroTitle: 'AI-Powered Social Media',
-    heroTitleHighlight: 'Content Tools',
-    heroSubtitle: 'Create viral content, generate hashtags, write scripts and more with our AI-powered tools.',
-    getStartedFree: 'Get Started Free',
-    viewPricing: 'View Pricing',
-    trustedBy: 'Trusted by content creators worldwide',
+    // Dashboard
+    dashboard: {
+      welcome: 'Welcome back',
+      credits: 'Credits',
+      searchTools: 'Search tools...',
+      categories: { all: 'All', video: 'Video', content: 'Content', analysis: 'Analysis', optimization: 'Optimization', helper: 'Helper' },
+      free: 'FREE',
+      new: 'NEW'
+    },
     
-    // Home Pricing Section
-    pricingTitle: 'Simple, Transparent Pricing',
-    pricingSubtitle: 'Start free, upgrade when you need more',
-    
-    // Languages
-    languages: {
-      en: 'English',
-      tr: 'Türkçe',
-      ru: 'Русский',
-      de: 'Deutsch',
-      fr: 'Français'
+    // Auth
+    auth: {
+      login: { title: 'Welcome Back', subtitle: 'Sign in to continue', email: 'Email', password: 'Password', button: 'Sign In', noAccount: 'No account yet?', signUp: 'Create one', forgotPassword: 'Forgot password?' },
+      register: { title: 'Start Free Today', subtitle: 'No credit card required', name: 'Full Name', email: 'Email', password: 'Password', button: 'Create Account', hasAccount: 'Already have an account?', signIn: 'Sign in', terms: 'By signing up, you agree to our Terms of Service and Privacy Policy.' }
     }
   },
   
   tr: {
-    // Common
-    loading: 'Yükleniyor...',
-    credits: 'Kredi',
-    free: 'Ücretsiz',
-    upgrade: 'Yükselt',
-    save: 'Kaydet',
-    cancel: 'İptal',
-    back: 'Geri',
-    signIn: 'Giriş Yap',
-    signUp: 'Kayıt Ol',
-    signOut: 'Çıkış Yap',
-    dashboard: 'Panel',
-    pricing: 'Fiyatlandırma',
-    
-    // Header
-    contentPlatform: 'İçerik Üretim Platformu',
-    watchAd: 'Reklam İzle',
-    adsRemaining: 'reklam hakkı kaldı',
-    
-    // Dashboard
-    welcomeBack: 'Tekrar hoş geldin',
-    totalCredits: 'Toplam Kredi',
-    toolsUsed: 'Kullanılan Araç',
-    searchTools: 'Araç ara...',
-    allTools: 'Tüm Araçlar',
-    freeTools: 'Ücretsiz',
-    paidTools: 'Ücretli',
-    noToolsFound: 'Araç bulunamadı',
-    
-    // Categories
-    categories: {
-      all: 'Tümü',
-      content: 'İçerik',
-      video: 'Video',
-      social: 'Sosyal',
-      analysis: 'Analiz',
-      helper: 'Yardımcı'
-    },
-    
-    // Pricing
-    simplePricing: 'Basit Fiyatlandırma',
-    choosePlan: 'İhtiyacınıza uygun planı seçin',
-    monthly: 'Aylık',
-    yearly: 'Yıllık',
-    currentPlan: 'Mevcut Plan',
-    upgradeToPro: "Pro'ya Geç",
-    recommended: 'Önerilen',
-    monthsFree: '2 ay bedava!',
-    perMonth: '/ay',
-    perYear: '/yıl',
-    creditsPerMonth: 'kredi/ay',
-    
-    // Plan Features
-    features: {
-      freeCredits: 'Aylık 50 kredi',
-      proCredits: 'Aylık 1000 kredi',
-      freeTools: 'Ücretsiz araçlara erişim',
-      allTools: 'Tüm AI araçlarına erişim',
-      basicSupport: 'Temel destek',
-      prioritySupport: 'Öncelikli destek',
-      watchAdsCredits: 'Reklam izle kredi kazan',
-      noAds: 'Reklamsız kullanım',
-      unlimited: 'Sınırsız üretim'
-    },
-    
-    // FAQ
-    faq: 'Sıkça Sorulan Sorular',
-    faqCredits: 'Kredi nedir?',
-    faqCreditsAnswer: 'Krediler, AI araçlarını kullanmak için harcadığınız birimlerdir. Her araç farklı miktarda kredi kullanır.',
-    faqCancel: 'İstediğim zaman iptal edebilir miyim?',
-    faqCancelAnswer: 'Evet! Aboneliğinizi istediğiniz zaman iptal edebilirsiniz. Dönem sonuna kadar erişiminiz devam eder.',
-    faqPayment: 'Hangi ödeme yöntemlerini kabul ediyorsunuz?',
-    faqPaymentAnswer: 'Kredi kartı, banka kartı ve PayPal ile ödeme yapabilirsiniz.',
-    
-    // Feature Comparison
-    featureComparison: 'Özellik Karşılaştırması',
-    feature: 'Özellik',
-    monthlyCredits: 'Aylık Kredi',
-    aiTools: 'AI Araçları',
-    ads: 'Reklamlar',
-    support: 'Destek',
-    basic: 'Temel',
-    all: 'Tümü',
-    yes: 'Var',
-    none: 'Yok',
-    priority: 'Öncelikli',
-    
-    // Ad Modal
-    watchAdTitle: 'Reklam İzle & Kredi Kazan',
-    watchAdDesc: '15 saniyelik reklam izleyerek 5 ücretsiz kredi kazanın!',
-    adPlaying: 'Reklam oynatılıyor...',
-    earnCredits: '5 Kredi Kazan',
-    close: 'Kapat',
-    
-    // Footer
-    allRightsReserved: 'Tüm hakları saklıdır.',
-    
-    // Home Page
-    heroTitle: 'AI Destekli Sosyal Medya',
-    heroTitleHighlight: 'İçerik Araçları',
-    heroSubtitle: 'AI destekli araçlarımızla viral içerik oluşturun, hashtag üretin, script yazın ve daha fazlası.',
-    getStartedFree: 'Ücretsiz Başla',
-    viewPricing: 'Fiyatları Gör',
-    trustedBy: 'Dünya genelinde içerik üreticileri tarafından tercih ediliyor',
-    
-    // Home Pricing Section
-    pricingTitle: 'Basit, Şeffaf Fiyatlandırma',
-    pricingSubtitle: 'Ücretsiz başla, ihtiyacın olunca yükselt',
-    
-    // Languages
-    languages: {
-      en: 'English',
-      tr: 'Türkçe',
-      ru: 'Русский',
-      de: 'Deutsch',
-      fr: 'Français'
-    }
+    common: { loading: 'Yükleniyor...', error: 'Bir hata oluştu', success: 'Başarılı!', copy: 'Kopyala', copied: 'Kopyalandı!', generate: 'Oluştur', credits: 'kredi', back: 'Geri', backToDashboard: '← Panele Dön', close: 'Kapat' },
+    nav: { features: 'Özellikler', pricing: 'Fiyatlar', faq: 'SSS', login: 'Giriş', signup: 'Kayıt Ol', dashboard: 'Panel', logout: 'Çıkış' },
+    hero: { badge: '🚀 AI Destekli Üretkenlik', title: 'Zihninizi Temizleyin.', titleHighlight: 'İşinizi Güçlendirin.', subtitle: 'Tekrarlayan görevlere saatler harcamayı bırakın. AI araçlarımız daha iyi yazmanıza ve daha hızlı karar vermenize yardımcı olur.', cta: 'Ücretsiz Başla', ctaSecondary: 'Nasıl Çalışır', stats: { users: '10K+', tools: '17+', requests: '500K+' } },
+    features: { title: 'Gerçekten Önemli Araçlar', subtitle: 'Sadece başka bir AI aracı değil. Gerçek sorunlar için gerçek çözümler.', items: [
+      { icon: '⚡', title: 'Günde Saatler Kazanın', description: 'Tek bir içeriği saniyeler içinde 4 platforma uygun posta dönüştürün.' },
+      { icon: '💰', title: 'Satışlarınızı Artırın', description: 'Satış metinlerinizi kanıtlanmış ikna teknikleriyle analiz edin.' },
+      { icon: '🎯', title: 'Karmaşıklığı Basitleştirin', description: 'Jargon dolu metni herkesin anlayabileceği dile dönüştürün.' },
+      { icon: '🛡️', title: 'Hataları Önleyin', description: 'İçeriğinizi yayınlamadan önce kontrol edin.' },
+      { icon: '⚖️', title: 'Güvenle Karar Verin', description: 'Artıları ve eksileriyle seçenekleri analiz edin.' },
+      { icon: '🧘', title: 'Düşüncelerinizi Netleştirin', description: 'Kaotik düşünceleri yapılandırılmış netliğe dönüştürün.' }
+    ] },
+    howItWorks: { title: 'Nasıl Çalışır', subtitle: '3 basit adımda sonuç alın', steps: [
+      { number: '1', title: 'İçeriğinizi Yapıştırın', description: 'Metninizi, fikrinizi veya sorununuzu girin.' },
+      { number: '2', title: 'Aracınızı Seçin', description: 'İhtiyacınız olanı seçin: uyarla, analiz et, basitleştir.' },
+      { number: '3', title: 'Anında Sonuç Alın', description: 'Hemen kullanıma hazır çıktı alın.' }
+    ] },
+    pricing: { title: 'Basit, Dürüst Fiyatlandırma', subtitle: 'Ücretsiz başlayın. İhtiyacınız olduğunda yükseltin.', monthly: 'Aylık', yearly: 'Yıllık', save: '%17 Tasarruf', plans: {
+      free: { name: 'Ücretsiz', price: '$0', period: '/ay', description: 'Başlamak için', features: ['50 kredi/ay', 'Temel araçlar', 'E-posta desteği'], cta: 'Ücretsiz Başla', popular: false },
+      starter: { name: 'Başlangıç', price: '$2.99', period: '/ay', description: 'Hobi için', features: ['200 kredi/ay', 'Tüm AI araçları', 'Standart destek'], cta: 'Başla', popular: false },
+      pro: { name: 'Pro', price: '$4.99', period: '/ay', description: 'Profesyoneller için', features: ['1000 kredi/ay', 'Tüm AI araçları', 'Öncelikli destek', 'Reklamsız'], cta: 'Pro\'ya Yükselt', popular: true }
+    } },
+    faq: { title: 'Sıkça Sorulan Sorular', subtitle: 'Bilmeniz gereken her şey', items: [
+      { question: 'Krediler nedir?', answer: 'Krediler AI araçları için kullanılan birimlerdir. Her araç farklı miktarda kredi kullanır.' },
+      { question: 'İstediğim zaman iptal edebilir miyim?', answer: 'Evet! Aboneliğinizi istediğiniz zaman iptal edebilirsiniz.' },
+      { question: 'Hangi ödeme yöntemlerini kabul ediyorsunuz?', answer: 'Kredi kartı, banka kartı ve PayPal kabul ediyoruz.' },
+      { question: 'Ücretsiz plan ne kadar süre geçerli?', answer: 'Ücretsiz plan sonsuza kadar geçerlidir. Her ay 50 kredi alırsınız.' }
+    ] },
+    testimonials: { title: 'Kullanıcılarımız Ne Diyor', subtitle: 'Binlerce içerik üreticisi bize güveniyor', items: [
+      { name: 'Ayşe K.', role: 'İçerik Üreticisi', text: 'Bu araçlar içerik oluşturma süremin yarıya indirdi!', avatar: '👩‍💼', rating: 5 },
+      { name: 'Mehmet R.', role: 'Sosyal Medya Yöneticisi', text: 'Hook üretici inanılmaz etkili. Etkileşimim %200 arttı.', avatar: '👨‍💻', rating: 5 },
+      { name: 'Elif L.', role: 'YouTuber', text: 'Video scriptleri için mükemmel.', avatar: '👩‍🎤', rating: 5 }
+    ] },
+    footer: { description: 'Hayatınızı kolaylaştıran AI araçları.', product: 'Ürün', company: 'Şirket', legal: 'Yasal', links: { features: 'Özellikler', pricing: 'Fiyatlar', api: 'API', about: 'Hakkımızda', blog: 'Blog', careers: 'Kariyer', privacy: 'Gizlilik', terms: 'Şartlar' }, copyright: '© 2024 Media Tool Kit. Tüm hakları saklıdır.' },
+    dashboard: { welcome: 'Hoş geldin', credits: 'Kredi', searchTools: 'Araç ara...', categories: { all: 'Tümü', video: 'Video', content: 'İçerik', analysis: 'Analiz', optimization: 'Optimizasyon', helper: 'Yardımcı' }, free: 'ÜCRETSİZ', new: 'YENİ' },
+    auth: { login: { title: 'Tekrar Hoş Geldin', subtitle: 'Devam etmek için giriş yap', email: 'E-posta', password: 'Şifre', button: 'Giriş Yap', noAccount: 'Hesabın yok mu?', signUp: 'Oluştur', forgotPassword: 'Şifreni mi unuttun?' }, register: { title: 'Bugün Ücretsiz Başla', subtitle: 'Kredi kartı gerekmez', name: 'Ad Soyad', email: 'E-posta', password: 'Şifre', button: 'Hesap Oluştur', hasAccount: 'Zaten hesabın var mı?', signIn: 'Giriş yap', terms: 'Kayıt olarak Kullanım Şartlarını kabul edersiniz.' } }
   },
   
   ru: {
-    // Common
-    loading: 'Загрузка...',
-    credits: 'Кредиты',
-    free: 'Бесплатно',
-    upgrade: 'Улучшить',
-    save: 'Сохранить',
-    cancel: 'Отмена',
-    back: 'Назад',
-    signIn: 'Войти',
-    signUp: 'Регистрация',
-    signOut: 'Выйти',
-    dashboard: 'Панель',
-    pricing: 'Цены',
-    
-    // Header
-    contentPlatform: 'Платформа для создания контента',
-    watchAd: 'Смотреть рекламу',
-    adsRemaining: 'реклам осталось сегодня',
-    
-    // Dashboard
-    welcomeBack: 'С возвращением',
-    totalCredits: 'Всего кредитов',
-    toolsUsed: 'Использовано инструментов',
-    searchTools: 'Поиск инструментов...',
-    allTools: 'Все инструменты',
-    freeTools: 'Бесплатные',
-    paidTools: 'Платные',
-    noToolsFound: 'Инструменты не найдены',
-    
-    // Categories
-    categories: {
-      all: 'Все',
-      content: 'Контент',
-      video: 'Видео',
-      social: 'Соцсети',
-      analysis: 'Анализ',
-      helper: 'Помощник'
-    },
-    
-    // Pricing
-    simplePricing: 'Простые цены',
-    choosePlan: 'Выберите подходящий план',
-    monthly: 'Ежемесячно',
-    yearly: 'Ежегодно',
-    currentPlan: 'Текущий план',
-    upgradeToPro: 'Перейти на Pro',
-    recommended: 'Рекомендуется',
-    monthsFree: '2 месяца бесплатно!',
-    perMonth: '/мес',
-    perYear: '/год',
-    creditsPerMonth: 'кредитов/мес',
-    
-    // Plan Features
-    features: {
-      freeCredits: '50 кредитов/месяц',
-      proCredits: '1000 кредитов/месяц',
-      freeTools: 'Доступ к бесплатным инструментам',
-      allTools: 'Все AI инструменты',
-      basicSupport: 'Базовая поддержка',
-      prioritySupport: 'Приоритетная поддержка',
-      watchAdsCredits: 'Смотрите рекламу за кредиты',
-      noAds: 'Без рекламы',
-      unlimited: 'Безлимитная генерация'
-    },
-    
-    // FAQ
-    faq: 'Частые вопросы',
-    faqCredits: 'Что такое кредиты?',
-    faqCreditsAnswer: 'Кредиты — это единицы, которые вы тратите на использование AI инструментов. Каждый инструмент использует разное количество кредитов.',
-    faqCancel: 'Могу ли я отменить в любое время?',
-    faqCancelAnswer: 'Да! Вы можете отменить подписку в любое время. Доступ сохранится до конца оплаченного периода.',
-    faqPayment: 'Какие способы оплаты вы принимаете?',
-    faqPaymentAnswer: 'Мы принимаем кредитные карты, дебетовые карты и PayPal.',
-    
-    // Feature Comparison
-    featureComparison: 'Сравнение функций',
-    feature: 'Функция',
-    monthlyCredits: 'Кредитов в месяц',
-    aiTools: 'AI Инструменты',
-    ads: 'Реклама',
-    support: 'Поддержка',
-    basic: 'Базовая',
-    all: 'Все',
-    yes: 'Да',
-    none: 'Нет',
-    priority: 'Приоритетная',
-    
-    // Ad Modal
-    watchAdTitle: 'Смотрите рекламу и зарабатывайте кредиты',
-    watchAdDesc: 'Посмотрите 15-секундную рекламу и получите 5 бесплатных кредитов!',
-    adPlaying: 'Реклама воспроизводится...',
-    earnCredits: 'Получить 5 кредитов',
-    close: 'Закрыть',
-    
-    // Footer
-    allRightsReserved: 'Все права защищены.',
-    
-    // Home Page
-    heroTitle: 'AI-инструменты для',
-    heroTitleHighlight: 'социальных сетей',
-    heroSubtitle: 'Создавайте вирусный контент, генерируйте хэштеги, пишите сценарии и многое другое с помощью наших AI-инструментов.',
-    getStartedFree: 'Начать бесплатно',
-    viewPricing: 'Посмотреть цены',
-    trustedBy: 'Нам доверяют создатели контента по всему миру',
-    
-    // Home Pricing Section
-    pricingTitle: 'Простые, прозрачные цены',
-    pricingSubtitle: 'Начните бесплатно, обновите когда понадобится',
-    
-    // Languages
-    languages: {
-      en: 'English',
-      tr: 'Türkçe',
-      ru: 'Русский',
-      de: 'Deutsch',
-      fr: 'Français'
-    }
+    common: { loading: 'Загрузка...', error: 'Произошла ошибка', success: 'Успешно!', copy: 'Копировать', copied: 'Скопировано!', generate: 'Создать', credits: 'кредитов', back: 'Назад', backToDashboard: '← Назад к панели', close: 'Закрыть' },
+    nav: { features: 'Функции', pricing: 'Цены', faq: 'FAQ', login: 'Вход', signup: 'Регистрация', dashboard: 'Панель', logout: 'Выход' },
+    hero: { badge: '🚀 AI Продуктивность', title: 'Освободите разум.', titleHighlight: 'Усильте работу.', subtitle: 'Перестаньте тратить часы на рутину. Наши AI-инструменты помогут писать лучше.', cta: 'Начать бесплатно', ctaSecondary: 'Как это работает', stats: { users: '10K+', tools: '17+', requests: '500K+' } },
+    features: { title: 'Инструменты, которые важны', subtitle: 'Реальные решения для реальных проблем.', items: [
+      { icon: '⚡', title: 'Экономьте часы', description: 'Превратите контент в 4 поста за секунды.' },
+      { icon: '💰', title: 'Увеличьте продажи', description: 'Анализируйте продающие тексты.' },
+      { icon: '🎯', title: 'Упростите сложное', description: 'Превратите жаргон в понятный язык.' },
+      { icon: '🛡️', title: 'Избегайте ошибок', description: 'Проверяйте контент перед публикацией.' },
+      { icon: '⚖️', title: 'Решайте уверенно', description: 'Анализируйте варианты.' },
+      { icon: '🧘', title: 'Упорядочьте мысли', description: 'Организуйте хаос в структуру.' }
+    ] },
+    howItWorks: { title: 'Как это работает', subtitle: 'Результат за 3 шага', steps: [
+      { number: '1', title: 'Вставьте контент', description: 'Введите текст или идею.' },
+      { number: '2', title: 'Выберите инструмент', description: 'Выберите что нужно.' },
+      { number: '3', title: 'Получите результат', description: 'Готовый результат.' }
+    ] },
+    pricing: { title: 'Простые цены', subtitle: 'Начните бесплатно.', monthly: 'Ежемесячно', yearly: 'Ежегодно', save: 'Скидка 17%', plans: {
+      free: { name: 'Бесплатно', price: '$0', period: '/мес', description: 'Для начала', features: ['50 кредитов/мес', 'Базовые инструменты', 'Email поддержка'], cta: 'Начать', popular: false },
+      starter: { name: 'Стартер', price: '$2.99', period: '/мес', description: 'Для хобби', features: ['200 кредитов/мес', 'Все AI инструменты', 'Стандартная поддержка'], cta: 'Начать', popular: false },
+      pro: { name: 'Pro', price: '$4.99', period: '/мес', description: 'Для профессионалов', features: ['1000 кредитов/мес', 'Все AI инструменты', 'Приоритетная поддержка', 'Без рекламы'], cta: 'Перейти на Pro', popular: true }
+    } },
+    faq: { title: 'Частые вопросы', subtitle: 'Ответы на ваши вопросы', items: [
+      { question: 'Что такое кредиты?', answer: 'Кредиты — единицы для использования AI инструментов.' },
+      { question: 'Могу отменить?', answer: 'Да! Отмените когда угодно.' },
+      { question: 'Способы оплаты?', answer: 'Карты и PayPal.' },
+      { question: 'Как долго бесплатный план?', answer: 'Бессрочно. 50 кредитов каждый месяц.' }
+    ] },
+    testimonials: { title: 'Отзывы', subtitle: 'Тысячи создателей доверяют нам', items: [
+      { name: 'Анна К.', role: 'Контент-мейкер', text: 'Эти инструменты сократили время вдвое!', avatar: '👩‍💼', rating: 5 },
+      { name: 'Михаил Р.', role: 'SMM', text: 'Генератор хуков невероятен.', avatar: '👨‍💻', rating: 5 },
+      { name: 'Елена Л.', role: 'YouTuber', text: 'Идеально для видео скриптов.', avatar: '👩‍🎤', rating: 5 }
+    ] },
+    footer: { description: 'AI инструменты для жизни.', product: 'Продукт', company: 'Компания', legal: 'Правовая информация', links: { features: 'Функции', pricing: 'Цены', api: 'API', about: 'О нас', blog: 'Блог', careers: 'Карьера', privacy: 'Конфиденциальность', terms: 'Условия' }, copyright: '© 2024 Media Tool Kit.' },
+    dashboard: { welcome: 'С возвращением', credits: 'Кредиты', searchTools: 'Поиск...', categories: { all: 'Все', video: 'Видео', content: 'Контент', analysis: 'Анализ', optimization: 'Оптимизация', helper: 'Помощник' }, free: 'БЕСПЛАТНО', new: 'НОВОЕ' },
+    auth: { login: { title: 'С возвращением', subtitle: 'Войдите', email: 'Email', password: 'Пароль', button: 'Войти', noAccount: 'Нет аккаунта?', signUp: 'Создать', forgotPassword: 'Забыли пароль?' }, register: { title: 'Начните бесплатно', subtitle: 'Без карты', name: 'Имя', email: 'Email', password: 'Пароль', button: 'Создать', hasAccount: 'Есть аккаунт?', signIn: 'Войти', terms: 'Регистрируясь, вы соглашаетесь с Условиями.' } }
   },
   
   de: {
-    // Common
-    loading: 'Laden...',
-    credits: 'Credits',
-    free: 'Kostenlos',
-    upgrade: 'Upgraden',
-    save: 'Speichern',
-    cancel: 'Abbrechen',
-    back: 'Zurück',
-    signIn: 'Anmelden',
-    signUp: 'Registrieren',
-    signOut: 'Abmelden',
-    dashboard: 'Dashboard',
-    pricing: 'Preise',
-    
-    // Header
-    contentPlatform: 'Content-Erstellungsplattform',
-    watchAd: 'Werbung ansehen',
-    adsRemaining: 'Anzeigen heute übrig',
-    
-    // Dashboard
-    welcomeBack: 'Willkommen zurück',
-    totalCredits: 'Gesamte Credits',
-    toolsUsed: 'Verwendete Tools',
-    searchTools: 'Tools suchen...',
-    allTools: 'Alle Tools',
-    freeTools: 'Kostenlos',
-    paidTools: 'Kostenpflichtig',
-    noToolsFound: 'Keine Tools gefunden',
-    
-    // Categories
-    categories: {
-      all: 'Alle',
-      content: 'Inhalt',
-      video: 'Video',
-      social: 'Sozial',
-      analysis: 'Analyse',
-      helper: 'Helfer'
-    },
-    
-    // Pricing
-    simplePricing: 'Einfache Preise',
-    choosePlan: 'Wählen Sie den passenden Plan',
-    monthly: 'Monatlich',
-    yearly: 'Jährlich',
-    currentPlan: 'Aktueller Plan',
-    upgradeToPro: 'Auf Pro upgraden',
-    recommended: 'Empfohlen',
-    monthsFree: '2 Monate kostenlos!',
-    perMonth: '/Monat',
-    perYear: '/Jahr',
-    creditsPerMonth: 'Credits/Monat',
-    
-    // Plan Features
-    features: {
-      freeCredits: '50 Credits/Monat',
-      proCredits: '1000 Credits/Monat',
-      freeTools: 'Zugang zu kostenlosen Tools',
-      allTools: 'Alle AI-Tools',
-      basicSupport: 'Basis-Support',
-      prioritySupport: 'Prioritäts-Support',
-      watchAdsCredits: 'Werbung für Credits ansehen',
-      noAds: 'Keine Werbung',
-      unlimited: 'Unbegrenzte Generierung'
-    },
-    
-    // FAQ
-    faq: 'Häufige Fragen',
-    faqCredits: 'Was sind Credits?',
-    faqCreditsAnswer: 'Credits sind Einheiten, die Sie für die Nutzung von AI-Tools ausgeben. Jedes Tool verbraucht unterschiedlich viele Credits.',
-    faqCancel: 'Kann ich jederzeit kündigen?',
-    faqCancelAnswer: 'Ja! Sie können Ihr Abonnement jederzeit kündigen. Der Zugang bleibt bis zum Ende des Abrechnungszeitraums erhalten.',
-    faqPayment: 'Welche Zahlungsmethoden akzeptieren Sie?',
-    faqPaymentAnswer: 'Wir akzeptieren Kreditkarten, Debitkarten und PayPal.',
-    
-    // Feature Comparison
-    featureComparison: 'Funktionsvergleich',
-    feature: 'Funktion',
-    monthlyCredits: 'Monatliche Credits',
-    aiTools: 'AI-Tools',
-    ads: 'Werbung',
-    support: 'Support',
-    basic: 'Basis',
-    all: 'Alle',
-    yes: 'Ja',
-    none: 'Keine',
-    priority: 'Priorität',
-    
-    // Ad Modal
-    watchAdTitle: 'Werbung ansehen & Credits verdienen',
-    watchAdDesc: 'Sehen Sie eine 15-Sekunden-Werbung und erhalten Sie 5 kostenlose Credits!',
-    adPlaying: 'Werbung läuft...',
-    earnCredits: '5 Credits verdienen',
-    close: 'Schließen',
-    
-    // Footer
-    allRightsReserved: 'Alle Rechte vorbehalten.',
-    
-    // Home Page
-    heroTitle: 'KI-gestützte Social-Media',
-    heroTitleHighlight: 'Content-Tools',
-    heroSubtitle: 'Erstellen Sie virale Inhalte, generieren Sie Hashtags, schreiben Sie Skripte und mehr mit unseren KI-Tools.',
-    getStartedFree: 'Kostenlos starten',
-    viewPricing: 'Preise ansehen',
-    trustedBy: 'Weltweit von Content-Erstellern genutzt',
-    
-    // Home Pricing Section
-    pricingTitle: 'Einfache, transparente Preise',
-    pricingSubtitle: 'Kostenlos starten, upgraden wenn nötig',
-    
-    // Languages
-    languages: {
-      en: 'English',
-      tr: 'Türkçe',
-      ru: 'Русский',
-      de: 'Deutsch',
-      fr: 'Français'
-    }
+    common: { loading: 'Laden...', error: 'Ein Fehler ist aufgetreten', success: 'Erfolgreich!', copy: 'Kopieren', copied: 'Kopiert!', generate: 'Generieren', credits: 'Credits', back: 'Zurück', backToDashboard: '← Zurück zum Dashboard', close: 'Schließen' },
+    nav: { features: 'Funktionen', pricing: 'Preise', faq: 'FAQ', login: 'Anmelden', signup: 'Registrieren', dashboard: 'Dashboard', logout: 'Abmelden' },
+    hero: { badge: '🚀 KI-Produktivität', title: 'Klarer Kopf.', titleHighlight: 'Bessere Arbeit.', subtitle: 'Verschwenden Sie keine Stunden mehr mit Routineaufgaben.', cta: 'Kostenlos starten', ctaSecondary: 'So funktioniert es', stats: { users: '10K+', tools: '17+', requests: '500K+' } },
+    features: { title: 'Tools die zählen', subtitle: 'Echte Lösungen für echte Probleme.', items: [
+      { icon: '⚡', title: 'Stunden sparen', description: 'Verwandeln Sie Inhalt in 4 Posts.' },
+      { icon: '💰', title: 'Umsatz steigern', description: 'Analysieren Sie Verkaufstexte.' },
+      { icon: '🎯', title: 'Komplexes vereinfachen', description: 'Klare Sprache.' },
+      { icon: '🛡️', title: 'Fehler vermeiden', description: 'Prüfen Sie Inhalte.' },
+      { icon: '⚖️', title: 'Sicher entscheiden', description: 'Analysieren Sie Optionen.' },
+      { icon: '🧘', title: 'Gedanken ordnen', description: 'Organisieren Sie Chaos.' }
+    ] },
+    howItWorks: { title: 'So funktioniert es', subtitle: 'Ergebnisse in 3 Schritten', steps: [
+      { number: '1', title: 'Inhalt einfügen', description: 'Geben Sie Text ein.' },
+      { number: '2', title: 'Tool wählen', description: 'Wählen Sie was Sie brauchen.' },
+      { number: '3', title: 'Ergebnis erhalten', description: 'Fertiges Ergebnis.' }
+    ] },
+    pricing: { title: 'Einfache Preise', subtitle: 'Kostenlos starten.', monthly: 'Monatlich', yearly: 'Jährlich', save: '17% sparen', plans: {
+      free: { name: 'Kostenlos', price: '$0', period: '/Monat', description: 'Zum Einstieg', features: ['50 Credits/Monat', 'Basis-Tools', 'E-Mail Support'], cta: 'Kostenlos starten', popular: false },
+      starter: { name: 'Starter', price: '$2.99', period: '/Monat', description: 'Für Hobbies', features: ['200 Credits/Monat', 'Alle KI-Tools', 'Standard Support'], cta: 'Starten', popular: false },
+      pro: { name: 'Pro', price: '$4.99', period: '/Monat', description: 'Für Profis', features: ['1000 Credits/Monat', 'Alle KI-Tools', 'Prioritäts-Support', 'Keine Werbung'], cta: 'Auf Pro upgraden', popular: true }
+    } },
+    faq: { title: 'Häufige Fragen', subtitle: 'Antworten', items: [
+      { question: 'Was sind Credits?', answer: 'Einheiten zur Nutzung von KI-Tools.' },
+      { question: 'Kann ich kündigen?', answer: 'Ja! Jederzeit.' },
+      { question: 'Zahlungsmethoden?', answer: 'Karten und PayPal.' },
+      { question: 'Wie lange kostenlos?', answer: 'Unbegrenzt. 50 Credits monatlich.' }
+    ] },
+    testimonials: { title: 'Was Nutzer sagen', subtitle: 'Tausende vertrauen uns', items: [
+      { name: 'Sarah K.', role: 'Creator', text: 'Diese Tools haben meine Zeit halbiert!', avatar: '👩‍💼', rating: 5 },
+      { name: 'Mike R.', role: 'Manager', text: 'Der Hook-Generator ist effektiv.', avatar: '👨‍💻', rating: 5 },
+      { name: 'Emma L.', role: 'YouTuber', text: 'Perfekt für Skripte.', avatar: '👩‍🎤', rating: 5 }
+    ] },
+    footer: { description: 'KI-Tools die das Leben vereinfachen.', product: 'Produkt', company: 'Unternehmen', legal: 'Rechtliches', links: { features: 'Funktionen', pricing: 'Preise', api: 'API', about: 'Über uns', blog: 'Blog', careers: 'Karriere', privacy: 'Datenschutz', terms: 'AGB' }, copyright: '© 2024 Media Tool Kit.' },
+    dashboard: { welcome: 'Willkommen', credits: 'Credits', searchTools: 'Suchen...', categories: { all: 'Alle', video: 'Video', content: 'Inhalt', analysis: 'Analyse', optimization: 'Optimierung', helper: 'Helfer' }, free: 'KOSTENLOS', new: 'NEU' },
+    auth: { login: { title: 'Willkommen zurück', subtitle: 'Anmelden', email: 'E-Mail', password: 'Passwort', button: 'Anmelden', noAccount: 'Kein Konto?', signUp: 'Erstellen', forgotPassword: 'Passwort vergessen?' }, register: { title: 'Kostenlos starten', subtitle: 'Keine Karte nötig', name: 'Name', email: 'E-Mail', password: 'Passwort', button: 'Konto erstellen', hasAccount: 'Bereits ein Konto?', signIn: 'Anmelden', terms: 'Mit der Registrierung stimmen Sie den Nutzungsbedingungen zu.' } }
   },
   
   fr: {
-    // Common
-    loading: 'Chargement...',
-    credits: 'Crédits',
-    free: 'Gratuit',
-    upgrade: 'Améliorer',
-    save: 'Enregistrer',
-    cancel: 'Annuler',
-    back: 'Retour',
-    signIn: 'Connexion',
-    signUp: 'Inscription',
-    signOut: 'Déconnexion',
-    dashboard: 'Tableau de bord',
-    pricing: 'Tarifs',
-    
-    // Header
-    contentPlatform: 'Plateforme de création de contenu',
-    watchAd: 'Regarder une pub',
-    adsRemaining: 'pubs restantes aujourd\'hui',
-    
-    // Dashboard
-    welcomeBack: 'Bon retour',
-    totalCredits: 'Total des crédits',
-    toolsUsed: 'Outils utilisés',
-    searchTools: 'Rechercher des outils...',
-    allTools: 'Tous les outils',
-    freeTools: 'Gratuits',
-    paidTools: 'Payants',
-    noToolsFound: 'Aucun outil trouvé',
-    
-    // Categories
-    categories: {
-      all: 'Tous',
-      content: 'Contenu',
-      video: 'Vidéo',
-      social: 'Social',
-      analysis: 'Analyse',
-      helper: 'Assistant'
-    },
-    
-    // Pricing
-    simplePricing: 'Tarifs simples',
-    choosePlan: 'Choisissez le plan adapté à vos besoins',
-    monthly: 'Mensuel',
-    yearly: 'Annuel',
-    currentPlan: 'Plan actuel',
-    upgradeToPro: 'Passer à Pro',
-    recommended: 'Recommandé',
-    monthsFree: '2 mois gratuits !',
-    perMonth: '/mois',
-    perYear: '/an',
-    creditsPerMonth: 'crédits/mois',
-    
-    // Plan Features
-    features: {
-      freeCredits: '50 crédits/mois',
-      proCredits: '1000 crédits/mois',
-      freeTools: 'Accès aux outils gratuits',
-      allTools: 'Tous les outils AI',
-      basicSupport: 'Support basique',
-      prioritySupport: 'Support prioritaire',
-      watchAdsCredits: 'Regardez des pubs pour des crédits',
-      noAds: 'Sans publicité',
-      unlimited: 'Génération illimitée'
-    },
-    
-    // FAQ
-    faq: 'Questions fréquentes',
-    faqCredits: 'Que sont les crédits ?',
-    faqCreditsAnswer: 'Les crédits sont des unités que vous dépensez pour utiliser les outils AI. Chaque outil utilise un nombre différent de crédits.',
-    faqCancel: 'Puis-je annuler à tout moment ?',
-    faqCancelAnswer: 'Oui ! Vous pouvez annuler votre abonnement à tout moment. L\'accès sera maintenu jusqu\'à la fin de la période de facturation.',
-    faqPayment: 'Quels modes de paiement acceptez-vous ?',
-    faqPaymentAnswer: 'Nous acceptons les cartes de crédit, les cartes de débit et PayPal.',
-    
-    // Feature Comparison
-    featureComparison: 'Comparaison des fonctionnalités',
-    feature: 'Fonctionnalité',
-    monthlyCredits: 'Crédits mensuels',
-    aiTools: 'Outils AI',
-    ads: 'Publicités',
-    support: 'Support',
-    basic: 'Basique',
-    all: 'Tous',
-    yes: 'Oui',
-    none: 'Aucune',
-    priority: 'Prioritaire',
-    
-    // Ad Modal
-    watchAdTitle: 'Regardez une pub et gagnez des crédits',
-    watchAdDesc: 'Regardez une pub de 15 secondes et obtenez 5 crédits gratuits !',
-    adPlaying: 'Pub en cours...',
-    earnCredits: 'Gagner 5 crédits',
-    close: 'Fermer',
-    
-    // Footer
-    allRightsReserved: 'Tous droits réservés.',
-    
-    // Home Page
-    heroTitle: 'Outils de contenu',
-    heroTitleHighlight: 'propulsés par l\'IA',
-    heroSubtitle: 'Créez du contenu viral, générez des hashtags, écrivez des scripts et plus encore avec nos outils IA.',
-    getStartedFree: 'Commencer gratuitement',
-    viewPricing: 'Voir les tarifs',
-    trustedBy: 'Utilisé par des créateurs de contenu du monde entier',
-    
-    // Home Pricing Section
-    pricingTitle: 'Tarifs simples et transparents',
-    pricingSubtitle: 'Commencez gratuitement, améliorez quand vous en avez besoin',
-    
-    // Languages
-    languages: {
-      en: 'English',
-      tr: 'Türkçe',
-      ru: 'Русский',
-      de: 'Deutsch',
-      fr: 'Français'
-    }
+    common: { loading: 'Chargement...', error: 'Une erreur est survenue', success: 'Succès!', copy: 'Copier', copied: 'Copié!', generate: 'Générer', credits: 'crédits', back: 'Retour', backToDashboard: '← Retour au tableau de bord', close: 'Fermer' },
+    nav: { features: 'Fonctionnalités', pricing: 'Tarifs', faq: 'FAQ', login: 'Connexion', signup: 'Inscription', dashboard: 'Tableau de bord', logout: 'Déconnexion' },
+    hero: { badge: '🚀 Productivité IA', title: 'Libérez votre esprit.', titleHighlight: 'Amplifiez votre travail.', subtitle: 'Arrêtez de perdre des heures sur des tâches répétitives.', cta: 'Commencer gratuitement', ctaSecondary: 'Comment ça marche', stats: { users: '10K+', tools: '17+', requests: '500K+' } },
+    features: { title: 'Des outils qui comptent', subtitle: 'De vraies solutions pour de vrais problèmes.', items: [
+      { icon: '⚡', title: 'Gagnez des heures', description: 'Transformez un contenu en 4 posts.' },
+      { icon: '💰', title: 'Boostez vos ventes', description: 'Analysez vos textes.' },
+      { icon: '🎯', title: 'Simplifiez le complexe', description: 'Langage clair.' },
+      { icon: '🛡️', title: 'Évitez les erreurs', description: 'Vérifiez le contenu.' },
+      { icon: '⚖️', title: 'Décidez sereinement', description: 'Analysez les options.' },
+      { icon: '🧘', title: 'Clarifiez vos pensées', description: 'Organisez le chaos.' }
+    ] },
+    howItWorks: { title: 'Comment ça marche', subtitle: 'Résultats en 3 étapes', steps: [
+      { number: '1', title: 'Collez votre contenu', description: 'Entrez votre texte.' },
+      { number: '2', title: 'Choisissez l\'outil', description: 'Sélectionnez ce dont vous avez besoin.' },
+      { number: '3', title: 'Obtenez le résultat', description: 'Résultat prêt à l\'emploi.' }
+    ] },
+    pricing: { title: 'Tarifs simples', subtitle: 'Commencez gratuitement.', monthly: 'Mensuel', yearly: 'Annuel', save: '17% d\'économie', plans: {
+      free: { name: 'Gratuit', price: '$0', period: '/mois', description: 'Pour commencer', features: ['50 crédits/mois', 'Outils de base', 'Support email'], cta: 'Commencer', popular: false },
+      starter: { name: 'Starter', price: '$2.99', period: '/mois', description: 'Pour les hobbies', features: ['200 crédits/mois', 'Tous les outils IA', 'Support standard'], cta: 'Commencer', popular: false },
+      pro: { name: 'Pro', price: '$4.99', period: '/mois', description: 'Pour les pros', features: ['1000 crédits/mois', 'Tous les outils IA', 'Support prioritaire', 'Sans publicité'], cta: 'Passer à Pro', popular: true }
+    } },
+    faq: { title: 'Questions fréquentes', subtitle: 'Réponses', items: [
+      { question: 'Que sont les crédits?', answer: 'Unités pour utiliser les outils IA.' },
+      { question: 'Puis-je annuler?', answer: 'Oui! À tout moment.' },
+      { question: 'Modes de paiement?', answer: 'Cartes et PayPal.' },
+      { question: 'Durée du plan gratuit?', answer: 'Illimité. 50 crédits par mois.' }
+    ] },
+    testimonials: { title: 'Ce que disent nos utilisateurs', subtitle: 'Des milliers nous font confiance', items: [
+      { name: 'Sarah K.', role: 'Créatrice', text: 'Ces outils ont réduit mon temps de moitié!', avatar: '👩‍💼', rating: 5 },
+      { name: 'Mike R.', role: 'Manager', text: 'Le générateur de hooks est efficace.', avatar: '👨‍💻', rating: 5 },
+      { name: 'Emma L.', role: 'YouTuber', text: 'Parfait pour les scripts.', avatar: '👩‍🎤', rating: 5 }
+    ] },
+    footer: { description: 'Outils IA qui simplifient la vie.', product: 'Produit', company: 'Entreprise', legal: 'Mentions légales', links: { features: 'Fonctionnalités', pricing: 'Tarifs', api: 'API', about: 'À propos', blog: 'Blog', careers: 'Carrières', privacy: 'Confidentialité', terms: 'CGU' }, copyright: '© 2024 Media Tool Kit.' },
+    dashboard: { welcome: 'Bon retour', credits: 'Crédits', searchTools: 'Rechercher...', categories: { all: 'Tous', video: 'Vidéo', content: 'Contenu', analysis: 'Analyse', optimization: 'Optimisation', helper: 'Assistant' }, free: 'GRATUIT', new: 'NOUVEAU' },
+    auth: { login: { title: 'Bon retour', subtitle: 'Connectez-vous', email: 'Email', password: 'Mot de passe', button: 'Se connecter', noAccount: 'Pas de compte?', signUp: 'Créer', forgotPassword: 'Mot de passe oublié?' }, register: { title: 'Commencez gratuitement', subtitle: 'Aucune carte requise', name: 'Nom', email: 'Email', password: 'Mot de passe', button: 'Créer un compte', hasAccount: 'Déjà un compte?', signIn: 'Se connecter', terms: 'En vous inscrivant, vous acceptez nos Conditions.' } }
   }
 }
-
-export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
-export type TranslationKey = keyof typeof translations.en
