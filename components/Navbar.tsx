@@ -12,13 +12,22 @@ const languages = [
   { code: 'fr', flag: '🇫🇷', name: 'Français' },
 ]
 
+const navTexts: Record<Language, Record<string, string>> = {
+  en: { features: 'Features', pricing: 'Pricing', faq: 'FAQ', login: 'Login', signup: 'Sign Up', language: 'Language' },
+  tr: { features: 'Özellikler', pricing: 'Fiyatlar', faq: 'SSS', login: 'Giriş', signup: 'Kayıt Ol', language: 'Dil' },
+  ru: { features: 'Функции', pricing: 'Цены', faq: 'FAQ', login: 'Вход', signup: 'Регистрация', language: 'Язык' },
+  de: { features: 'Funktionen', pricing: 'Preise', faq: 'FAQ', login: 'Anmelden', signup: 'Registrieren', language: 'Sprache' },
+  fr: { features: 'Fonctionnalités', pricing: 'Tarifs', faq: 'FAQ', login: 'Connexion', signup: 'Inscription', language: 'Langue' },
+}
+
 export default function Navbar() {
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [langDropdownOpen, setLangDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  const txt = navTexts[language]
 
-  // Dropdown dışına tıklandığında kapat
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -39,30 +48,20 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
               <span className="text-lg sm:text-xl font-bold text-white">M</span>
             </div>
-            <span className="text-lg sm:text-xl font-bold text-white hidden xs:block">Media Tool Kit</span>
+            <span className="text-lg sm:text-xl font-bold text-white hidden sm:block">Media Tool Kit</span>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
-            <a href="#features" className="text-gray-300 hover:text-white transition text-sm lg:text-base">
-              {t.nav?.features || 'Features'}
-            </a>
-            <a href="#pricing" className="text-gray-300 hover:text-white transition text-sm lg:text-base">
-              {t.nav?.pricing || 'Pricing'}
-            </a>
-            <a href="#faq" className="text-gray-300 hover:text-white transition text-sm lg:text-base">
-              {t.nav?.faq || 'FAQ'}
-            </a>
+            <a href="#features" className="text-gray-300 hover:text-white transition text-sm lg:text-base">{txt.features}</a>
+            <a href="#pricing" className="text-gray-300 hover:text-white transition text-sm lg:text-base">{txt.pricing}</a>
+            <a href="#faq" className="text-gray-300 hover:text-white transition text-sm lg:text-base">{txt.faq}</a>
           </div>
 
-          {/* Right Side - Desktop */}
           <div className="hidden md:flex items-center gap-3 lg:gap-4">
-            {/* Language Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
@@ -91,20 +90,11 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link href="/login" className="text-gray-300 hover:text-white transition text-sm lg:text-base">
-              {t.nav?.login || 'Login'}
-            </Link>
-            <Link href="/register" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition text-sm lg:text-base font-medium">
-              {t.nav?.signup || 'Sign Up'}
-            </Link>
+            <Link href="/login" className="text-gray-300 hover:text-white transition text-sm lg:text-base">{txt.login}</Link>
+            <Link href="/register" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition text-sm lg:text-base font-medium">{txt.signup}</Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-white p-2 -mr-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
+          <button className="md:hidden text-white p-2 -mr-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             {mobileMenuOpen ? (
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -117,44 +107,22 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-800 animate-fadeIn">
             <div className="flex flex-col gap-1">
-              <a 
-                href="#features" 
-                className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.nav?.features || 'Features'}
-              </a>
-              <a 
-                href="#pricing" 
-                className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.nav?.pricing || 'Pricing'}
-              </a>
-              <a 
-                href="#faq" 
-                className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t.nav?.faq || 'FAQ'}
-              </a>
+              <a href="#features" className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition" onClick={() => setMobileMenuOpen(false)}>{txt.features}</a>
+              <a href="#pricing" className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition" onClick={() => setMobileMenuOpen(false)}>{txt.pricing}</a>
+              <a href="#faq" className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg transition" onClick={() => setMobileMenuOpen(false)}>{txt.faq}</a>
               
-              {/* Language Selector - Mobile */}
               <div className="px-4 py-3">
-                <p className="text-gray-500 text-sm mb-2">🌐 {t.nav?.language || 'Language'}</p>
+                <p className="text-gray-500 text-sm mb-2">🌐 {txt.language}</p>
                 <div className="flex flex-wrap gap-2">
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => handleLanguageChange(lang.code as Language)}
                       className={`px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 ${
-                        language === lang.code 
-                          ? 'bg-purple-600 text-white' 
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                        language === lang.code ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       }`}
                     >
                       {lang.flag} {lang.code.toUpperCase()}
@@ -164,20 +132,8 @@ export default function Navbar() {
               </div>
 
               <div className="flex flex-col gap-2 pt-4 mt-2 border-t border-gray-800 px-4">
-                <Link 
-                  href="/login" 
-                  className="text-gray-300 hover:text-white py-3 text-center rounded-lg border border-gray-700 hover:bg-gray-800 transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav?.login || 'Login'}
-                </Link>
-                <Link 
-                  href="/register" 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 text-center rounded-lg font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav?.signup || 'Sign Up'}
-                </Link>
+                <Link href="/login" className="text-gray-300 hover:text-white py-3 text-center rounded-lg border border-gray-700 hover:bg-gray-800 transition" onClick={() => setMobileMenuOpen(false)}>{txt.login}</Link>
+                <Link href="/register" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 text-center rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>{txt.signup}</Link>
               </div>
             </div>
           </div>
