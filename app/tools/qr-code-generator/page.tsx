@@ -13,7 +13,7 @@ export default function QRGeneratorPage() {
   const [color, setColor] = useState('#000000')
   const [bgColor, setBgColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   const handleGenerate = async () => {

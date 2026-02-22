@@ -16,7 +16,7 @@ export default function CaptionWriterPage() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   useEffect(() => {

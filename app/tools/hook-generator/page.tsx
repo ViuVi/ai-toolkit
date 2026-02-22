@@ -13,7 +13,7 @@ export default function HookGeneratorPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [copied, setCopied] = useState<number | null>(null)
   const [filter, setFilter] = useState<string>('all')
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
 
   useEffect(() => {
