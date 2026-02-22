@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
 import { en } from '@/locales/en'
 import { tr } from '@/locales/tr'
 import { ru } from '@/locales/ru'
@@ -14,27 +14,38 @@ const translations: Record<Language, any> = { en, tr, ru, de, fr }
 type LanguageContextType = {
   language: Language
   setLanguage: (lang: Language) => void
-  t: any
+  t: typeof en
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en')
-  const [t, setT] = useState<any>(en)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const savedLang = localStorage.getItem('language') as Language
     if (savedLang && ['en', 'tr', 'ru', 'de', 'fr'].includes(savedLang)) {
       setLanguageState(savedLang)
-      setT(translations[savedLang])
     }
   }, [])
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
-    setT(translations[lang])
     localStorage.setItem('language', lang)
+  }
+
+  // useMemo ile t'yi language değiştiğinde otomatik güncelle
+  const t = useMemo(() => translations[language], [language])
+
+  // Hydration hatalarını önlemek için
+  if (!mounted) {
+    return (
+      <LanguageContext.Provider value={{ language: 'en', setLanguage, t: en }}>
+        {children}
+      </LanguageContext.Provider>
+    )
   }
 
   return (
