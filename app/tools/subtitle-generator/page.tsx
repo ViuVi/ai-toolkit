@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
@@ -16,6 +16,14 @@ export default function SubtitleGeneratorPage() {
   const [copied, setCopied] = useState(false)
   const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
+
+  const uiLanguages: { code: Language; label: string }[] = [
+    { code: 'en', label: 'EN' },
+    { code: 'tr', label: 'TR' },
+    { code: 'ru', label: 'RU' },
+    { code: 'de', label: 'DE' },
+    { code: 'fr', label: 'FR' }
+  ]
 
   useEffect(() => {
     async function getUser() {
@@ -31,7 +39,15 @@ export default function SubtitleGeneratorPage() {
       // Video dosyası kontrolü
       if (!file.type.startsWith('video/')) {
         showToast(
-          language === 'en' ? 'Please select a video file' : 'Lütfen bir video dosyası seçin',
+          language === 'tr'
+            ? 'Lütfen bir video dosyası seçin'
+            : language === 'ru'
+            ? 'Пожалуйста, выберите видеофайл'
+            : language === 'de'
+            ? 'Bitte wählen Sie eine Videodatei aus'
+            : language === 'fr'
+            ? 'Veuillez sélectionner un fichier vidéo'
+            : 'Please select a video file',
           'warning'
         )
         return
@@ -40,7 +56,15 @@ export default function SubtitleGeneratorPage() {
       // Boyut kontrolü (max 100MB)
       if (file.size > 100 * 1024 * 1024) {
         showToast(
-          language === 'en' ? 'File too large (max 100MB)' : 'Dosya çok büyük (max 100MB)',
+          language === 'tr'
+            ? 'Dosya çok büyük (maksimum 100MB)'
+            : language === 'ru'
+            ? 'Файл слишком большой (макс. 100 МБ)'
+            : language === 'de'
+            ? 'Datei zu groß (max. 100 MB)'
+            : language === 'fr'
+            ? 'Fichier trop volumineux (max 100 Mo)'
+            : 'File too large (max 100MB)',
           'warning'
         )
         return
@@ -48,7 +72,15 @@ export default function SubtitleGeneratorPage() {
       
       setVideoFile(file)
       showToast(
-        language === 'en' ? `File selected: ${file.name}` : `Dosya seçildi: ${file.name}`,
+        language === 'tr'
+          ? `Dosya seçildi: ${file.name}`
+          : language === 'ru'
+          ? `Файл выбран: ${file.name}`
+          : language === 'de'
+          ? `Datei ausgewählt: ${file.name}`
+          : language === 'fr'
+          ? `Fichier sélectionné : ${file.name}`
+          : `File selected: ${file.name}`,
         'success'
       )
     }
@@ -57,7 +89,15 @@ export default function SubtitleGeneratorPage() {
   const handleGenerate = async () => {
     if (!videoFile) {
       showToast(
-        language === 'en' ? 'Please select a video file' : 'Lütfen bir video dosyası seçin',
+        language === 'tr'
+          ? 'Lütfen bir video dosyası seçin'
+          : language === 'ru'
+          ? 'Пожалуйста, выберите видеофайл'
+          : language === 'de'
+          ? 'Bitte wählen Sie eine Videodatei aus'
+          : language === 'fr'
+          ? 'Veuillez sélectionner un fichier vidéo'
+          : 'Please select a video file',
         'warning'
       )
       return
@@ -86,12 +126,31 @@ export default function SubtitleGeneratorPage() {
       } else {
         setSubtitles(data.subtitles)
         showToast(
-          language === 'en' ? 'Subtitles generated!' : 'Alt yazılar oluşturuldu!',
+          language === 'tr'
+            ? 'Alt yazılar oluşturuldu!'
+            : language === 'ru'
+            ? 'Субтитры сгенерированы!'
+            : language === 'de'
+            ? 'Untertitel wurden erstellt!'
+            : language === 'fr'
+            ? 'Sous-titres générés !'
+            : 'Subtitles generated!',
           'success'
         )
       }
     } catch (err) {
-      showToast(language === 'en' ? 'An error occurred' : 'Bir hata oluştu', 'error')
+      showToast(
+        language === 'tr'
+          ? 'Bir hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred',
+        'error'
+      )
       console.error('Subtitle generation error:', err)
     }
 
@@ -103,7 +162,15 @@ export default function SubtitleGeneratorPage() {
       navigator.clipboard.writeText(subtitles.subtitle)
       setCopied(true)
       showToast(
-        language === 'en' ? 'Copied to clipboard!' : 'Panoya kopyalandı!',
+        language === 'tr'
+          ? 'Panoya kopyalandı!'
+          : language === 'ru'
+          ? 'Скопировано в буфер обмена!'
+          : language === 'de'
+          ? 'In die Zwischenablage kopiert!'
+          : language === 'fr'
+          ? 'Copié dans le presse-papiers !'
+          : 'Copied to clipboard!',
         'success'
       )
       setTimeout(() => setCopied(false), 2000)
@@ -120,7 +187,15 @@ export default function SubtitleGeneratorPage() {
       a.click()
       URL.revokeObjectURL(url)
       showToast(
-        language === 'en' ? 'Downloaded!' : 'İndirildi!',
+        language === 'tr'
+          ? 'İndirildi!'
+          : language === 'ru'
+          ? 'Скачано!'
+          : language === 'de'
+          ? 'Heruntergeladen!'
+          : language === 'fr'
+          ? 'Téléchargé !'
+          : 'Downloaded!',
         'success'
       )
     }
@@ -147,12 +222,31 @@ export default function SubtitleGeneratorPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{language === 'en' ? '← Back to Dashboard' : '← Panele Dön'}</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>TR</button>
+              {uiLanguages.map((langOpt) => (
+                <button
+                  key={langOpt.code}
+                  onClick={() => setLanguage(langOpt.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === langOpt.code ? 'bg-purple-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  {langOpt.label}
+                </button>
+              ))}
             </div>
             <span className="text-2xl">📝</span>
           </div>
