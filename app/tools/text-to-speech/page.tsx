@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
 import { supabase } from '@/lib/supabase'
+
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
+]
 
 export default function TextToSpeechPage() {
   const [text, setText] = useState('')
@@ -90,7 +98,17 @@ export default function TextToSpeechPage() {
         }, 500)
       }
     } catch (err) {
-      setError(language === 'tr' ? 'Bir hata oluştu' : 'An error occurred')
+      setError(
+        language === 'tr'
+          ? 'Bir hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred'
+      )
     } finally {
       setLoading(false)
     }
@@ -121,7 +139,17 @@ export default function TextToSpeechPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{language === 'tr' ? 'Geri' : 'Back'}</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
           </Link>
           <h1 className="text-xl font-bold flex items-center gap-2">
             <span>🔊</span>
@@ -129,8 +157,17 @@ export default function TextToSpeechPage() {
           </h1>
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>TR</button>
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === lang.code ? 'bg-purple-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

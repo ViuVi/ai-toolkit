@@ -4,7 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
+
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
+]
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
@@ -15,7 +23,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
+  const { language, setLanguage, t } = useLanguage()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,13 +31,33 @@ export default function RegisterPage() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError(language === 'tr' ? 'Şifreler eşleşmiyor' : 'Passwords do not match')
+      setError(
+        language === 'tr'
+          ? 'Şifreler eşleşmiyor'
+          : language === 'ru'
+          ? 'Пароли не совпадают'
+          : language === 'de'
+          ? 'Passwörter stimmen nicht überein'
+          : language === 'fr'
+          ? 'Les mots de passe ne correspondent pas'
+          : 'Passwords do not match'
+      )
       setLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError(language === 'tr' ? 'Şifre en az 6 karakter olmalı' : 'Password must be at least 6 characters')
+      setError(
+        language === 'tr'
+          ? 'Şifre en az 6 karakter olmalı'
+          : language === 'ru'
+          ? 'Пароль должен содержать не менее 6 символов'
+          : language === 'de'
+          ? 'Das Passwort muss mindestens 6 Zeichen lang sein'
+          : language === 'fr'
+          ? 'Le mot de passe doit contenir au moins 6 caractères'
+          : 'Password must be at least 6 characters'
+      )
       setLoading(false)
       return
     }
@@ -59,7 +87,18 @@ export default function RegisterPage() {
         router.push('/dashboard')
       }
     } catch (err: any) {
-      setError(err.message || (language === 'tr' ? 'Kayıt başarısız' : 'Registration failed'))
+      setError(
+        err.message ||
+          (language === 'tr'
+            ? 'Kayıt başarısız'
+            : language === 'ru'
+            ? 'Регистрация не удалась'
+            : language === 'de'
+            ? 'Registrierung fehlgeschlagen'
+            : language === 'fr'
+            ? "L'inscription a échoué"
+            : 'Registration failed')
+      )
     } finally {
       setLoading(false)
     }
@@ -91,22 +130,17 @@ export default function RegisterPage() {
       {/* Language Switcher */}
       <div className="absolute top-6 right-6 z-50">
         <div className="flex items-center bg-gray-800/50 backdrop-blur-md rounded-full p-1 border border-gray-700">
-          <button
-            onClick={() => setLanguage('en')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-              language === 'en' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => setLanguage('tr')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-              language === 'tr' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            TR
-          </button>
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => setLanguage(lang.code)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                language === lang.code ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {lang.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -117,10 +151,13 @@ export default function RegisterPage() {
             <span className="text-4xl">🚀</span>
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">
-            {language === 'tr' ? 'Hesap Oluştur' : 'Create Account'}
+            {t?.auth?.register?.title || (language === 'tr' ? 'Hesap Oluştur' : 'Create Account')}
           </h1>
           <p className="text-gray-400">
-            {language === 'tr' ? 'İçerik üretmeye başla ve markanı büyüt' : 'Start creating content and grow your brand'}
+            {t?.auth?.register?.subtitle ||
+              (language === 'tr'
+                ? 'İçerik üretmeye başla ve markanı büyüt'
+                : 'Start creating content and grow your brand')}
           </p>
         </div>
 
@@ -144,7 +181,7 @@ export default function RegisterPage() {
             {/* Name Input */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {language === 'tr' ? 'Ad Soyad' : 'Full Name'}
+                {t?.auth?.register?.name || (language === 'tr' ? 'Ad Soyad' : 'Full Name')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -166,7 +203,7 @@ export default function RegisterPage() {
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {language === 'tr' ? 'E-posta' : 'Email'}
+                {t?.auth?.register?.email || (language === 'tr' ? 'E-posta' : 'Email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -188,7 +225,7 @@ export default function RegisterPage() {
             {/* Password Input */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {language === 'tr' ? 'Şifre' : 'Password'}
+                {t?.auth?.register?.password || (language === 'tr' ? 'Şifre' : 'Password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -241,10 +278,18 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  {language === 'tr' ? 'Kaydediliyor...' : 'Creating account...'}
+                  {language === 'tr'
+                    ? 'Kaydediliyor...'
+                    : language === 'ru'
+                    ? 'Создание аккаунта...'
+                    : language === 'de'
+                    ? 'Konto wird erstellt...'
+                    : language === 'fr'
+                    ? 'Création du compte...'
+                    : 'Creating account...'}
                 </span>
               ) : (
-                language === 'tr' ? 'Hesap Oluştur' : 'Create Account'
+                t?.auth?.register?.button || (language === 'tr' ? 'Hesap Oluştur' : 'Create Account')
               )}
             </button>
           </form>
@@ -256,7 +301,15 @@ export default function RegisterPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-gray-800/50 text-gray-400">
-                {language === 'tr' ? 'veya' : 'or'}
+                {language === 'tr'
+                  ? 'veya'
+                  : language === 'ru'
+                  ? 'или'
+                  : language === 'de'
+                  ? 'oder'
+                  : language === 'fr'
+                  ? 'ou'
+                  : 'or'}
               </span>
             </div>
           </div>
@@ -272,14 +325,22 @@ export default function RegisterPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {language === 'tr' ? 'Google ile Kayıt Ol' : 'Sign up with Google'}
+            {language === 'tr'
+              ? 'Google ile Kayıt Ol'
+              : language === 'ru'
+              ? 'Зарегистрироваться через Google'
+              : language === 'de'
+              ? 'Mit Google registrieren'
+              : language === 'fr'
+              ? "S'inscrire avec Google"
+              : 'Sign up with Google'}
           </button>
 
           {/* Sign In Link */}
           <p className="mt-6 text-center text-gray-400">
-            {language === 'tr' ? 'Zaten hesabın var mı?' : 'Already have an account?'}{' '}
+            {t?.auth?.register?.hasAccount || (language === 'tr' ? 'Zaten hesabın var mı?' : 'Already have an account?')}{' '}
             <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-              {language === 'tr' ? 'Giriş Yap' : 'Sign In'}
+              {t?.auth?.register?.signIn || (language === 'tr' ? 'Giriş Yap' : 'Sign In')}
             </Link>
           </p>
         </div>

@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
+
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
+]
 
 export default function CompetitorAnalysisPage() {
   const [competitorUrl, setCompetitorUrl] = useState('')
@@ -45,10 +53,32 @@ export default function CompetitorAnalysisPage() {
         showToast(data.error, 'error')
       } else {
         setAnalysis(data.analysis)
-        showToast(language === 'en' ? 'Analysis complete!' : 'Analiz tamamlandı!', 'success')
+        showToast(
+          language === 'tr'
+            ? 'Analiz tamamlandı!'
+            : language === 'ru'
+            ? 'Анализ завершён!'
+            : language === 'de'
+            ? 'Analyse abgeschlossen!'
+            : language === 'fr'
+            ? 'Analyse terminée !'
+            : 'Analysis complete!',
+          'success'
+        )
       }
     } catch (err) {
-      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
+      showToast(
+        language === 'tr'
+          ? 'Hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred',
+        'error'
+      )
     }
 
     setLoading(false)
@@ -60,12 +90,31 @@ export default function CompetitorAnalysisPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-red-500 text-white' : 'text-gray-400'}`}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-red-500 text-white' : 'text-gray-400'}`}>TR</button>
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === lang.code ? 'bg-red-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
             <span className="text-2xl">🔍</span>
           </div>

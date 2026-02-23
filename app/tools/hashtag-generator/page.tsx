@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
+
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
+]
 
 export default function HashtagGeneratorPage() {
   const [topic, setTopic] = useState('')
@@ -51,12 +59,31 @@ export default function HashtagGeneratorPage() {
       } else {
         setHashtags(data.hashtags)
         showToast(
-          language === 'en' ? 'Hashtags generated!' : 'Hashtagler oluşturuldu!',
+          language === 'tr'
+            ? 'Hashtagler oluşturuldu!'
+            : language === 'ru'
+            ? 'Хэштеги сгенерированы!'
+            : language === 'de'
+            ? 'Hashtags wurden generiert!'
+            : language === 'fr'
+            ? 'Hashtags générés !'
+            : 'Hashtags generated!',
           'success'
         )
       }
     } catch (err) {
-      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
+      showToast(
+        language === 'tr'
+          ? 'Hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred',
+        'error'
+      )
       console.error('Hashtag generation error:', err)
     }
 
@@ -68,7 +95,15 @@ export default function HashtagGeneratorPage() {
     navigator.clipboard.writeText(text)
     setCopiedCategory(category)
     showToast(
-      language === 'en' ? 'Copied to clipboard!' : 'Panoya kopyalandı!',
+      language === 'tr'
+        ? 'Panoya kopyalandı!'
+        : language === 'ru'
+        ? 'Скопировано в буфер обмена!'
+        : language === 'de'
+        ? 'In die Zwischenablage kopiert!'
+        : language === 'fr'
+        ? 'Copié dans le presse-papiers !'
+        : 'Copied to clipboard!',
       'success'
     )
     setTimeout(() => setCopiedCategory(null), 2000)
@@ -85,7 +120,15 @@ export default function HashtagGeneratorPage() {
     const text = allTags.map(tag => `#${tag}`).join(' ')
     navigator.clipboard.writeText(text)
     showToast(
-      language === 'en' ? 'All hashtags copied!' : 'Tüm hashtagler kopyalandı!',
+      language === 'tr'
+        ? 'Tüm hashtagler kopyalandı!'
+        : language === 'ru'
+        ? 'Все хэштеги скопированы!'
+        : language === 'de'
+        ? 'Alle Hashtags wurden kopiert!'
+        : language === 'fr'
+        ? 'Tous les hashtags ont été copiés !'
+        : 'All hashtags copied!',
       'success'
     )
   }
@@ -113,12 +156,31 @@ export default function HashtagGeneratorPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <span>←</span>
-            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}>EN</button>
-              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}>TR</button>
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === lang.code ? 'bg-blue-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
             <span className="text-2xl">🏷️</span>
           </div>
