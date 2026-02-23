@@ -1,16 +1,14 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
-import { translations } from './translations'
+import { translations, Language } from './translations'
 
-export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
+export type { Language }
 
-type TranslationType = typeof translations.en
-
-type LanguageContextType = {
+interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: TranslationType
+  t: any
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -40,11 +38,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // t'yi language değiştiğinde yeniden hesapla
   const t = useMemo(() => {
-    return (translations[language] || translations.en) as TranslationType
+    const result = translations[language]
+    console.log('Language changed to:', language, 'translations:', result?.nav?.features)
+    return result || translations.en
   }, [language])
 
-  // Hydration hatalarını önle
+  // Hydration için mounted kontrolü
   if (!mounted) {
     return (
       <LanguageContext.Provider value={{ language: 'en', setLanguage, t: translations.en }}>

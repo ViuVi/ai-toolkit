@@ -2,9 +2,132 @@
 
 export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
 
-export const translations: Record<Language, any> = {
+interface TranslationData {
+  common: {
+    loading: string
+    error: string
+    success: string
+    copy: string
+    copied: string
+    generate: string
+    credits: string
+    back: string
+    backToDashboard: string
+    close: string
+  }
+  nav: {
+    features: string
+    pricing: string
+    faq: string
+    login: string
+    signup: string
+    dashboard: string
+    logout: string
+  }
+  hero: {
+    badge: string
+    title: string
+    titleHighlight: string
+    subtitle: string
+    cta: string
+    ctaSecondary: string
+    stats: {
+      users: string
+      tools: string
+      requests: string
+    }
+  }
+  features: {
+    title: string
+    subtitle: string
+    items: Array<{ icon: string; title: string; description: string }>
+  }
+  howItWorks: {
+    title: string
+    subtitle: string
+    steps: Array<{ number: string; title: string; description: string }>
+  }
+  pricing: {
+    title: string
+    subtitle: string
+    monthly: string
+    yearly: string
+    save: string
+    plans: {
+      free: { name: string; price: string; period: string; description: string; features: string[]; cta: string; popular: boolean }
+      starter: { name: string; price: string; period: string; description: string; features: string[]; cta: string; popular: boolean }
+      pro: { name: string; price: string; period: string; description: string; features: string[]; cta: string; popular: boolean }
+    }
+  }
+  faq: {
+    title: string
+    subtitle: string
+    items: Array<{ question: string; answer: string }>
+  }
+  testimonials: {
+    title: string
+    subtitle: string
+    items: Array<{ name: string; role: string; text: string; avatar: string; rating: number }>
+  }
+  footer: {
+    description: string
+    product: string
+    company: string
+    legal: string
+    links: {
+      features: string
+      pricing: string
+      api: string
+      about: string
+      blog: string
+      careers: string
+      privacy: string
+      terms: string
+    }
+    copyright: string
+  }
+  dashboard: {
+    welcome: string
+    credits: string
+    searchTools: string
+    categories: {
+      all: string
+      video: string
+      content: string
+      analysis: string
+      optimization: string
+      helper: string
+    }
+    free: string
+    new: string
+  }
+  auth: {
+    login: {
+      title: string
+      subtitle: string
+      email: string
+      password: string
+      button: string
+      noAccount: string
+      signUp: string
+      forgotPassword: string
+    }
+    register: {
+      title: string
+      subtitle: string
+      name: string
+      email: string
+      password: string
+      button: string
+      hasAccount: string
+      signIn: string
+      terms: string
+    }
+  }
+}
+
+export const translations: Record<Language, TranslationData> = {
   en: {
-    // Common
     common: {
       loading: 'Loading...',
       error: 'Something went wrong',
@@ -17,8 +140,6 @@ export const translations: Record<Language, any> = {
       backToDashboard: '← Back to Dashboard',
       close: 'Close'
     },
-    
-    // Navigation
     nav: {
       features: 'Features',
       pricing: 'Pricing',
@@ -28,8 +149,6 @@ export const translations: Record<Language, any> = {
       dashboard: 'Dashboard',
       logout: 'Logout'
     },
-    
-    // Hero Section
     hero: {
       badge: '🚀 AI-Powered Productivity',
       title: 'Clear Your Mind.',
@@ -37,14 +156,8 @@ export const translations: Record<Language, any> = {
       subtitle: 'Stop wasting hours on repetitive tasks. Our AI tools help you write better, decide faster, and communicate clearer.',
       cta: 'Start Free',
       ctaSecondary: 'See How It Works',
-      stats: {
-        users: '10K+',
-        tools: '17+',
-        requests: '500K+'
-      }
+      stats: { users: '10K+', tools: '17+', requests: '500K+' }
     },
-    
-    // Features Section
     features: {
       title: 'Tools That Actually Matter',
       subtitle: 'Not just another AI tool. Real solutions for real problems.',
@@ -57,8 +170,6 @@ export const translations: Record<Language, any> = {
         { icon: '🧘', title: 'Clear Your Thoughts', description: 'Organize chaotic thoughts into structured, actionable clarity.' }
       ]
     },
-    
-    // How It Works
     howItWorks: {
       title: 'How It Works',
       subtitle: 'Get results in 3 simple steps',
@@ -68,8 +179,6 @@ export const translations: Record<Language, any> = {
         { number: '3', title: 'Get Instant Results', description: 'Receive polished output ready to use immediately.' }
       ]
     },
-    
-    // Pricing
     pricing: {
       title: 'Simple, Honest Pricing',
       subtitle: 'Start free. Upgrade when you need more.',
@@ -82,8 +191,6 @@ export const translations: Record<Language, any> = {
         pro: { name: 'Pro', price: '$4.99', period: '/month', description: 'For professionals', features: ['1000 credits/month', 'All AI tools', 'Priority support', 'No ads'], cta: 'Upgrade to Pro', popular: true }
       }
     },
-    
-    // FAQ
     faq: {
       title: 'Frequently Asked Questions',
       subtitle: 'Everything you need to know',
@@ -94,8 +201,6 @@ export const translations: Record<Language, any> = {
         { question: 'How long is the free plan available?', answer: 'The free plan is available forever. You get 50 credits every month to use our tools.' }
       ]
     },
-    
-    // Testimonials
     testimonials: {
       title: 'What Our Users Say',
       subtitle: 'Thousands of content creators trust us',
@@ -105,8 +210,6 @@ export const translations: Record<Language, any> = {
         { name: 'Emma L.', role: 'YouTuber', text: 'Perfect for video scripts. No more spending hours thinking about what to say.', avatar: '👩‍🎤', rating: 5 }
       ]
     },
-    
-    // Footer
     footer: {
       description: 'AI tools that actually make your life easier.',
       product: 'Product',
@@ -115,8 +218,6 @@ export const translations: Record<Language, any> = {
       links: { features: 'Features', pricing: 'Pricing', api: 'API', about: 'About', blog: 'Blog', careers: 'Careers', privacy: 'Privacy Policy', terms: 'Terms of Service' },
       copyright: '© 2024 Media Tool Kit. All rights reserved.'
     },
-    
-    // Dashboard
     dashboard: {
       welcome: 'Welcome back',
       credits: 'Credits',
@@ -125,14 +226,12 @@ export const translations: Record<Language, any> = {
       free: 'FREE',
       new: 'NEW'
     },
-    
-    // Auth
     auth: {
       login: { title: 'Welcome Back', subtitle: 'Sign in to continue', email: 'Email', password: 'Password', button: 'Sign In', noAccount: 'No account yet?', signUp: 'Create one', forgotPassword: 'Forgot password?' },
       register: { title: 'Start Free Today', subtitle: 'No credit card required', name: 'Full Name', email: 'Email', password: 'Password', button: 'Create Account', hasAccount: 'Already have an account?', signIn: 'Sign in', terms: 'By signing up, you agree to our Terms of Service and Privacy Policy.' }
     }
   },
-  
+
   tr: {
     common: { loading: 'Yükleniyor...', error: 'Bir hata oluştu', success: 'Başarılı!', copy: 'Kopyala', copied: 'Kopyalandı!', generate: 'Oluştur', credits: 'kredi', back: 'Geri', backToDashboard: '← Panele Dön', close: 'Kapat' },
     nav: { features: 'Özellikler', pricing: 'Fiyatlar', faq: 'SSS', login: 'Giriş', signup: 'Kayıt Ol', dashboard: 'Panel', logout: 'Çıkış' },
@@ -170,7 +269,7 @@ export const translations: Record<Language, any> = {
     dashboard: { welcome: 'Hoş geldin', credits: 'Kredi', searchTools: 'Araç ara...', categories: { all: 'Tümü', video: 'Video', content: 'İçerik', analysis: 'Analiz', optimization: 'Optimizasyon', helper: 'Yardımcı' }, free: 'ÜCRETSİZ', new: 'YENİ' },
     auth: { login: { title: 'Tekrar Hoş Geldin', subtitle: 'Devam etmek için giriş yap', email: 'E-posta', password: 'Şifre', button: 'Giriş Yap', noAccount: 'Hesabın yok mu?', signUp: 'Oluştur', forgotPassword: 'Şifreni mi unuttun?' }, register: { title: 'Bugün Ücretsiz Başla', subtitle: 'Kredi kartı gerekmez', name: 'Ad Soyad', email: 'E-posta', password: 'Şifre', button: 'Hesap Oluştur', hasAccount: 'Zaten hesabın var mı?', signIn: 'Giriş yap', terms: 'Kayıt olarak Kullanım Şartlarını kabul edersiniz.' } }
   },
-  
+
   ru: {
     common: { loading: 'Загрузка...', error: 'Произошла ошибка', success: 'Успешно!', copy: 'Копировать', copied: 'Скопировано!', generate: 'Создать', credits: 'кредитов', back: 'Назад', backToDashboard: '← Назад к панели', close: 'Закрыть' },
     nav: { features: 'Функции', pricing: 'Цены', faq: 'FAQ', login: 'Вход', signup: 'Регистрация', dashboard: 'Панель', logout: 'Выход' },
@@ -208,7 +307,7 @@ export const translations: Record<Language, any> = {
     dashboard: { welcome: 'С возвращением', credits: 'Кредиты', searchTools: 'Поиск...', categories: { all: 'Все', video: 'Видео', content: 'Контент', analysis: 'Анализ', optimization: 'Оптимизация', helper: 'Помощник' }, free: 'БЕСПЛАТНО', new: 'НОВОЕ' },
     auth: { login: { title: 'С возвращением', subtitle: 'Войдите', email: 'Email', password: 'Пароль', button: 'Войти', noAccount: 'Нет аккаунта?', signUp: 'Создать', forgotPassword: 'Забыли пароль?' }, register: { title: 'Начните бесплатно', subtitle: 'Без карты', name: 'Имя', email: 'Email', password: 'Пароль', button: 'Создать', hasAccount: 'Есть аккаунт?', signIn: 'Войти', terms: 'Регистрируясь, вы соглашаетесь с Условиями.' } }
   },
-  
+
   de: {
     common: { loading: 'Laden...', error: 'Ein Fehler ist aufgetreten', success: 'Erfolgreich!', copy: 'Kopieren', copied: 'Kopiert!', generate: 'Generieren', credits: 'Credits', back: 'Zurück', backToDashboard: '← Zurück zum Dashboard', close: 'Schließen' },
     nav: { features: 'Funktionen', pricing: 'Preise', faq: 'FAQ', login: 'Anmelden', signup: 'Registrieren', dashboard: 'Dashboard', logout: 'Abmelden' },
@@ -246,7 +345,7 @@ export const translations: Record<Language, any> = {
     dashboard: { welcome: 'Willkommen', credits: 'Credits', searchTools: 'Suchen...', categories: { all: 'Alle', video: 'Video', content: 'Inhalt', analysis: 'Analyse', optimization: 'Optimierung', helper: 'Helfer' }, free: 'KOSTENLOS', new: 'NEU' },
     auth: { login: { title: 'Willkommen zurück', subtitle: 'Anmelden', email: 'E-Mail', password: 'Passwort', button: 'Anmelden', noAccount: 'Kein Konto?', signUp: 'Erstellen', forgotPassword: 'Passwort vergessen?' }, register: { title: 'Kostenlos starten', subtitle: 'Keine Karte nötig', name: 'Name', email: 'E-Mail', password: 'Passwort', button: 'Konto erstellen', hasAccount: 'Bereits ein Konto?', signIn: 'Anmelden', terms: 'Mit der Registrierung stimmen Sie den Nutzungsbedingungen zu.' } }
   },
-  
+
   fr: {
     common: { loading: 'Chargement...', error: 'Une erreur est survenue', success: 'Succès!', copy: 'Copier', copied: 'Copié!', generate: 'Générer', credits: 'crédits', back: 'Retour', backToDashboard: '← Retour au tableau de bord', close: 'Fermer' },
     nav: { features: 'Fonctionnalités', pricing: 'Tarifs', faq: 'FAQ', login: 'Connexion', signup: 'Inscription', dashboard: 'Tableau de bord', logout: 'Déconnexion' },
