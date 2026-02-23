@@ -9,95 +9,46 @@ export default function Footer() {
   return (
     <footer className="bg-gray-800/50 border-t border-gray-800 py-16 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          {/* Brand */}
-          <div>
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
+          <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">🧠</span>
-              <span className="text-xl font-bold text-white">AI Toolkit</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <span className="text-xl font-bold text-white">M</span>
+              </div>
+              <span className="text-xl font-bold text-white">Media Tool Kit</span>
             </Link>
-            <p className="text-gray-400">
-              {t.footer.description}
-            </p>
-            {/* Social Links */}
-            <div className="flex gap-4 mt-6">
-              <a href="#" className="text-gray-400 hover:text-white transition text-xl">
-                𝕏
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition text-xl">
-                in
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition text-xl">
-                📷
-              </a>
-            </div>
+            <p className="text-gray-400">{t.footer?.description || 'AI tools for content creators'}</p>
           </div>
 
-          {/* Product */}
           <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer.product}</h4>
+            <h4 className="text-white font-semibold mb-4">{t.footer?.product || 'Product'}</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#features" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.features}
-                </a>
-              </li>
-              <li>
-                <a href="#pricing" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.pricing}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.api}
-                </a>
-              </li>
+              <li><a href="#features" className="text-gray-400 hover:text-white transition">{t.footer?.links?.features || 'Features'}</a></li>
+              <li><a href="#pricing" className="text-gray-400 hover:text-white transition">{t.footer?.links?.pricing || 'Pricing'}</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.api || 'API'}</a></li>
             </ul>
           </div>
 
-          {/* Company */}
           <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer.company}</h4>
+            <h4 className="text-white font-semibold mb-4">{t.footer?.company || 'Company'}</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.about}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.blog}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.careers}
-                </a>
-              </li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.about || 'About'}</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.blog || 'Blog'}</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.careers || 'Careers'}</a></li>
             </ul>
           </div>
 
-          {/* Legal */}
           <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer.legal}</h4>
+            <h4 className="text-white font-semibold mb-4">{t.footer?.legal || 'Legal'}</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.privacy}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
-                  {t.footer.links.terms}
-                </a>
-              </li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.privacy || 'Privacy'}</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.terms || 'Terms'}</a></li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="border-t border-gray-700 pt-8 text-center">
-          <p className="text-gray-500">{t.footer.copyright}</p>
+          <p className="text-gray-500">{t.footer?.copyright || '© 2024 Media Tool Kit. All rights reserved.'}</p>
         </div>
       </div>
     </footer>

@@ -5,10 +5,12 @@ import { translations } from './translations'
 
 export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
 
+type TranslationType = typeof translations.en
+
 type LanguageContextType = {
   language: Language
   setLanguage: (lang: Language) => void
-  t: typeof translations.en
+  t: TranslationType
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -24,18 +26,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (savedLang && ['en', 'tr', 'ru', 'de', 'fr'].includes(savedLang)) {
         setLanguageState(savedLang)
       }
-    } catch (e) {}
+    } catch (e) {
+      // localStorage erişim hatası
+    }
   }, [])
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
     try {
       localStorage.setItem('language', lang)
-    } catch (e) {}
+    } catch (e) {
+      // localStorage erişim hatası
+    }
   }
 
-  const t = useMemo(() => translations[language] || translations.en, [language])
+  const t = useMemo(() => {
+    return (translations[language] || translations.en) as TranslationType
+  }, [language])
 
+  // Hydration hatalarını önle
   if (!mounted) {
     return (
       <LanguageContext.Provider value={{ language: 'en', setLanguage, t: translations.en }}>
