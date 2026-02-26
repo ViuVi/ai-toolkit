@@ -23,7 +23,33 @@ const texts: Record<Language, any> = {
     toolsSection: { title: '16 Powerful Tools', subtitle: 'One Platform', desc: "From content creation to analytics, we've got you covered", freeTitle: 'Free Tools', freeDesc: 'No credit card required', premiumTitle: 'Premium Tools', premiumDesc: 'AI-powered features', freeItems: ['Bio Generator', 'QR Code Generator', 'Hashtag Generator'], premiumItems: ['Subtitle Generator', 'Video Script Writer', 'Competitor Analysis', 'Trend Detector', 'And more...'] },
     pricing: { title: 'Simple, Transparent', highlight: 'Pricing', subtitle: 'Start free, upgrade when you need more', free: { name: 'Free', price: '$0', period: '/month', credits: '50 credits/month', features: ['Access to free tools', 'Basic support', 'Watch ads for credits'], cta: 'Start Free' }, pro: { name: 'Pro', price: '$4.99', period: '/month', credits: '1000 credits/month', badge: 'RECOMMENDED', features: ['All AI tools', 'Priority support', 'No ads', 'Unlimited generations'], cta: 'Upgrade to Pro' } },
     cta: { title: 'Ready to Go Viral?', subtitle: 'Join thousands of creators using Media Tool Kit', button: 'Start Free Trial - 50 Credits Free' },
-    footer: { desc: 'AI-powered content creation tools for modern creators.', product: 'Product', info: 'Info', about: 'About', contact: 'Contact', privacy: 'Privacy', copyright: '© 2025 Media Tool Kit. All rights reserved.' }
+    footer: { desc: 'AI-powered content creation tools for modern creators.', product: 'Product', info: 'Info', about: 'About', contact: 'Contact', privacy: 'Privacy', copyright: '© 2025 Media Tool Kit. All rights reserved.' },
+    modals: {
+      about: {
+        title: 'About Us',
+        p1: 'Media Tool Kit is a personal project I developed to make content creators\' work easier. I created this platform to make social media content creation easier, faster, and more effective for everyone.',
+        p2: 'With 16+ different AI-powered tools, I cover all your needs from hook generation to hashtag optimization, video script writing to competitor analysis - all in one platform.',
+        stats: { tools: 'AI Tools', access: 'Access' },
+        note: '💡 This project is continuously being developed. I\'m always open to your suggestions and feedback!'
+      },
+      contact: {
+        title: 'Contact',
+        subtitle: 'Feel free to reach out to me for questions, suggestions, or feedback.',
+        email: 'Email',
+        note: '💡 Your feedback is valuable for improving this project. Thank you!'
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        sections: [
+          { title: '1. Data Collection', text: 'Only necessary data is collected to provide services: email address, usage statistics, and created content. Your data is never shared with or sold to third parties.' },
+          { title: '2. Data Security', text: 'Your data is protected with SSL encryption. Your data stored on secure servers is maintained with the highest security measures.' },
+          { title: '3. Cookies', text: 'Cookies are used to provide a better user experience. You can manage cookies through your browser settings.' },
+          { title: '4. Your Rights', text: 'Under GDPR, you have the right to access, correct, and delete your data. Contact me to exercise these rights.' },
+          { title: '5. Content Usage', text: 'Content created with AI tools belongs entirely to you. You can freely use this content for commercial or personal purposes.' }
+        ],
+        updated: 'Last updated: January 2025. For questions, email ahmetemresozer@gmail.com'
+      }
+    }
   },
   tr: {
     nav: { features: 'Özellikler', tools: 'Araçlar', pricing: 'Fiyatlandırma', dashboard: 'Panel', signIn: 'Giriş Yap', getStarted: 'Başla' },
@@ -40,7 +66,33 @@ const texts: Record<Language, any> = {
     toolsSection: { title: '16 Güçlü Araç', subtitle: 'Tek Platform', desc: 'İçerik üretiminden analize, her şeyi kapsıyoruz', freeTitle: 'Ücretsiz Araçlar', freeDesc: 'Kredi kartı gerekmez', premiumTitle: 'Premium Araçlar', premiumDesc: 'Yapay zeka destekli', freeItems: ['Bio Oluşturucu', 'QR Kod Oluşturucu', 'Hashtag Üretici'], premiumItems: ['Alt Yazı Ekleyici', 'Video Script Yazıcı', 'Rakip Analizi', 'Trend Dedektörü', 've daha fazlası...'] },
     pricing: { title: 'Basit, Şeffaf', highlight: 'Fiyatlandırma', subtitle: 'Ücretsiz başla, ihtiyacın olduğunda yükselt', free: { name: 'Ücretsiz', price: '$0', period: '/ay', credits: '50 kredi/ay', features: ['Ücretsiz araçlara erişim', 'Temel destek', 'Reklam izle kredi kazan'], cta: 'Ücretsiz Başla' }, pro: { name: 'Pro', price: '$4.99', period: '/ay', credits: '1000 kredi/ay', badge: 'ÖNERİLEN', features: ['Tüm AI araçlarına erişim', 'Öncelikli destek', 'Reklamsız kullanım', 'Sınırsız üretim'], cta: "Pro'ya Geç" } },
     cta: { title: 'Viral Olmaya Hazır mısın?', subtitle: 'Media Tool Kit kullanan binlerce içerik üreticiye katıl', button: 'Ücretsiz Dene - 50 Kredi Bedava' },
-    footer: { desc: 'Modern içerik üreticiler için yapay zeka destekli araçlar.', product: 'Ürün', info: 'Bilgi', about: 'Hakkımızda', contact: 'İletişim', privacy: 'Gizlilik', copyright: '© 2025 Media Tool Kit. Tüm hakları saklıdır.' }
+    footer: { desc: 'Modern içerik üreticiler için yapay zeka destekli araçlar.', product: 'Ürün', info: 'Bilgi', about: 'Hakkımızda', contact: 'İletişim', privacy: 'Gizlilik', copyright: '© 2025 Media Tool Kit. Tüm hakları saklıdır.' },
+    modals: {
+      about: {
+        title: 'Hakkımızda',
+        p1: 'Media Tool Kit, içerik üreticilerinin işini kolaylaştırmak için geliştirdiğim bireysel bir projedir. Sosyal medya içerik üretimini herkes için daha kolay, hızlı ve etkili hale getirmek amacıyla bu platformu oluşturdum.',
+        p2: '16+ farklı AI destekli araçla hook oluşturmadan hashtag optimizasyonuna, video script yazımından rakip analizine kadar tüm ihtiyaçlarınızı tek bir platformda karşılıyorum.',
+        stats: { tools: 'AI Araç', access: 'Erişim' },
+        note: '💡 Bu proje sürekli geliştirilmektedir. Önerileriniz ve geri bildirimleriniz için her zaman açığım!'
+      },
+      contact: {
+        title: 'İletişim',
+        subtitle: 'Sorularınız, önerileriniz veya geri bildirimleriniz için benimle iletişime geçebilirsiniz.',
+        email: 'E-posta',
+        note: '💡 Geri bildirimleriniz projenin gelişmesi için çok değerli. Teşekkürler!'
+      },
+      privacy: {
+        title: 'Gizlilik Politikası',
+        sections: [
+          { title: '1. Veri Toplama', text: 'Hizmetleri sunmak için yalnızca gerekli veriler toplanmaktadır: e-posta adresi, kullanım istatistikleri ve oluşturulan içerikler. Verileriniz asla üçüncü taraflarla paylaşılmaz veya satılmaz.' },
+          { title: '2. Veri Güvenliği', text: 'Verileriniz SSL şifrelemesi ile korunmaktadır. Güvenli sunucularda saklanan verileriniz en üst düzey güvenlik önlemleriyle muhafaza edilir.' },
+          { title: '3. Çerezler', text: 'Daha iyi bir kullanıcı deneyimi sunmak için çerezler kullanılmaktadır. Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz.' },
+          { title: '4. Haklarınız', text: 'KVKK kapsamında verilerinize erişim, düzeltme ve silme hakkına sahipsiniz. Bu haklarınızı kullanmak için iletişim adresinden ulaşabilirsiniz.' },
+          { title: '5. İçerik Kullanımı', text: 'AI araçlarıyla oluşturduğunuz içerikler tamamen size aittir. Bu içerikleri ticari veya kişisel amaçlarla özgürce kullanabilirsiniz.' }
+        ],
+        updated: 'Son güncelleme: Ocak 2025. Sorularınız için ahmetemresozer@gmail.com adresine yazabilirsiniz.'
+      }
+    }
   },
   ru: {
     nav: { features: 'Функции', tools: 'Инструменты', pricing: 'Цены', dashboard: 'Панель', signIn: 'Войти', getStarted: 'Начать' },
@@ -57,7 +109,18 @@ const texts: Record<Language, any> = {
     toolsSection: { title: '16 мощных инструментов', subtitle: 'Одна платформа', desc: 'От создания контента до аналитики', freeTitle: 'Бесплатные', freeDesc: 'Без карты', premiumTitle: 'Премиум', premiumDesc: 'AI функции', freeItems: ['Генератор био', 'QR коды', 'Хэштеги'], premiumItems: ['Субтитры', 'Сценарии', 'Анализ конкурентов', 'Тренды', 'И ещё...'] },
     pricing: { title: 'Простые, прозрачные', highlight: 'цены', subtitle: 'Начните бесплатно', free: { name: 'Бесплатно', price: '$0', period: '/мес', credits: '50 кредитов/мес', features: ['Бесплатные инструменты', 'Базовая поддержка', 'Реклама за кредиты'], cta: 'Начать бесплатно' }, pro: { name: 'Pro', price: '$4.99', period: '/мес', credits: '1000 кредитов/мес', badge: 'РЕКОМЕНДУЕТСЯ', features: ['Все AI инструменты', 'Приоритетная поддержка', 'Без рекламы', 'Безлимит'], cta: 'Перейти на Pro' } },
     cta: { title: 'Готовы стать вирусными?', subtitle: 'Присоединяйтесь к тысячам создателей', button: 'Начать бесплатно - 50 кредитов' },
-    footer: { desc: 'AI инструменты для создателей контента.', product: 'Продукт', info: 'Информация', about: 'О нас', contact: 'Контакты', privacy: 'Конфиденциальность', copyright: '© 2025 Media Tool Kit.' }
+    footer: { desc: 'AI инструменты для создателей контента.', product: 'Продукт', info: 'Информация', about: 'О нас', contact: 'Контакты', privacy: 'Конфиденциальность', copyright: '© 2025 Media Tool Kit.' },
+    modals: {
+      about: { title: 'О нас', p1: 'Media Tool Kit - персональный проект для упрощения работы создателей контента.', p2: '16+ AI инструментов для всех ваших потребностей.', stats: { tools: 'AI инструментов', access: 'Доступ' }, note: '💡 Проект постоянно развивается. Буду рад вашим отзывам!' },
+      contact: { title: 'Контакты', subtitle: 'Свяжитесь со мной для вопросов и предложений.', email: 'Email', note: '💡 Ваши отзывы ценны для улучшения проекта. Спасибо!' },
+      privacy: { title: 'Политика конфиденциальности', sections: [
+        { title: '1. Сбор данных', text: 'Собираются только необходимые данные: email, статистика использования.' },
+        { title: '2. Безопасность', text: 'Данные защищены SSL шифрованием.' },
+        { title: '3. Cookies', text: 'Используются для улучшения опыта.' },
+        { title: '4. Ваши права', text: 'Вы можете запросить доступ, исправление или удаление данных.' },
+        { title: '5. Контент', text: 'Созданный контент принадлежит вам.' }
+      ], updated: 'Обновлено: Январь 2025.' }
+    }
   },
   de: {
     nav: { features: 'Funktionen', tools: 'Tools', pricing: 'Preise', dashboard: 'Dashboard', signIn: 'Anmelden', getStarted: 'Starten' },
@@ -72,9 +135,20 @@ const texts: Record<Language, any> = {
       { icon: '🗓️', title: 'Planung', desc: 'Content-Kalender' }
     ]},
     toolsSection: { title: '16 leistungsstarke Tools', subtitle: 'Eine Plattform', desc: 'Von Content-Erstellung bis Analytik', freeTitle: 'Kostenlose Tools', freeDesc: 'Keine Karte nötig', premiumTitle: 'Premium Tools', premiumDesc: 'KI-Funktionen', freeItems: ['Bio-Generator', 'QR-Codes', 'Hashtags'], premiumItems: ['Untertitel', 'Video-Skripte', 'Wettbewerbsanalyse', 'Trends', 'Und mehr...'] },
-    pricing: { title: 'Einfache, transparente', highlight: 'Preise', subtitle: 'Kostenlos starten', free: { name: 'Kostenlos', price: '$0', period: '/Monat', credits: '50 Credits/Monat', features: ['Kostenlose Tools', 'Basis-Support', 'Werbung für Credits'], cta: 'Kostenlos starten' }, pro: { name: 'Pro', price: '$4.99', period: '/Monat', credits: '1000 Credits/Monat', badge: 'EMPFOHLEN', features: ['Alle AI-Tools', 'Prioritäts-Support', 'Keine Werbung', 'Unbegrenzt'], cta: 'Auf Pro upgraden' } },
+    pricing: { title: 'Einfache, transparente', highlight: 'Preise', subtitle: 'Kostenlos starten', free: { name: 'Kostenlos', price: '$0', period: '/Mo', credits: '50 Credits/Mo', features: ['Kostenlose Tools', 'Basis-Support', 'Werbung für Credits'], cta: 'Kostenlos starten' }, pro: { name: 'Pro', price: '$4.99', period: '/Mo', credits: '1000 Credits/Mo', badge: 'EMPFOHLEN', features: ['Alle AI-Tools', 'Prioritäts-Support', 'Keine Werbung', 'Unbegrenzt'], cta: 'Auf Pro upgraden' } },
     cta: { title: 'Bereit viral zu gehen?', subtitle: 'Schließen Sie sich tausenden Content-Erstellern an', button: 'Kostenlos starten - 50 Credits' },
-    footer: { desc: 'KI-Tools für Content-Ersteller.', product: 'Produkt', info: 'Info', about: 'Über uns', contact: 'Kontakt', privacy: 'Datenschutz', copyright: '© 2025 Media Tool Kit.' }
+    footer: { desc: 'KI-Tools für Content-Ersteller.', product: 'Produkt', info: 'Info', about: 'Über uns', contact: 'Kontakt', privacy: 'Datenschutz', copyright: '© 2025 Media Tool Kit.' },
+    modals: {
+      about: { title: 'Über uns', p1: 'Media Tool Kit ist ein persönliches Projekt zur Vereinfachung der Content-Erstellung.', p2: '16+ KI-Tools für alle Ihre Bedürfnisse.', stats: { tools: 'KI-Tools', access: 'Zugang' }, note: '💡 Das Projekt wird ständig weiterentwickelt. Feedback willkommen!' },
+      contact: { title: 'Kontakt', subtitle: 'Kontaktieren Sie mich für Fragen und Vorschläge.', email: 'Email', note: '💡 Ihr Feedback ist wertvoll. Danke!' },
+      privacy: { title: 'Datenschutz', sections: [
+        { title: '1. Datenerfassung', text: 'Nur notwendige Daten werden erfasst: Email, Nutzungsstatistiken.' },
+        { title: '2. Sicherheit', text: 'Daten sind SSL-verschlüsselt.' },
+        { title: '3. Cookies', text: 'Werden für bessere Nutzererfahrung verwendet.' },
+        { title: '4. Ihre Rechte', text: 'Sie können Zugang, Korrektur oder Löschung anfordern.' },
+        { title: '5. Inhalte', text: 'Erstellte Inhalte gehören Ihnen.' }
+      ], updated: 'Aktualisiert: Januar 2025.' }
+    }
   },
   fr: {
     nav: { features: 'Fonctionnalités', tools: 'Outils', pricing: 'Tarifs', dashboard: 'Tableau de bord', signIn: 'Connexion', getStarted: 'Commencer' },
@@ -91,7 +165,18 @@ const texts: Record<Language, any> = {
     toolsSection: { title: '16 outils puissants', subtitle: 'Une plateforme', desc: 'De la création à l\'analytique', freeTitle: 'Outils gratuits', freeDesc: 'Sans carte', premiumTitle: 'Outils Premium', premiumDesc: 'Fonctionnalités IA', freeItems: ['Générateur de bio', 'QR codes', 'Hashtags'], premiumItems: ['Sous-titres', 'Scripts vidéo', 'Analyse concurrentielle', 'Tendances', 'Et plus...'] },
     pricing: { title: 'Tarifs simples,', highlight: 'transparents', subtitle: 'Commencez gratuitement', free: { name: 'Gratuit', price: '$0', period: '/mois', credits: '50 crédits/mois', features: ['Outils gratuits', 'Support basique', 'Pubs pour crédits'], cta: 'Commencer gratuitement' }, pro: { name: 'Pro', price: '$4.99', period: '/mois', credits: '1000 crédits/mois', badge: 'RECOMMANDÉ', features: ['Tous les outils IA', 'Support prioritaire', 'Sans pub', 'Illimité'], cta: 'Passer à Pro' } },
     cta: { title: 'Prêt à devenir viral?', subtitle: 'Rejoignez des milliers de créateurs', button: 'Essai gratuit - 50 crédits' },
-    footer: { desc: 'Outils IA pour créateurs de contenu.', product: 'Produit', info: 'Info', about: 'À propos', contact: 'Contact', privacy: 'Confidentialité', copyright: '© 2025 Media Tool Kit.' }
+    footer: { desc: 'Outils IA pour créateurs de contenu.', product: 'Produit', info: 'Info', about: 'À propos', contact: 'Contact', privacy: 'Confidentialité', copyright: '© 2025 Media Tool Kit.' },
+    modals: {
+      about: { title: 'À propos', p1: 'Media Tool Kit est un projet personnel pour simplifier la création de contenu.', p2: '16+ outils IA pour tous vos besoins.', stats: { tools: 'Outils IA', access: 'Accès' }, note: '💡 Le projet évolue constamment. Vos retours sont les bienvenus!' },
+      contact: { title: 'Contact', subtitle: 'Contactez-moi pour vos questions et suggestions.', email: 'Email', note: '💡 Vos retours sont précieux. Merci!' },
+      privacy: { title: 'Confidentialité', sections: [
+        { title: '1. Collecte de données', text: 'Seules les données nécessaires sont collectées: email, statistiques.' },
+        { title: '2. Sécurité', text: 'Les données sont protégées par SSL.' },
+        { title: '3. Cookies', text: 'Utilisés pour améliorer l\'expérience.' },
+        { title: '4. Vos droits', text: 'Vous pouvez demander l\'accès, la correction ou la suppression.' },
+        { title: '5. Contenu', text: 'Le contenu créé vous appartient.' }
+      ], updated: 'Mis à jour: Janvier 2025.' }
+    }
   }
 }
 
@@ -144,8 +229,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <div className="relative group">
                 <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800/80 rounded-lg text-sm font-medium text-gray-300 border border-gray-700">
-                  <span>🌐</span>
-                  <span>{language.toUpperCase()}</span>
+                  <span>🌐</span><span>{language.toUpperCase()}</span>
                 </button>
                 <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                   {langs.map((l) => (
@@ -316,16 +400,92 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Modal */}
+      {/* MODALS */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setActiveModal(null)} />
-          <div className="relative bg-gray-800 rounded-2xl border border-gray-700 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl p-8">
-            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 transition">✕</button>
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4">{activeModal === 'about' ? t.footer.about : activeModal === 'contact' ? t.footer.contact : t.footer.privacy}</h2>
-              <p className="text-gray-400">Media Tool Kit - AI-powered content creation tools.</p>
-            </div>
+          <div className="relative bg-gray-800 rounded-2xl border border-gray-700 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 transition z-10">✕</button>
+            
+            {/* About Modal */}
+            {activeModal === 'about' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center"><span className="text-2xl">🚀</span></div>
+                  <h2 className="text-2xl font-bold">{t.modals.about.title}</h2>
+                </div>
+                <div className="space-y-4 text-gray-300">
+                  <p>{t.modals.about.p1}</p>
+                  <p>{t.modals.about.p2}</p>
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-gray-700/50 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-purple-400">16+</div>
+                      <div className="text-sm text-gray-400">{t.modals.about.stats.tools}</div>
+                    </div>
+                    <div className="bg-gray-700/50 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-pink-400">7/24</div>
+                      <div className="text-sm text-gray-400">{t.modals.about.stats.access}</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+                    <p className="text-sm">{t.modals.about.note}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Contact Modal */}
+            {activeModal === 'contact' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center"><span className="text-2xl">📬</span></div>
+                  <h2 className="text-2xl font-bold">{t.modals.contact.title}</h2>
+                </div>
+                <div className="space-y-6">
+                  <p className="text-gray-300">{t.modals.contact.subtitle}</p>
+                  <div className="space-y-4">
+                    <a href="mailto:ahmetemresozer@gmail.com" className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-xl hover:bg-gray-700 transition">
+                      <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">📧</div>
+                      <div>
+                        <div className="text-sm text-gray-400">{t.modals.contact.email}</div>
+                        <div className="font-medium">ahmetemresozer@gmail.com</div>
+                      </div>
+                    </a>
+                    <a href="https://instagram.com/emreesozeer" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-xl hover:bg-gray-700 transition">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center text-2xl">📸</div>
+                      <div>
+                        <div className="text-sm text-gray-400">Instagram</div>
+                        <div className="font-medium">@emreesozeer</div>
+                      </div>
+                    </a>
+                  </div>
+                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+                    <p className="text-sm text-gray-300">{t.modals.contact.note}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Privacy Modal */}
+            {activeModal === 'privacy' && (
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center"><span className="text-2xl">🔒</span></div>
+                  <h2 className="text-2xl font-bold">{t.modals.privacy.title}</h2>
+                </div>
+                <div className="space-y-6 text-gray-300 text-sm">
+                  {t.modals.privacy.sections.map((section: any, i: number) => (
+                    <div key={i}>
+                      <h3 className="font-bold text-white mb-2">{section.title}</h3>
+                      <p>{section.text}</p>
+                    </div>
+                  ))}
+                  <div className="mt-6 p-4 bg-gray-700/50 rounded-xl">
+                    <p className="text-xs text-gray-400">{t.modals.privacy.updated}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
