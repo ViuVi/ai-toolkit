@@ -1,24 +1,30 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
-import { toolPage, toolNames } from '@/lib/translations'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
-const langs: { code: Language; flag: string }[] = [
-  { code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }
+const uiLanguages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
 ]
 
-export default function ToolPage() {
-  const [input, setInput] = useState('')
-  const [result, setResult] = useState<any>(null)
+export default function EngagementPredictorPage() {
+  const [caption, setCaption] = useState('')
+  const [hashtags, setHashtags] = useState('')
+  const [postTime, setPostTime] = useState('12:00')
+  const [platform, setPlatform] = useState('instagram')
+  const [contentType, setContentType] = useState('photo')
+  const [prediction, setPrediction] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
-  const tp = toolPage[language]
-  const title = toolNames[language].engagementPredictor
 
   useEffect(() => {
     async function getUser() {
@@ -28,53 +34,195 @@ export default function ToolPage() {
     getUser()
   }, [])
 
-  const handleGenerate = async () => {
-    if (!input.trim()) { showToast(tp.required, 'warning'); return }
-    setLoading(true); setResult(null)
+  const handlePredict = async () => {
+    if (!caption.trim()) {
+      showToast(
+        language === 'tr'
+          ? 'Lütfen bir caption girin'
+          : language === 'ru'
+          ? 'Пожалуйста, введите подпись'
+          : language === 'de'
+          ? 'Bitte geben Sie eine Bildunterschrift ein'
+          : language === 'fr'
+          ? 'Veuillez entrer une légende'
+          : 'Please enter a caption',
+        'warning'
+      )
+      return
+    }
+
+    setLoading(true)
+    setPrediction(null)
+
     try {
-      const res = await fetch('/api/engagement-predictor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input, userId, language }) })
-      const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setResult(data); showToast(tp.success, 'success') }
-    } catch { showToast(tp.error, 'error') }
+      const response = await fetch('/api/engagement-predictor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caption, hashtags, postTime, platform, contentType, userId, language }),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        showToast(data.error, 'error')
+      } else {
+        setPrediction(data.prediction)
+        showToast(
+          language === 'tr'
+            ? 'Tahmin tamamlandı!'
+            : language === 'ru'
+            ? 'Прогноз завершён!'
+            : language === 'de'
+            ? 'Vorhersage abgeschlossen!'
+            : language === 'fr'
+            ? 'Prédiction terminée !'
+            : 'Prediction complete!',
+          'success'
+        )
+      }
+    } catch (err) {
+      showToast(
+        language === 'tr'
+          ? 'Hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred',
+        'error'
+      )
+    }
+
     setLoading(false)
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{tp.back}</Link>
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
+            <span>←</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
+          </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2 py-1 rounded text-xs transition ${language === l.code ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{l.flag}</button>))}
+              {uiLanguages.map((langOpt) => (
+                <button
+                  key={langOpt.code}
+                  onClick={() => setLanguage(langOpt.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === langOpt.code ? 'bg-green-500 text-white' : 'text-gray-400'
+                  }`}
+                >
+                  {langOpt.label}
+                </button>
+              ))}
             </div>
-            <span className="text-2xl">📈</span>
+            <span className="text-2xl">📊</span>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full mb-4">⚡ 5 Credits</span>
-          <h1 className="text-4xl font-bold mb-2">{title}</h1>
+          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-4">
+            <span className="text-green-400 text-sm font-medium">
+              {language === 'en' ? '📊 5 CREDITS - PREDICTION TOOL' : '📊 5 KREDİ - TAHMİN ARACI'}
+            </span>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">
+            {language === 'en' ? 'Engagement Predictor' : 'Engagement Predictor'}
+          </h1>
+          <p className="text-gray-400">
+            {language === 'en' ? 'Predict your post performance before publishing' : 'Yayınlamadan önce post performansını tahmin et'}
+          </p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <textarea value={input} onChange={(e) => setInput(e.target.value)} className="w-full h-32 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-purple-500 focus:outline-none resize-none" placeholder="Enter your content..." />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Platform</label>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-green-500 focus:outline-none">
+                <option value="instagram">📸 Instagram</option>
+                <option value="tiktok">🎵 TikTok</option>
+                <option value="youtube">📺 YouTube</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">{language === 'en' ? 'Content Type' : 'İçerik Tipi'}</label>
+              <select value={contentType} onChange={(e) => setContentType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-green-500 focus:outline-none">
+                <option value="photo">{language === 'en' ? 'Photo' : 'Fotoğraf'}</option>
+                <option value="video">{language === 'en' ? 'Video' : 'Video'}</option>
+                <option value="reel">Reel/Short</option>
+              </select>
+            </div>
+          </div>
+
+          <label className="block text-sm font-medium mb-2">Caption</label>
+          <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={4} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-green-500 focus:outline-none mb-4" placeholder={language === 'en' ? 'Enter your caption...' : 'Caption\'ınızı girin...'} />
+
+          <label className="block text-sm font-medium mb-2">Hashtags</label>
+          <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-green-500 focus:outline-none mb-4" placeholder="#example #hashtags #here" />
+
+          <label className="block text-sm font-medium mb-2">{language === 'en' ? 'Post Time' : 'Paylaşım Saati'}</label>
+          <input type="time" value={postTime} onChange={(e) => setPostTime(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-green-500 focus:outline-none" />
         </div>
 
-        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-6">
-          {loading ? <><span className="animate-spin">⏳</span> {tp.generating}</> : <>📈 {tp.generate}</>}
+        <button onClick={handlePredict} disabled={loading} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8">
+          {loading ? <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</> : <>📊 {language === 'en' ? 'Predict Engagement' : 'Etkileşim Tahmin Et'}</>}
         </button>
 
-        {result && (
-          <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{tp.result}</h2>
-              <button onClick={() => {navigator.clipboard.writeText(JSON.stringify(result, null, 2)); showToast(tp.copied, 'success')}} className="px-4 py-2 bg-purple-600 rounded-lg text-sm">{tp.copy}</button>
+        {prediction && (
+          <div className="space-y-6 animate-fade-in">
+            <div className={`rounded-2xl p-8 text-center ${
+              prediction.overallScore >= 80 ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30' :
+              prediction.overallScore >= 60 ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30' :
+              prediction.overallScore >= 40 ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30' :
+              'bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30'
+            }`}>
+              <div className="text-6xl font-bold mb-2">{prediction.overallScore}%</div>
+              <div className="text-2xl font-semibold mb-4">{prediction.rating}</div>
+              <div className="text-sm text-gray-300">
+                {language === 'en' ? 'Estimated Reach' : 'Tahmini Erişim'}: {prediction.estimatedReach.min}-{prediction.estimatedReach.max} {prediction.estimatedReach.unit}
+              </div>
             </div>
-            <pre className="text-gray-300 whitespace-pre-wrap text-sm">{JSON.stringify(result, null, 2)}</pre>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(prediction.metrics).map(([key, value]: [string, any], i) => (
+                <div key={i} className="bg-gray-800 rounded-xl border border-gray-700 p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400 mb-1">{value}%</div>
+                  <div className="text-xs text-gray-400">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                </div>
+              ))}
+            </div>
+
+            {prediction.recommendations.length > 0 && (
+              <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  💡 {language === 'en' ? 'Recommendations' : 'Öneriler'}
+                </h3>
+                <ul className="space-y-2 text-gray-300 text-sm">
+                  {prediction.recommendations.map((rec: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-yellow-400">▸</span>
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </main>

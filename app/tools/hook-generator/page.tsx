@@ -1,13 +1,17 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
-import { toolPage, toolNames } from '@/lib/translations'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
-const langs: { code: Language; flag: string }[] = [
-  { code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'tr', label: 'TR' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'fr', label: 'FR' }
 ]
 
 export default function HookGeneratorPage() {
@@ -16,10 +20,9 @@ export default function HookGeneratorPage() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [copied, setCopied] = useState<number | null>(null)
-  const { language, setLanguage } = useLanguage()
+  const [filter, setFilter] = useState<string>('all')
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
-  const tp = toolPage[language]
-  const title = toolNames[language].hookGen
 
   useEffect(() => {
     async function getUser() {
@@ -30,32 +33,125 @@ export default function HookGeneratorPage() {
   }, [])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) { showToast(tp.required, 'warning'); return }
-    setLoading(true); setHooks([])
+    if (!topic.trim()) {
+      showToast(language === 'en' ? 'Please enter a topic' : 'Lütfen konu girin', 'warning')
+      return
+    }
+
+    setLoading(true)
+    setHooks([])
+
     try {
-      const res = await fetch('/api/hook-generator', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, userId, language }) })
-      const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setHooks(data.hooks || []); showToast(tp.success, 'success') }
-    } catch { showToast(tp.error, 'error') }
+      const response = await fetch('/api/hook-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, userId, language }),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        showToast(data.error, 'error')
+      } else {
+        setHooks(data.hooks)
+        showToast(
+          language === 'tr'
+            ? "Hook'lar üretildi!"
+            : language === 'ru'
+            ? 'Хуки сгенерированы!'
+            : language === 'de'
+            ? 'Hooks wurden generiert!'
+            : language === 'fr'
+            ? 'Hooks générés !'
+            : 'Hooks generated!',
+          'success'
+        )
+      }
+    } catch (err) {
+      showToast(
+        language === 'tr'
+          ? 'Hata oluştu'
+          : language === 'ru'
+          ? 'Произошла ошибка'
+          : language === 'de'
+          ? 'Ein Fehler ist aufgetreten'
+          : language === 'fr'
+          ? 'Une erreur est survenue'
+          : 'An error occurred',
+        'error'
+      )
+    }
+
     setLoading(false)
   }
 
   const handleCopy = (index: number, text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(index)
-    showToast(tp.copied, 'success')
+    showToast(
+      language === 'tr'
+        ? 'Kopyalandı!'
+        : language === 'ru'
+        ? 'Скопировано!'
+        : language === 'de'
+        ? 'Kopiert!'
+        : language === 'fr'
+        ? 'Copié !'
+        : 'Copied!',
+      'success'
+    )
     setTimeout(() => setCopied(null), 2000)
   }
+
+  const hookTypes = [
+    { key: 'all', label: '🎯 All', labelTr: '🎯 Tümü' },
+    { key: 'curiosity', label: '🤔 Curiosity', labelTr: '🤔 Merak' },
+    { key: 'shocking', label: '😱 Shocking', labelTr: '😱 Şok' },
+    { key: 'question', label: '❓ Question', labelTr: '❓ Soru' },
+    { key: 'story', label: '📖 Story', labelTr: '📖 Hikaye' },
+    { key: 'statistic', label: '📊 Statistic', labelTr: '📊 İstatistik' },
+  ]
+
+  const filteredHooks = filter === 'all' ? hooks : hooks.filter(h => h.type === filter)
+
+  const exampleTopics = [
+    language === 'en' ? 'productivity tips' : 'verimlilik ipuçları',
+    language === 'en' ? 'making money online' : 'online para kazanma',
+    language === 'en' ? 'personal growth' : 'kişisel gelişim',
+    language === 'en' ? 'social media marketing' : 'sosyal medya pazarlama',
+  ]
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{tp.back}</Link>
+          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
+            <span>←</span>
+            <span>
+              {language === 'tr'
+                ? 'Panele Dön'
+                : language === 'ru'
+                ? 'Назад к панели'
+                : language === 'de'
+                ? 'Zurück zum Dashboard'
+                : language === 'fr'
+                ? 'Retour au tableau de bord'
+                : 'Back to Dashboard'}
+            </span>
+          </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2 py-1 rounded text-xs transition ${language === l.code ? 'bg-yellow-500 text-black' : 'text-gray-400'}`}>{l.flag}</button>))}
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`px-2 py-1 rounded text-xs transition ${
+                    language === lang.code ? 'bg-yellow-500 text-black' : 'text-gray-400'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
             <span className="text-2xl">🎣</span>
           </div>
@@ -63,24 +159,74 @@ export default function HookGeneratorPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-full mb-4">⚡ 2 Credits</span>
-          <h1 className="text-4xl font-bold mb-2">{title}</h1>
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2 mb-4">
+            <span className="text-yellow-400 text-sm">{(language === 'tr' ? '2 Kredi' : '2 Credits')}</span>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Hook Oluşturucu' : 'Hook Generator')}</h1>
+          <p className="text-gray-400">{(language === 'tr' ? 'Viral hooklar oluşturun' : 'Generate viral hooks')}</p>
         </div>
 
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <textarea value={topic} onChange={(e) => setTopic(e.target.value)} className="w-full h-24 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-yellow-500 focus:outline-none resize-none" placeholder="Enter your topic..." />
+          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'Konu' : 'Topic')}</label>
+          <textarea
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            className="w-full h-24 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-yellow-500 focus:outline-none resize-none transition"
+            placeholder={(language === 'tr' ? 'Konunuzu girin...' : 'Enter your topic...')}
+          />
+          
+          <div className="mt-4">
+            <p className="text-sm text-gray-400 mb-2">{language === 'en' ? 'Quick topics:' : 'Hızlı konular:'}</p>
+            <div className="flex flex-wrap gap-2">
+              {exampleTopics.map((ex, i) => (
+                <button
+                  key={i}
+                  onClick={() => setTopic(ex)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition"
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg text-black mb-6">
-          {loading ? <><span className="animate-spin">⏳</span> {tp.generating}</> : <>🎣 {tp.generate}</>}
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg text-black mb-6"
+        >
+          {loading ? (
+            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
+          ) : (
+            <>🎣 {(language === 'tr' ? 'Hook Oluştur' : 'Generate Hooks')}</>
+          )}
         </button>
 
         {hooks.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">{tp.result}</h2>
+          <div className="animate-fade-in">
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {hookTypes.map(type => (
+                <button
+                  key={type.key}
+                  onClick={() => setFilter(type.key)}
+                  className={`px-4 py-2 rounded-lg text-sm transition ${
+                    filter === type.key
+                      ? 'bg-yellow-500 text-black'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  }`}
+                >
+                  {language === 'en' ? type.label : type.labelTr}
+                </button>
+              ))}
+            </div>
+
+            <h2 className="text-xl font-semibold mb-4">{(language === 'tr' ? 'Sonuçlar' : 'Results')}</h2>
+            
             <div className="space-y-4">
-              {hooks.map((hook, index) => (
+              {filteredHooks.map((hook, index) => (
                 <div key={index} className="bg-gray-800 rounded-xl border border-gray-700 p-4 hover:border-yellow-500/50 transition">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -91,7 +237,10 @@ export default function HookGeneratorPage() {
                       <p className="text-lg text-white mb-2">"{hook.text}"</p>
                       <p className="text-sm text-gray-400">💡 {hook.reason}</p>
                     </div>
-                    <button onClick={() => handleCopy(index, hook.text)} className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition shrink-0">
+                    <button
+                      onClick={() => handleCopy(index, hook.text)}
+                      className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition shrink-0"
+                    >
                       {copied === index ? '✓' : '📋'}
                     </button>
                   </div>
@@ -100,6 +249,18 @@ export default function HookGeneratorPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-8 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-6">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            💡 {language === 'en' ? 'Hook Tips' : 'Hook İpuçları'}
+          </h3>
+          <ul className="text-gray-400 text-sm space-y-2">
+            <li>• {language === 'en' ? 'The first 3 seconds decide if people keep watching' : 'İlk 3 saniye izleyicinin devam edip etmeyeceğini belirler'}</li>
+            <li>• {language === 'en' ? 'Use curiosity gaps to make people NEED to know more' : 'Merak boşlukları kullanarak izleyicinin bilmek istemesini sağla'}</li>
+            <li>• {language === 'en' ? 'Personal stories outperform generic advice' : 'Kişisel hikayeler genel tavsiyelerden daha iyi performans gösterir'}</li>
+            <li>• {language === 'en' ? 'Test different hooks on the same content' : 'Aynı içerik için farklı hook\'ları test et'}</li>
+          </ul>
+        </div>
       </main>
     </div>
   )

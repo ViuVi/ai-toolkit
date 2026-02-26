@@ -1,27 +1,44 @@
 'use client'
+
 import { useLanguage } from '@/lib/LanguageContext'
-import { t } from '@/lib/translations'
+
+interface Testimonial {
+  name: string
+  role: string
+  text: string
+  avatar: string
+  rating: number
+}
 
 export default function Testimonials() {
-  const { language } = useLanguage()
-  const te = t.testimonials[language]
+  const { t } = useLanguage()
+
+  const items: Testimonial[] = t.testimonials?.items || []
 
   return (
     <section className="py-20 px-4 bg-gray-800/30">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">{te.title}</h2>
-          <p className="text-gray-400 text-lg">{te.subtitle}</p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{t.testimonials?.title || 'Testimonials'}</h2>
+          <p className="text-xl text-gray-400">{t.testimonials?.subtitle || ''}</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {te.items.map((item: any, i: number) => (
-            <div key={i} className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {items.map((testimonial: Testimonial, index: number) => (
+            <div key={index} className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
               <div className="flex items-center gap-4 mb-4">
-                <div className="text-4xl">{item.avatar}</div>
-                <div><div className="font-semibold text-white">{item.name}</div><div className="text-gray-400 text-sm">{item.role}</div></div>
+                <div className="text-4xl">{testimonial.avatar}</div>
+                <div>
+                  <div className="font-bold text-white">{testimonial.name}</div>
+                  <div className="text-sm text-gray-400">{testimonial.role}</div>
+                </div>
               </div>
-              <div className="flex gap-1 mb-4">{[1,2,3,4,5].map(n => <span key={n} className="text-yellow-400">★</span>)}</div>
-              <p className="text-gray-300">"{item.text}"</p>
+              <p className="text-gray-300 mb-4">"{testimonial.text}"</p>
+              <div className="text-yellow-400">
+                {[...Array(testimonial.rating)].map((_, i: number) => (
+                  <span key={i}>★</span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
