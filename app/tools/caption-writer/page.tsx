@@ -1,299 +1,36 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
-import { supabase } from '@/lib/supabase'
-
-const uiLanguages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
-
+const texts: Record<Language, any> = {
+  en: { back: '← Back to Dashboard', title: 'Caption Writer', subtitle: 'Create engaging captions', credits: '2 Credits', topic: 'Topic', placeholder: 'What is your post about?', platform: 'Platform', tone: 'Tone', generate: 'Generate Captions', generating: 'Generating...', results: 'Generated Captions', copy: 'Copy', copied: 'Copied!', required: 'Topic is required', success: 'Captions generated!', error: 'Error', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }, tones: { professional: 'Professional', casual: 'Casual', funny: 'Funny', inspirational: 'Inspirational' } },
+  tr: { back: '← Panele Dön', title: 'Caption Yazarı', subtitle: 'Etkileyici captionlar oluştur', credits: '2 Kredi', topic: 'Konu', placeholder: 'Paylaşımınız ne hakkında?', platform: 'Platform', tone: 'Ton', generate: 'Caption Oluştur', generating: 'Oluşturuluyor...', results: 'Oluşturulan Captionlar', copy: 'Kopyala', copied: 'Kopyalandı!', required: 'Konu gerekli', success: 'Captionlar oluşturuldu!', error: 'Hata', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }, tones: { professional: 'Profesyonel', casual: 'Günlük', funny: 'Eğlenceli', inspirational: 'İlham Verici' } },
+  ru: { back: '← Назад', title: 'Автор подписей', subtitle: 'Создайте подписи для постов', credits: '2 Кредита', topic: 'Тема', placeholder: 'О чем ваш пост?', platform: 'Платформа', tone: 'Тон', generate: 'Создать подписи', generating: 'Создание...', results: 'Созданные подписи', copy: 'Копировать', copied: 'Скопировано!', required: 'Тема обязательна', success: 'Подписи созданы!', error: 'Ошибка', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }, tones: { professional: 'Профессиональный', casual: 'Повседневный', funny: 'Смешной', inspirational: 'Вдохновляющий' } },
+  de: { back: '← Zurück', title: 'Caption-Autor', subtitle: 'Erstellen Sie Captions', credits: '2 Credits', topic: 'Thema', placeholder: 'Worum geht es?', platform: 'Plattform', tone: 'Ton', generate: 'Captions erstellen', generating: 'Erstellen...', results: 'Erstellte Captions', copy: 'Kopieren', copied: 'Kopiert!', required: 'Thema erforderlich', success: 'Captions erstellt!', error: 'Fehler', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }, tones: { professional: 'Professionell', casual: 'Locker', funny: 'Lustig', inspirational: 'Inspirierend' } },
+  fr: { back: '← Retour', title: 'Rédacteur de légendes', subtitle: 'Créez des légendes', credits: '2 Crédits', topic: 'Sujet', placeholder: 'De quoi parle votre post?', platform: 'Plateforme', tone: 'Ton', generate: 'Générer des légendes', generating: 'Génération...', results: 'Légendes générées', copy: 'Copier', copied: 'Copié!', required: 'Sujet requis', success: 'Légendes générées!', error: 'Erreur', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }, tones: { professional: 'Professionnel', casual: 'Décontracté', funny: 'Drôle', inspirational: 'Inspirant' } }
+}
+const languages: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
 export default function CaptionWriterPage() {
-  const [topic, setTopic] = useState('')
-  const [platform, setPlatform] = useState('instagram')
-  const [tone, setTone] = useState('casual')
-  const [includeEmojis, setIncludeEmojis] = useState(true)
-  const [includeHashtags, setIncludeHashtags] = useState(true)
-  const [captions, setCaptions] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const { t, language, setLanguage } = useLanguage()
-  const { showToast } = useToast()
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
-
-  const handleGenerate = async () => {
-    if (!topic.trim()) {
-      showToast(
-        language === 'tr'
-          ? 'Lütfen bir konu girin'
-          : language === 'ru'
-          ? 'Пожалуйста, введите тему'
-          : language === 'de'
-          ? 'Bitte geben Sie ein Thema ein'
-          : language === 'fr'
-          ? 'Veuillez entrer un sujet'
-          : 'Please enter a topic',
-        'warning'
-      )
-      return
-    }
-
-    setLoading(true)
-    setCaptions([])
-
-    try {
-      const response = await fetch('/api/caption-writer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, tone, includeEmojis, includeHashtags, userId, language }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setCaptions(data.captions)
-        showToast(
-          language === 'tr'
-            ? 'Captionlar oluşturuldu!'
-            : language === 'ru'
-            ? 'Подписи сгенерированы!'
-            : language === 'de'
-            ? 'Captions wurden generiert!'
-            : language === 'fr'
-            ? 'Légendes générées !'
-            : 'Captions generated!',
-          'success'
-        )
-      }
-    } catch (err) {
-      showToast(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred',
-        'error'
-      )
-      console.error('Caption generation error:', err)
-    }
-
-    setLoading(false)
-  }
-
-  const copyCaption = (caption: string, index: number) => {
-    navigator.clipboard.writeText(caption)
-    setCopiedIndex(index)
-    showToast(
-      language === 'tr'
-        ? 'Kopyalandı!'
-        : language === 'ru'
-        ? 'Скопировано!'
-        : language === 'de'
-        ? 'Kopiert!'
-        : language === 'fr'
-        ? 'Copié !'
-        : 'Copied!',
-      'success'
-    )
-    setTimeout(() => setCopiedIndex(null), 2000)
-  }
-
-  const platforms = [
-    { value: 'instagram', label: 'Instagram', icon: '📸' },
-    { value: 'tiktok', label: 'TikTok', icon: '🎵' },
-  ]
-
-  const tones = [
-    { value: 'casual', label: language === 'tr' ? 'Gündelik' : 'Casual', icon: '😊' },
-    { value: 'professional', label: language === 'tr' ? 'Profesyonel' : 'Professional', icon: '💼' },
-    { value: 'inspirational', label: language === 'tr' ? 'İlham Verici' : 'Inspirational', icon: '✨' },
-    { value: 'funny', label: language === 'tr' ? 'Komik' : 'Funny', icon: '😂' },
-  ]
-
+  const [topic, setTopic] = useState(''); const [platform, setPlatform] = useState('instagram'); const [tone, setTone] = useState('casual'); const [captions, setCaptions] = useState<string[]>([]); const [loading, setLoading] = useState(false); const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const { language, setLanguage } = useLanguage(); const { showToast } = useToast(); const t = texts[language]
+  const handleGenerate = async () => { if (!topic) { showToast(t.required, 'warning'); return }; setLoading(true); try { const res = await fetch('/api/caption-writer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, tone, language }) }); const data = await res.json(); if (data.captions) { setCaptions(data.captions); showToast(t.success, 'success') } } catch { showToast(t.error, 'error') } setLoading(false) }
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {uiLanguages.map((langOpt) => (
-                <button
-                  key={langOpt.code}
-                  onClick={() => setLanguage(langOpt.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === langOpt.code ? 'bg-pink-500 text-white' : 'text-gray-400'
-                  }`}
-                >
-                  {langOpt.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">✍️</span>
-          </div>
-        </div>
-      </header>
-
+      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50"><div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"><Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link><div className="flex items-center gap-4"><div className="flex items-center bg-gray-800 rounded-lg p-1">{languages.map((lang) => (<button key={lang.code} onClick={() => setLanguage(lang.code)} className={`px-2 py-1 rounded text-xs transition ${language === lang.code ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{lang.flag}</button>))}</div><span className="text-2xl">✍️</span></div></div></header>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-pink-400 text-sm font-medium">
-              {language === 'en' ? '✍️ 2 CREDITS - CAPTION TOOL' : '✍️ 2 KREDİ - CAPTION ARACI'}
-            </span>
+        <div className="text-center mb-8"><span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full mb-4">⚡ {t.credits}</span><h1 className="text-4xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800 rounded-2xl p-6 mb-8">
+          <div className="space-y-4">
+            <div><label className="block text-sm font-medium mb-2">{t.topic}</label><textarea value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t.placeholder} rows={3} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl resize-none" /></div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-2">{t.platform}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl">{Object.entries(t.platforms).map(([k,v]) => <option key={k} value={k}>{v as string}</option>)}</select></div>
+              <div><label className="block text-sm font-medium mb-2">{t.tone}</label><select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl">{Object.entries(t.tones).map(([k,v]) => <option key={k} value={k}>{v as string}</option>)}</select></div>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2">
-            {language === 'en' ? 'Caption Writer' : 'Caption Writer'}
-          </h1>
-          <p className="text-gray-400">
-            {language === 'en' 
-              ? 'Generate engaging captions for Instagram & TikTok' 
-              : 'Instagram ve TikTok için etkileşim artıran captionlar'}
-          </p>
+          <button onClick={handleGenerate} disabled={loading} className="w-full mt-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold transition disabled:opacity-50">{loading ? t.generating : t.generate}</button>
         </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          {/* Platform */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '1. Platform' : '1. Platform'}
-          </label>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {platforms.map(p => (
-              <button
-                key={p.value}
-                onClick={() => setPlatform(p.value)}
-                className={`p-4 rounded-xl border-2 transition ${
-                  platform === p.value
-                    ? 'border-pink-500 bg-pink-500/10'
-                    : 'border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                <div className="text-3xl mb-2">{p.icon}</div>
-                <div className="text-sm font-medium">{p.label}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Topic */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '2. Topic' : '2. Konu'}
-          </label>
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-pink-500 focus:outline-none transition mb-6"
-            placeholder={language === 'en' ? 'e.g., Morning coffee, Sunset vibes...' : 'örn., Sabah kahvesi, Gün batımı...'}
-          />
-
-          {/* Tone */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '3. Tone' : '3. Ton'}
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            {tones.map(t => (
-              <button
-                key={t.value}
-                onClick={() => setTone(t.value)}
-                className={`p-3 rounded-xl border-2 transition ${
-                  tone === t.value
-                    ? 'border-pink-500 bg-pink-500/10'
-                    : 'border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                <div className="text-2xl mb-1">{t.icon}</div>
-                <div className="text-xs font-medium">{t.label}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Options */}
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeEmojis}
-                onChange={(e) => setIncludeEmojis(e.target.checked)}
-                className="w-4 h-4 bg-gray-700 border-gray-600 rounded"
-              />
-              <span className="text-sm">{language === 'en' ? 'Include Emojis' : 'Emoji Ekle'}</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeHashtags}
-                onChange={(e) => setIncludeHashtags(e.target.checked)}
-                className="w-4 h-4 bg-gray-700 border-gray-600 rounded"
-              />
-              <span className="text-sm">{language === 'en' ? 'Include Hashtags' : 'Hashtag Ekle'}</span>
-            </label>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
-        >
-          {loading ? (
-            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
-          ) : (
-            <>✍️ {language === 'en' ? 'Generate Captions' : 'Caption Oluştur'}</>
-          )}
-        </button>
-
-        {captions.length > 0 && (
-          <div className="space-y-4 animate-fade-in">
-            {captions.map((caption, index) => (
-              <div key={index} className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-sm font-medium text-gray-400">
-                    {language === 'en' ? 'Caption' : 'Caption'} {index + 1}
-                  </h3>
-                  <button
-                    onClick={() => copyCaption(caption, index)}
-                    className="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg text-sm transition"
-                  >
-                    {copiedIndex === index ? '✓' : '📋'} {language === 'en' ? 'Copy' : 'Kopyala'}
-                  </button>
-                </div>
-                <p className="text-white whitespace-pre-line">{caption}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        {captions.length > 0 && (<div className="space-y-4"><h2 className="text-xl font-semibold">{t.results}</h2>{captions.map((caption, index) => (<div key={index} className="bg-gray-800 rounded-xl p-4 flex justify-between items-start gap-4"><p className="flex-1">{caption}</p><button onClick={() => {navigator.clipboard.writeText(caption); setCopiedIndex(index); showToast(t.copied, 'success'); setTimeout(() => setCopiedIndex(null), 2000)}} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">{copiedIndex === index ? t.copied : t.copy}</button></div>))}</div>)}
       </main>
     </div>
   )

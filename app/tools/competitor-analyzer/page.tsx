@@ -1,240 +1,33 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
-import { supabase } from '@/lib/supabase'
-
-const languages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
-
-export default function CompetitorAnalysisPage() {
-  const [competitorUrl, setCompetitorUrl] = useState('')
-  const [platform, setPlatform] = useState('instagram')
-  const [analysis, setAnalysis] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
-  const { showToast } = useToast()
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
-
-  const handleAnalyze = async () => {
-    if (!competitorUrl.trim()) {
-      showToast(language === 'en' ? 'Please enter a competitor URL' : 'Lütfen bir rakip URL\'si girin', 'warning')
-      return
-    }
-
-    setLoading(true)
-    setAnalysis(null)
-
-    try {
-      const response = await fetch('/api/competitor-analyzer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ competitorUrl, platform, userId, language }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setAnalysis(data.analysis)
-        showToast(
-          language === 'tr'
-            ? 'Analiz tamamlandı!'
-            : language === 'ru'
-            ? 'Анализ завершён!'
-            : language === 'de'
-            ? 'Analyse abgeschlossen!'
-            : language === 'fr'
-            ? 'Analyse terminée !'
-            : 'Analysis complete!',
-          'success'
-        )
-      }
-    } catch (err) {
-      showToast(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred',
-        'error'
-      )
-    }
-
-    setLoading(false)
-  }
-
+const texts: Record<Language, any> = {
+  en: { back: '← Back to Dashboard', title: 'Competitor Analysis', subtitle: 'Analyze competitors', credits: '8 Credits', competitor: 'Competitor', placeholder: 'Competitor name or URL...', niche: 'Your Niche', nichePlaceholder: 'e.g. fitness, tech...', generate: 'Analyze', generating: 'Analyzing...', result: 'Analysis', required: 'Info required', success: 'Done!', error: 'Error' },
+  tr: { back: '← Panele Dön', title: 'Rakip Analizi', subtitle: 'Rakipleri analiz et', credits: '8 Kredi', competitor: 'Rakip', placeholder: 'Rakip adı veya URL...', niche: 'Nişiniz', nichePlaceholder: 'örn. fitness, teknoloji...', generate: 'Analiz Et', generating: 'Analiz ediliyor...', result: 'Analiz', required: 'Bilgi gerekli', success: 'Tamam!', error: 'Hata' },
+  ru: { back: '← Назад', title: 'Анализ конкурентов', subtitle: 'Анализируйте конкурентов', credits: '8 Кредитов', competitor: 'Конкурент', placeholder: 'Имя или URL...', niche: 'Ниша', nichePlaceholder: 'напр. фитнес...', generate: 'Анализировать', generating: 'Анализ...', result: 'Анализ', required: 'Информация обязательна', success: 'Готово!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Wettbewerbsanalyse', subtitle: 'Konkurrenten analysieren', credits: '8 Credits', competitor: 'Wettbewerber', placeholder: 'Name oder URL...', niche: 'Nische', nichePlaceholder: 'z.B. Fitness...', generate: 'Analysieren', generating: 'Analyse...', result: 'Analyse', required: 'Info erforderlich', success: 'Fertig!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Analyse concurrentielle', subtitle: 'Analysez les concurrents', credits: '8 Crédits', competitor: 'Concurrent', placeholder: 'Nom ou URL...', niche: 'Niche', nichePlaceholder: 'ex. fitness...', generate: 'Analyser', generating: 'Analyse...', result: 'Analyse', required: 'Info requise', success: 'Terminé!', error: 'Erreur' }
+}
+const languages: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+export default function Page() {
+  const [competitor, setCompetitor] = useState(''); const [niche, setNiche] = useState(''); const [result, setResult] = useState(''); const [loading, setLoading] = useState(false)
+  const { language, setLanguage } = useLanguage(); const { showToast } = useToast(); const t = texts[language]
+  const handleGenerate = async () => { if (!competitor) { showToast(t.required, 'warning'); return }; setLoading(true); try { const res = await fetch('/api/competitor-analyzer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ competitor, niche, language }) }); const data = await res.json(); if (data.analysis) { setResult(data.analysis); showToast(t.success, 'success') } } catch { showToast(t.error, 'error') } setLoading(false) }
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === lang.code ? 'bg-red-500 text-white' : 'text-gray-400'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">🔍</span>
+      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50"><div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"><Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link><div className="flex items-center gap-4"><div className="flex items-center bg-gray-800 rounded-lg p-1">{languages.map((lang) => (<button key={lang.code} onClick={() => setLanguage(lang.code)} className={`px-2 py-1 rounded text-xs transition ${language === lang.code ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{lang.flag}</button>))}</div><span className="text-2xl">🔍</span></div></div></header>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center mb-8"><span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full mb-4">⚡ {t.credits}</span><h1 className="text-4xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800 rounded-2xl p-6 mb-8">
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <div><label className="block text-sm font-medium mb-2">{t.competitor}</label><input type="text" value={competitor} onChange={(e) => setCompetitor(e.target.value)} placeholder={t.placeholder} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl" /></div>
+            <div><label className="block text-sm font-medium mb-2">{t.niche}</label><input type="text" value={niche} onChange={(e) => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl" /></div>
           </div>
+          <button onClick={handleGenerate} disabled={loading} className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold transition disabled:opacity-50">{loading ? t.generating : t.generate}</button>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-red-400 text-sm font-medium">
-              {language === 'en' ? '🔍 8 CREDITS' : '🔍 8 KREDİ'}
-            </span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">
-            {language === 'en' ? 'Competitor Analysis' : 'Rakip Analizi'}
-          </h1>
-          <p className="text-gray-400">
-            {language === 'en' ? 'Analyze your competitors and discover their strategies' : 'Rakiplerinizi analiz edin ve stratejilerini keşfedin'}
-          </p>
-        </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Platform</label>
-              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none">
-                <option value="instagram">📸 Instagram</option>
-                <option value="tiktok">🎵 TikTok</option>
-                <option value="youtube">📺 YouTube</option>
-                <option value="twitter">🐦 Twitter</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {language === 'en' ? 'Competitor URL' : 'Rakip URL'}
-              </label>
-              <input
-                type="text"
-                value={competitorUrl}
-                onChange={(e) => setCompetitorUrl(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none"
-                placeholder="https://instagram.com/competitor"
-              />
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={handleAnalyze}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
-        >
-          {loading ? <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</> : <>🔍 {language === 'en' ? 'Analyze Competitor' : 'Rakibi Analiz Et'}</>}
-        </button>
-
-        {analysis && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-              <h2 className="text-2xl font-bold mb-4">{analysis.accountName}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gray-700/50 p-4 rounded-xl">
-                  <div className="text-3xl font-bold text-red-400">{analysis.followers}</div>
-                  <div className="text-sm text-gray-400">{language === 'en' ? 'Followers' : 'Takipçi'}</div>
-                </div>
-                <div className="bg-gray-700/50 p-4 rounded-xl">
-                  <div className="text-3xl font-bold text-orange-400">{analysis.avgEngagement}%</div>
-                  <div className="text-sm text-gray-400">{language === 'en' ? 'Engagement' : 'Etkileşim'}</div>
-                </div>
-                <div className="bg-gray-700/50 p-4 rounded-xl">
-                  <div className="text-3xl font-bold text-yellow-400">{analysis.postFrequency}</div>
-                  <div className="text-sm text-gray-400">{language === 'en' ? 'Posts/Week' : 'Post/Hafta'}</div>
-                </div>
-                <div className="bg-gray-700/50 p-4 rounded-xl">
-                  <div className="text-3xl font-bold text-green-400">{analysis.contentScore}</div>
-                  <div className="text-sm text-gray-400">{language === 'en' ? 'Quality Score' : 'Kalite Skoru'}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-              <h3 className="font-bold text-lg mb-4">{language === 'en' ? 'Top Performing Content' : 'En Başarılı İçerikler'}</h3>
-              <div className="space-y-3">
-                {analysis.topPosts.map((post: any, i: number) => (
-                  <div key={i} className="bg-gray-700/50 p-4 rounded-xl">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold">{post.type}</span>
-                      <span className="text-red-400">❤️ {post.likes}</span>
-                    </div>
-                    <p className="text-sm text-gray-400">{post.caption}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-              <h3 className="font-bold text-lg mb-4">{language === 'en' ? 'Most Used Hashtags' : 'En Çok Kullanılan Hashtag\'ler'}</h3>
-              <div className="flex flex-wrap gap-2">
-                {analysis.topHashtags.map((tag: string, i: number) => (
-                  <span key={i} className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg text-sm">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2 text-yellow-400">
-                💡 {language === 'en' ? 'Recommendations' : 'Öneriler'}
-              </h3>
-              <ul className="space-y-2 text-gray-300 text-sm">
-                {analysis.recommendations.map((rec: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-yellow-400">▸</span>
-                    <span>{rec}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
+        {result && (<div className="bg-gray-800 rounded-2xl p-6"><h2 className="text-xl font-semibold mb-4">{t.result}</h2><p className="text-gray-300 whitespace-pre-wrap">{result}</p></div>)}
       </main>
     </div>
   )

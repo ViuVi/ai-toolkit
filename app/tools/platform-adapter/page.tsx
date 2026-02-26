@@ -1,221 +1,31 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
-import { supabase } from '@/lib/supabase'
-
-const languages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
-
-export default function PlatformAdapterPage() {
-  const [content, setContent] = useState('')
-  const [result, setResult] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
-  const { showToast } = useToast()
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
-
-  const handleAdapt = async () => {
-    if (!content.trim()) {
-      showToast(language === 'en' ? 'Please enter content' : 'Lütfen içerik girin', 'warning')
-      return
-    }
-
-    setLoading(true)
-    setResult(null)
-
-    try {
-      const response = await fetch('/api/platform-adapter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, userId }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setResult(data)
-        showToast(
-          language === 'tr'
-            ? 'İçerik uyarlandı!'
-            : language === 'ru'
-            ? 'Контент адаптирован!'
-            : language === 'de'
-            ? 'Inhalt wurde angepasst!'
-            : language === 'fr'
-            ? 'Contenu adapté !'
-            : 'Content adapted!',
-          'success'
-        )
-      }
-    } catch (err) {
-      showToast(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred',
-        'error'
-      )
-    }
-
-    setLoading(false)
-  }
-
-  const handleCopy = (platform: string, text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(platform)
-    showToast((language === 'tr' ? 'Kopyalandı!' : 'Copied!'), 'success')
-    setTimeout(() => setCopied(null), 2000)
-  }
-
-  const platforms = [
-    { key: 'instagram', icon: '📸', color: 'from-pink-500 to-purple-500', name: 'Instagram' },
-    { key: 'linkedin', icon: '💼', color: 'from-blue-600 to-blue-800', name: 'LinkedIn' },
-    { key: 'twitter', icon: '𝕏', color: 'from-gray-700 to-gray-900', name: 'Twitter/X' },
-    { key: 'tiktok', icon: '🎵', color: 'from-pink-500 to-cyan-500', name: 'TikTok' },
-  ]
-
-  const exampleContent = `The future of work is changing rapidly. Remote work has become the norm for many companies, and this shift is here to stay. Studies show that employees who work remotely are often more productive and report higher job satisfaction. However, it's important to maintain work-life balance and stay connected with your team. The key is finding the right tools and creating a dedicated workspace at home.`
-
+const texts: Record<Language, any> = {
+  en: { back: '← Back to Dashboard', title: 'Platform Adapter', subtitle: 'Adapt content for platforms', credits: '3 Credits', content: 'Content', placeholder: 'Paste your content...', platform: 'Target Platform', generate: 'Adapt', generating: 'Adapting...', result: 'Adapted Content', copy: 'Copy', copied: 'Copied!', required: 'Content is required', success: 'Done!', error: 'Error', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', tiktok: 'TikTok', facebook: 'Facebook' } },
+  tr: { back: '← Panele Dön', title: 'Platform Uyarlayıcı', subtitle: 'İçeriği platformlara uyarla', credits: '3 Kredi', content: 'İçerik', placeholder: 'İçeriğinizi yapıştırın...', platform: 'Hedef Platform', generate: 'Uyarla', generating: 'Uyarlanıyor...', result: 'Uyarlanmış İçerik', copy: 'Kopyala', copied: 'Kopyalandı!', required: 'İçerik gerekli', success: 'Tamam!', error: 'Hata', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', tiktok: 'TikTok', facebook: 'Facebook' } },
+  ru: { back: '← Назад', title: 'Адаптер платформ', subtitle: 'Адаптируйте контент', credits: '3 Кредита', content: 'Контент', placeholder: 'Вставьте контент...', platform: 'Платформа', generate: 'Адаптировать', generating: 'Адаптация...', result: 'Адаптированный контент', copy: 'Копировать', copied: 'Скопировано!', required: 'Контент обязателен', success: 'Готово!', error: 'Ошибка', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', tiktok: 'TikTok', facebook: 'Facebook' } },
+  de: { back: '← Zurück', title: 'Plattform-Adapter', subtitle: 'Inhalte anpassen', credits: '3 Credits', content: 'Inhalt', placeholder: 'Inhalt einfügen...', platform: 'Plattform', generate: 'Anpassen', generating: 'Anpassung...', result: 'Angepasster Inhalt', copy: 'Kopieren', copied: 'Kopiert!', required: 'Inhalt erforderlich', success: 'Fertig!', error: 'Fehler', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', tiktok: 'TikTok', facebook: 'Facebook' } },
+  fr: { back: '← Retour', title: 'Adaptateur', subtitle: 'Adaptez le contenu', credits: '3 Crédits', content: 'Contenu', placeholder: 'Collez le contenu...', platform: 'Plateforme', generate: 'Adapter', generating: 'Adaptation...', result: 'Contenu adapté', copy: 'Copier', copied: 'Copié!', required: 'Contenu requis', success: 'Terminé!', error: 'Erreur', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', tiktok: 'TikTok', facebook: 'Facebook' } }
+}
+const languages: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+export default function Page() {
+  const [content, setContent] = useState(''); const [platform, setPlatform] = useState('instagram'); const [result, setResult] = useState(''); const [loading, setLoading] = useState(false)
+  const { language, setLanguage } = useLanguage(); const { showToast } = useToast(); const t = texts[language]
+  const handleGenerate = async () => { if (!content) { showToast(t.required, 'warning'); return }; setLoading(true); try { const res = await fetch('/api/platform-adapter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, platform, language }) }); const data = await res.json(); if (data.adapted) { setResult(data.adapted); showToast(t.success, 'success') } } catch { showToast(t.error, 'error') } setLoading(false) }
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === lang.code
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                      : 'text-gray-400'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">🔄</span>
-          </div>
+      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50"><div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"><Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link><div className="flex items-center gap-4"><div className="flex items-center bg-gray-800 rounded-lg p-1">{languages.map((lang) => (<button key={lang.code} onClick={() => setLanguage(lang.code)} className={`px-2 py-1 rounded text-xs transition ${language === lang.code ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{lang.flag}</button>))}</div><span className="text-2xl">🔄</span></div></div></header>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center mb-8"><span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full mb-4">⚡ {t.credits}</span><h1 className="text-4xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800 rounded-2xl p-6 mb-8">
+          <div className="mb-4"><label className="block text-sm font-medium mb-2">{t.content}</label><textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={t.placeholder} rows={4} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl resize-none" /></div>
+          <div className="mb-4"><label className="block text-sm font-medium mb-2">{t.platform}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl">{Object.entries(t.platforms).map(([k,v]) => <option key={k} value={k}>{v as string}</option>)}</select></div>
+          <button onClick={handleGenerate} disabled={loading} className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold transition disabled:opacity-50">{loading ? t.generating : t.generate}</button>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-pink-400 text-sm">{(language === 'tr' ? '3 Kredi' : '3 Credits')}</span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Platform Adaptörü' : 'Platform Adapter')}</h1>
-          <p className="text-gray-400">{(language === 'tr' ? 'İçeriği farklı platformlara uyarlayın' : 'Adapt content to different platforms')}</p>
-        </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'İçerik' : 'Content')}</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-48 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-pink-500 focus:outline-none resize-none transition"
-            placeholder={(language === 'tr' ? 'İçeriğinizi girin...' : 'Enter your content...')}
-          />
-          <button
-            onClick={() => setContent(exampleContent)}
-            className="mt-3 text-sm text-pink-400 hover:underline"
-          >
-            📌 {language === 'en' ? 'Load example content' : 'Örnek içerik yükle'}
-          </button>
-        </div>
-
-        <button
-          onClick={handleAdapt}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
-        >
-          {loading ? (
-            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
-          ) : (
-            <>🔄 {(language === 'tr' ? 'Adapte Et' : 'Adapt')}</>
-          )}
-        </button>
-
-        {result && (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-xl font-semibold">{(language === 'tr' ? 'Sonuçlar' : 'Results')}</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {platforms.map(platform => (
-                <div key={platform.key} className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-                  <div className={`bg-gradient-to-r ${platform.color} px-4 py-3 flex items-center justify-between`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{platform.icon}</span>
-                      <span className="font-semibold">{platform.name}</span>
-                    </div>
-                    <button
-                      onClick={() => handleCopy(platform.key, result.platforms[platform.key])}
-                      className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg text-sm transition"
-                    >
-                      {copied === platform.key ? '✓' : '📋'}
-                    </button>
-                  </div>
-                  <div className="p-4">
-                    <pre className="whitespace-pre-wrap text-sm text-gray-300 font-sans leading-relaxed">
-                      {result.platforms[platform.key]}
-                    </pre>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-8 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
-            💡 {language === 'en' ? 'Pro Tips' : 'İpuçları'}
-          </h3>
-          <ul className="text-gray-400 text-sm space-y-2">
-            <li>• {language === 'en' ? 'Paste any content: blog posts, ideas, notes, or articles' : 'Herhangi bir içerik yapıştır: blog yazısı, fikir, not veya makale'}</li>
-            <li>• {language === 'en' ? 'Each platform gets a unique, optimized version' : 'Her platform benzersiz, optimize edilmiş versiyon alır'}</li>
-            <li>• {language === 'en' ? 'Edit the output to match your voice and style' : 'Çıktıyı kendi sesin ve stiline göre düzenle'}</li>
-          </ul>
-        </div>
+        {result && (<div className="bg-gray-800 rounded-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-semibold">{t.result}</h2><button onClick={() => {navigator.clipboard.writeText(result); showToast(t.copied, 'success')}} className="px-4 py-2 bg-purple-600 rounded-lg text-sm">{t.copy}</button></div><p className="text-gray-300 whitespace-pre-wrap">{result}</p></div>)}
       </main>
     </div>
   )

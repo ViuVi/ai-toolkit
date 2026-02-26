@@ -1,234 +1,36 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
-import { supabase } from '@/lib/supabase'
-
-const uiLanguages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
-
+const texts: Record<Language, any> = {
+  en: { back: '← Back to Dashboard', title: 'Video Script Writer', subtitle: 'Create scripts for your videos', credits: '4 Credits', topic: 'Topic', placeholder: 'What is your video about?', platform: 'Platform', duration: 'Duration', generate: 'Generate Script', generating: 'Generating...', result: 'Generated Script', copy: 'Copy', copied: 'Copied!', required: 'Topic is required', success: 'Script generated!', error: 'Error', platforms: { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram Reels', shorts: 'YouTube Shorts' }, durations: { short: '30 seconds', medium: '1 minute', long: '3 minutes', verylong: '5+ minutes' } },
+  tr: { back: '← Panele Dön', title: 'Video Script Yazarı', subtitle: 'Videolarınız için script oluşturun', credits: '4 Kredi', topic: 'Konu', placeholder: 'Videonuz ne hakkında?', platform: 'Platform', duration: 'Süre', generate: 'Script Oluştur', generating: 'Oluşturuluyor...', result: 'Oluşturulan Script', copy: 'Kopyala', copied: 'Kopyalandı!', required: 'Konu gerekli', success: 'Script oluşturuldu!', error: 'Hata', platforms: { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram Reels', shorts: 'YouTube Shorts' }, durations: { short: '30 saniye', medium: '1 dakika', long: '3 dakika', verylong: '5+ dakika' } },
+  ru: { back: '← Назад', title: 'Сценарист видео', subtitle: 'Создайте сценарии для видео', credits: '4 Кредита', topic: 'Тема', placeholder: 'О чем ваше видео?', platform: 'Платформа', duration: 'Длительность', generate: 'Создать сценарий', generating: 'Создание...', result: 'Созданный сценарий', copy: 'Копировать', copied: 'Скопировано!', required: 'Тема обязательна', success: 'Сценарий создан!', error: 'Ошибка', platforms: { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram Reels', shorts: 'YouTube Shorts' }, durations: { short: '30 секунд', medium: '1 минута', long: '3 минуты', verylong: '5+ минут' } },
+  de: { back: '← Zurück', title: 'Video-Skript-Autor', subtitle: 'Erstellen Sie Skripte für Videos', credits: '4 Credits', topic: 'Thema', placeholder: 'Worum geht es?', platform: 'Plattform', duration: 'Dauer', generate: 'Skript erstellen', generating: 'Erstellen...', result: 'Erstelltes Skript', copy: 'Kopieren', copied: 'Kopiert!', required: 'Thema erforderlich', success: 'Skript erstellt!', error: 'Fehler', platforms: { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram Reels', shorts: 'YouTube Shorts' }, durations: { short: '30 Sekunden', medium: '1 Minute', long: '3 Minuten', verylong: '5+ Minuten' } },
+  fr: { back: '← Retour', title: 'Scénariste vidéo', subtitle: 'Créez des scripts pour vos vidéos', credits: '4 Crédits', topic: 'Sujet', placeholder: 'De quoi parle votre vidéo?', platform: 'Plateforme', duration: 'Durée', generate: 'Générer le script', generating: 'Génération...', result: 'Script généré', copy: 'Copier', copied: 'Copié!', required: 'Sujet requis', success: 'Script généré!', error: 'Erreur', platforms: { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram Reels', shorts: 'YouTube Shorts' }, durations: { short: '30 secondes', medium: '1 minute', long: '3 minutes', verylong: '5+ minutes' } }
+}
+const languages: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
 export default function VideoScriptPage() {
-  const [topic, setTopic] = useState('')
-  const [platform, setPlatform] = useState('youtube')
-  const [duration, setDuration] = useState('60')
-  const [style, setStyle] = useState('question')
-  const [script, setScript] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
-  const { showToast } = useToast()
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
-
-  const handleGenerate = async () => {
-    if (!topic.trim()) {
-      showToast(
-        language === 'tr'
-          ? 'Lütfen bir konu girin'
-          : language === 'ru'
-          ? 'Пожалуйста, введите тему'
-          : language === 'de'
-          ? 'Bitte geben Sie ein Thema ein'
-          : language === 'fr'
-          ? 'Veuillez entrer un sujet'
-          : 'Please enter a topic',
-        'warning'
-      )
-      return
-    }
-
-    setLoading(true)
-    setScript(null)
-
-    try {
-      const response = await fetch('/api/video-script', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, duration, style, userId, language }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setScript(data.script)
-        showToast(
-          language === 'tr'
-            ? 'Script oluşturuldu!'
-            : language === 'ru'
-            ? 'Сценарий сгенерирован!'
-            : language === 'de'
-            ? 'Skript wurde generiert!'
-            : language === 'fr'
-            ? 'Script généré !'
-            : 'Script generated!',
-          'success'
-        )
-      }
-    } catch (err) {
-      showToast(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred',
-        'error'
-      )
-    }
-
-    setLoading(false)
-  }
-
-  const copyScript = () => {
-    if (!script) return
-    const text = script.sections.map((s: any) => `[${s.timestamp}] ${s.title}\n${s.content}`).join('\n\n')
-    navigator.clipboard.writeText(text)
-    showToast(
-      language === 'tr'
-        ? 'Kopyalandı!'
-        : language === 'ru'
-        ? 'Скопировано!'
-        : language === 'de'
-        ? 'Kopiert!'
-        : language === 'fr'
-        ? 'Copié !'
-        : 'Copied!',
-      'success'
-    )
-  }
-
+  const [topic, setTopic] = useState(''); const [platform, setPlatform] = useState('youtube'); const [duration, setDuration] = useState('medium'); const [script, setScript] = useState(''); const [loading, setLoading] = useState(false)
+  const { language, setLanguage } = useLanguage(); const { showToast } = useToast(); const t = texts[language]
+  const handleGenerate = async () => { if (!topic) { showToast(t.required, 'warning'); return }; setLoading(true); try { const res = await fetch('/api/video-script', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, duration, language }) }); const data = await res.json(); if (data.script) { setScript(data.script); showToast(t.success, 'success') } } catch { showToast(t.error, 'error') } setLoading(false) }
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {uiLanguages.map((langOpt) => (
-                <button
-                  key={langOpt.code}
-                  onClick={() => setLanguage(langOpt.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === langOpt.code ? 'bg-red-500 text-white' : 'text-gray-400'
-                  }`}
-                >
-                  {langOpt.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">🎬</span>
-          </div>
-        </div>
-      </header>
-
+      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50"><div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"><Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link><div className="flex items-center gap-4"><div className="flex items-center bg-gray-800 rounded-lg p-1">{languages.map((lang) => (<button key={lang.code} onClick={() => setLanguage(lang.code)} className={`px-2 py-1 rounded text-xs transition ${language === lang.code ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{lang.flag}</button>))}</div><span className="text-2xl">🎬</span></div></div></header>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-red-400 text-sm font-medium">
-              {language === 'en' ? '🎬 4 CREDITS' : '🎬 4 KREDİ'}
-            </span>
+        <div className="text-center mb-8"><span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full mb-4">⚡ {t.credits}</span><h1 className="text-4xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800 rounded-2xl p-6 mb-8">
+          <div className="space-y-4">
+            <div><label className="block text-sm font-medium mb-2">{t.topic}</label><textarea value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t.placeholder} rows={3} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl focus:border-purple-500 focus:outline-none resize-none" /></div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium mb-2">{t.platform}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl">{Object.entries(t.platforms).map(([k,v]) => <option key={k} value={k}>{v as string}</option>)}</select></div>
+              <div><label className="block text-sm font-medium mb-2">{t.duration}</label><select value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl">{Object.entries(t.durations).map(([k,v]) => <option key={k} value={k}>{v as string}</option>)}</select></div>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2">
-            {language === 'en' ? 'Video Script Writer' : 'Video Script Writer'}
-          </h1>
-          <p className="text-gray-400">
-            {language === 'en' ? 'Professional scripts for YouTube & TikTok' : 'YouTube ve TikTok için profesyonel scriptler'}
-          </p>
+          <button onClick={handleGenerate} disabled={loading} className="w-full mt-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold transition disabled:opacity-50">{loading ? t.generating : t.generate}</button>
         </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Platform</label>
-              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none">
-                <option value="youtube">📺 YouTube</option>
-                <option value="tiktok">🎵 TikTok</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">{language === 'en' ? 'Duration' : 'Süre'}</label>
-              <select value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none">
-                <option value="30">30 {language === 'en' ? 'seconds' : 'saniye'}</option>
-                <option value="60">60 {language === 'en' ? 'seconds' : 'saniye'}</option>
-                <option value="180">3 {language === 'en' ? 'minutes' : 'dakika'}</option>
-              </select>
-            </div>
-          </div>
-
-          <label className="block text-sm font-medium mb-2">{language === 'en' ? 'Hook Style' : 'Hook Stili'}</label>
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {[
-              { value: 'question', label: language === 'en' ? 'Question' : 'Soru', icon: '❓' },
-              { value: 'shocking', label: language === 'en' ? 'Shocking' : 'Şok', icon: '🔥' },
-              { value: 'storytelling', label: language === 'en' ? 'Story' : 'Hikaye', icon: '📖' }
-            ].map(s => (
-              <button key={s.value} onClick={() => setStyle(s.value)} className={`p-3 rounded-xl border-2 transition ${style === s.value ? 'border-red-500 bg-red-500/10' : 'border-gray-700'}`}>
-                {s.icon} {s.label}
-              </button>
-            ))}
-          </div>
-
-          <label className="block text-sm font-medium mb-2">{language === 'en' ? 'Topic' : 'Konu'}</label>
-          <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none" placeholder={language === 'en' ? 'e.g., Morning Routine' : 'örn., Sabah Rutini'} />
-        </div>
-
-        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8">
-          {loading ? <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</> : <>🎬 {language === 'en' ? 'Generate Script' : 'Script Oluştur'}</>}
-        </button>
-
-        {script && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-400">
-                <span className="mr-4">📊 {script.totalWords} {language === 'en' ? 'words' : 'kelime'}</span>
-                <span>⏱️ {script.estimatedReadingTime}</span>
-              </div>
-              <button onClick={copyScript} className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm transition">
-                📋 {language === 'en' ? 'Copy' : 'Kopyala'}
-              </button>
-            </div>
-            {script.sections.map((section: any, i: number) => (
-              <div key={i} className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-red-400 font-mono text-sm">{section.timestamp}</span>
-                  <h3 className="font-bold">{section.title}</h3>
-                </div>
-                <p className="text-gray-300">{section.content}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        {script && (<div className="bg-gray-800 rounded-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-semibold">{t.result}</h2><button onClick={() => {navigator.clipboard.writeText(script); showToast(t.copied, 'success')}} className="px-4 py-2 bg-purple-600 rounded-lg text-sm">{t.copy}</button></div><pre className="whitespace-pre-wrap text-gray-300">{script}</pre></div>)}
       </main>
     </div>
   )
