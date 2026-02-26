@@ -1,70 +1,45 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
-import { translations, Language } from './translations'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 
-export type { Language }
+export type Language = 'en' | 'tr' | 'ru' | 'de' | 'fr'
 
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: any
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+const LanguageContext = createContext<LanguageContextType>({
+  language: 'en',
+  setLanguage: () => {}
+})
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en')
-  const [mounted, setMounted] = useState(false)
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLang] = useState<Language>('en')
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    try {
-      const savedLang = localStorage.getItem('language') as Language
-      if (savedLang && ['en', 'tr', 'ru', 'de', 'fr'].includes(savedLang)) {
-        setLanguageState(savedLang)
-      }
-    } catch (e) {
-      // localStorage erişim hatası
+    const saved = localStorage.getItem('site_lang') as Language
+    if (saved && ['en', 'tr', 'ru', 'de', 'fr'].includes(saved)) {
+      setLang(saved)
     }
+    setReady(true)
   }, [])
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang)
-    try {
-      localStorage.setItem('language', lang)
-    } catch (e) {
-      // localStorage erişim hatası
-    }
+    setLang(lang)
+    localStorage.setItem('site_lang', lang)
   }
 
-  // t'yi language değiştiğinde yeniden hesapla
-  const t = useMemo(() => {
-    const result = translations[language]
-    console.log('Language changed to:', language, 'translations:', result?.nav?.features)
-    return result || translations.en
-  }, [language])
-
-  // Hydration için mounted kontrolü
-  if (!mounted) {
-    return (
-      <LanguageContext.Provider value={{ language: 'en', setLanguage, t: translations.en }}>
-        {children}
-      </LanguageContext.Provider>
-    )
+  if (!ready) {
+    return <>{children}</>
   }
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage }}>
       {children}
     </LanguageContext.Provider>
   )
 }
 
-export function useLanguage() {
-  const context = useContext(LanguageContext)
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider')
-  }
-  return context
-}
+export const useLanguage = () => useContext(LanguageContext)
