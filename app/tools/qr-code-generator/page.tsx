@@ -13,7 +13,7 @@ const texts: Record<Language, any> = {
   fr: { back: '← Retour', title: 'Générateur de QR Code', subtitle: 'Créez des QR codes pour vos liens', credits: 'GRATUIT', inputLabel: 'Entrez URL ou texte', inputPlaceholder: 'https://votre-site.com ou texte...', generate: 'Générer le QR Code', generating: 'Création du QR code...', result: 'Votre QR Code', download: 'Télécharger', emptyInput: 'Entrez une URL ou du texte', success: 'QR Code créé!' }
 }
 
-const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+const langs: { code: Language; flag: string; name: string }[] = [{ code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }]
 
 export default function QRCodeGeneratorPage() {
   const [input, setInput] = useState('')
@@ -37,7 +37,7 @@ export default function QRCodeGeneratorPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
           <div className="flex items-center gap-3">
-            <div className="flex bg-gray-800 rounded-xl p-1 border border-gray-700">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2.5 py-1.5 rounded-lg text-sm transition ${language === l.code ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}>{l.flag}</button>))}</div>
+            <div className="relative group"><button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700 hover:bg-gray-700 transition"><span>🌐</span><span>{language.toUpperCase()}</span></button><div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}</div></div>
             <span className="text-2xl">📱</span>
           </div>
         </div>

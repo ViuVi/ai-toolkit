@@ -24,13 +24,6 @@ const texts: Record<Language, any> = {
     creditUnit: 'credits',
     loading: 'Loading...',
     noTools: 'No tools found',
-    viewAll: 'View All',
-    quickStats: {
-      title: 'Quick Stats',
-      creditsUsed: 'Credits Used',
-      toolsUsed: 'Tools Used',
-      thisMonth: 'This Month'
-    },
     adModal: {
       title: '🎬 Earn Free Credits',
       subtitle: 'Watch a 15-second ad to earn 5 credits instantly!',
@@ -38,8 +31,7 @@ const texts: Record<Language, any> = {
       watching: 'Watching ad...',
       earnBtn: 'Watch Ad (+5 Credits)',
       limitReached: 'Daily limit reached (5/5)',
-      close: 'Close',
-      success: '+5 Credits added!'
+      close: 'Close'
     },
     categories: {
       all: 'All Tools',
@@ -76,7 +68,7 @@ const texts: Record<Language, any> = {
     credits: 'Kredi',
     watchAd: 'Kredi Kazan',
     earnCredits: 'Reklam izle, 5 kredi kazan!',
-    logout: 'Çıkış',
+    logout: 'Çıkış Yap',
     welcome: 'Tekrar hoş geldin',
     subtitle: 'Bugün ne oluşturmak istersin?',
     searchPlaceholder: 'Araç ara...',
@@ -86,13 +78,6 @@ const texts: Record<Language, any> = {
     creditUnit: 'kredi',
     loading: 'Yükleniyor...',
     noTools: 'Araç bulunamadı',
-    viewAll: 'Tümünü Gör',
-    quickStats: {
-      title: 'Hızlı İstatistikler',
-      creditsUsed: 'Kullanılan Kredi',
-      toolsUsed: 'Kullanılan Araç',
-      thisMonth: 'Bu Ay'
-    },
     adModal: {
       title: '🎬 Ücretsiz Kredi Kazan',
       subtitle: '15 saniyelik reklam izleyerek anında 5 kredi kazan!',
@@ -100,8 +85,7 @@ const texts: Record<Language, any> = {
       watching: 'Reklam izleniyor...',
       earnBtn: 'Reklam İzle (+5 Kredi)',
       limitReached: 'Günlük limit doldu (5/5)',
-      close: 'Kapat',
-      success: '+5 Kredi eklendi!'
+      close: 'Kapat'
     },
     categories: {
       all: 'Tüm Araçlar',
@@ -148,9 +132,7 @@ const texts: Record<Language, any> = {
     creditUnit: 'кредитов',
     loading: 'Загрузка...',
     noTools: 'Инструменты не найдены',
-    viewAll: 'Показать все',
-    quickStats: { title: 'Статистика', creditsUsed: 'Использовано кредитов', toolsUsed: 'Использовано инструментов', thisMonth: 'В этом месяце' },
-    adModal: { title: '🎬 Бесплатные кредиты', subtitle: 'Посмотрите 15-секундную рекламу и получите 5 кредитов!', remaining: 'реклам осталось сегодня', watching: 'Просмотр рекламы...', earnBtn: 'Смотреть (+5 кредитов)', limitReached: 'Дневной лимит (5/5)', close: 'Закрыть', success: '+5 кредитов добавлено!' },
+    adModal: { title: '🎬 Бесплатные кредиты', subtitle: 'Посмотрите 15-секундную рекламу и получите 5 кредитов!', remaining: 'реклам осталось сегодня', watching: 'Просмотр рекламы...', earnBtn: 'Смотреть (+5 кредитов)', limitReached: 'Дневной лимит (5/5)', close: 'Закрыть' },
     categories: { all: 'Все инструменты', video: 'Видео', content: 'Контент', analysis: 'Аналитика', optimization: 'Оптимизация', planning: 'Планирование' },
     tools: {
       videoScript: { name: 'Сценарист видео', desc: 'Создавайте сценарии для YouTube и TikTok' },
@@ -189,9 +171,7 @@ const texts: Record<Language, any> = {
     creditUnit: 'Credits',
     loading: 'Laden...',
     noTools: 'Keine Tools gefunden',
-    viewAll: 'Alle anzeigen',
-    quickStats: { title: 'Statistiken', creditsUsed: 'Credits verwendet', toolsUsed: 'Tools verwendet', thisMonth: 'Diesen Monat' },
-    adModal: { title: '🎬 Kostenlose Credits', subtitle: '15-Sekunden-Werbung ansehen und 5 Credits erhalten!', remaining: 'Werbungen übrig heute', watching: 'Werbung läuft...', earnBtn: 'Ansehen (+5 Credits)', limitReached: 'Tageslimit erreicht (5/5)', close: 'Schließen', success: '+5 Credits hinzugefügt!' },
+    adModal: { title: '🎬 Kostenlose Credits', subtitle: '15-Sekunden-Werbung ansehen und 5 Credits erhalten!', remaining: 'Werbungen übrig heute', watching: 'Werbung läuft...', earnBtn: 'Ansehen (+5 Credits)', limitReached: 'Tageslimit erreicht (5/5)', close: 'Schließen' },
     categories: { all: 'Alle Tools', video: 'Video', content: 'Inhalt', analysis: 'Analytik', optimization: 'Optimierung', planning: 'Planung' },
     tools: {
       videoScript: { name: 'Video-Skript-Autor', desc: 'Erstellen Sie Skripte für YouTube und TikTok' },
@@ -230,9 +210,7 @@ const texts: Record<Language, any> = {
     creditUnit: 'crédits',
     loading: 'Chargement...',
     noTools: 'Aucun outil trouvé',
-    viewAll: 'Voir tout',
-    quickStats: { title: 'Statistiques', creditsUsed: 'Crédits utilisés', toolsUsed: 'Outils utilisés', thisMonth: 'Ce mois' },
-    adModal: { title: '🎬 Crédits gratuits', subtitle: 'Regardez une pub de 15 secondes pour 5 crédits!', remaining: 'pubs restantes aujourd\'hui', watching: 'Visionnage en cours...', earnBtn: 'Regarder (+5 crédits)', limitReached: 'Limite quotidienne (5/5)', close: 'Fermer', success: '+5 crédits ajoutés!' },
+    adModal: { title: '🎬 Crédits gratuits', subtitle: 'Regardez une pub de 15 secondes pour 5 crédits!', remaining: 'pubs restantes aujourd\'hui', watching: 'Visionnage en cours...', earnBtn: 'Regarder (+5 crédits)', limitReached: 'Limite quotidienne (5/5)', close: 'Fermer' },
     categories: { all: 'Tous les outils', video: 'Vidéo', content: 'Contenu', analysis: 'Analytique', optimization: 'Optimisation', planning: 'Planification' },
     tools: {
       videoScript: { name: 'Scénariste vidéo', desc: 'Créez des scripts pour YouTube et TikTok' },
@@ -258,11 +236,11 @@ const texts: Record<Language, any> = {
 }
 
 const langs: { code: Language; flag: string; name: string }[] = [
-  { code: 'en', flag: '🇺🇸', name: 'EN' },
-  { code: 'tr', flag: '🇹🇷', name: 'TR' },
-  { code: 'ru', flag: '🇷🇺', name: 'RU' },
-  { code: 'de', flag: '🇩🇪', name: 'DE' },
-  { code: 'fr', flag: '🇫🇷', name: 'FR' }
+  { code: 'en', flag: '🇺🇸', name: 'English' },
+  { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
+  { code: 'ru', flag: '🇷🇺', name: 'Русский' },
+  { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
+  { code: 'fr', flag: '🇫🇷', name: 'Français' }
 ]
 
 export default function DashboardPage() {
@@ -344,27 +322,22 @@ export default function DashboardPage() {
   }
 
   const tools = [
-    // Video Tools
     { id: 'videoScript', icon: '🎬', path: '/tools/video-script', credits: 4, category: 'video' },
     { id: 'textToSpeech', icon: '🔊', path: '/tools/text-to-speech', credits: 3, category: 'video', new: true },
     { id: 'subtitleGenerator', icon: '📺', path: '/tools/subtitle-generator', credits: 5, category: 'video', hot: true },
-    // Content Creation
     { id: 'hookGenerator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content' },
     { id: 'captionWriter', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content' },
     { id: 'platformAdapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content' },
     { id: 'summarizer', icon: '📝', path: '/tools/summarize', credits: 2, category: 'content' },
-    // Analytics
     { id: 'competitorAnalysis', icon: '🔍', path: '/tools/competitor-analyzer', credits: 8, category: 'analysis', hot: true },
     { id: 'trendDetector', icon: '📊', path: '/tools/trend-detector', credits: 5, category: 'analysis' },
     { id: 'engagementPredictor', icon: '📈', path: '/tools/engagement-predictor', credits: 5, category: 'analysis' },
     { id: 'brandVoice', icon: '🎯', path: '/tools/brand-voice', credits: 2, category: 'analysis' },
     { id: 'viralScore', icon: '🚀', path: '/tools/viral-score', credits: 3, category: 'analysis' },
     { id: 'sentiment', icon: '😊', path: '/tools/sentiment', credits: 3, category: 'analysis' },
-    // Optimization (Free)
     { id: 'hashtagGenerator', icon: '#️⃣', path: '/tools/hashtag-generator', credits: 0, category: 'optimization', free: true },
     { id: 'bioGenerator', icon: '👤', path: '/tools/bio-generator', credits: 0, category: 'optimization', free: true },
     { id: 'qrCode', icon: '📱', path: '/tools/qr-code-generator', credits: 0, category: 'optimization', free: true },
-    // Planning (Free)
     { id: 'postScheduler', icon: '📅', path: '/tools/post-scheduler', credits: 0, category: 'planning', free: true },
     { id: 'contentCalendar', icon: '🗓️', path: '/tools/content-calendar', credits: 0, category: 'planning', free: true },
   ]
@@ -415,13 +388,19 @@ export default function DashboardPage() {
 
             {/* Right Side */}
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Language Selector */}
-              <div className="flex bg-gray-800/50 rounded-lg p-0.5 border border-gray-700/50">
-                {langs.map((l) => (
-                  <button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2 py-1 rounded-md text-xs font-medium transition ${language === l.code ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}>
-                    {l.flag}
-                  </button>
-                ))}
+              {/* Language Dropdown - Ana sayfa gibi */}
+              <div className="relative group">
+                <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800/80 rounded-lg text-sm font-medium text-gray-300 border border-gray-700 hover:bg-gray-700 transition">
+                  <span>🌐</span>
+                  <span>{language.toUpperCase()}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  {langs.map((l) => (
+                    <button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>
+                      {l.flag} {l.name}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Pro Button */}
@@ -445,9 +424,9 @@ export default function DashboardPage() {
                 <span className="text-sm text-green-400 font-bold">+5</span>
               </button>
 
-              {/* Logout */}
-              <button onClick={handleLogout} className="p-2 hover:bg-gray-700/50 rounded-lg transition text-gray-400 hover:text-white" title={t.logout}>
-                🚪
+              {/* Logout - Yazı olarak */}
+              <button onClick={handleLogout} className="px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                {t.logout}
               </button>
             </div>
           </div>
@@ -466,7 +445,6 @@ export default function DashboardPage() {
 
         {/* Search & Categories */}
         <div className="mb-8 space-y-4">
-          {/* Search */}
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
             <input
@@ -478,7 +456,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Categories */}
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
@@ -508,37 +485,16 @@ export default function DashboardPage() {
                   href={tool.path}
                   className="group relative bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-5 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1"
                 >
-                  {/* Tags */}
                   <div className="absolute top-3 right-3 flex gap-1.5">
-                    {tool.free && (
-                      <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
-                        {t.freeTag}
-                      </span>
-                    )}
-                    {tool.new && (
-                      <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/30">
-                        {t.newTag}
-                      </span>
-                    )}
-                    {tool.hot && (
-                      <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs font-bold rounded-full border border-orange-500/30">
-                        {t.hotTag}
-                      </span>
-                    )}
+                    {tool.free && <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">{t.freeTag}</span>}
+                    {tool.new && <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/30">{t.newTag}</span>}
+                    {tool.hot && <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs font-bold rounded-full border border-orange-500/30">{t.hotTag}</span>}
                   </div>
-
-                  {/* Icon */}
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <span className="text-3xl">{tool.icon}</span>
                   </div>
-
-                  {/* Content */}
-                  <h3 className="text-lg font-semibold text-white mb-1.5 group-hover:text-purple-400 transition">
-                    {toolText?.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-white mb-1.5 group-hover:text-purple-400 transition">{toolText?.name}</h3>
                   <p className="text-sm text-gray-400 mb-4 line-clamp-2">{toolText?.desc}</p>
-
-                  {/* Footer */}
                   <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
                     <span className={`text-sm font-medium ${tool.credits > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
                       {tool.credits > 0 ? `${tool.credits} ${t.creditUnit}` : t.freeTag}
@@ -584,9 +540,7 @@ export default function DashboardPage() {
                   <span className="text-sm text-gray-500">{MAX_DAILY_ADS - dailyAdsWatched} {t.adModal.remaining}</span>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setShowAdModal(false)} className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition font-medium">
-                    {t.adModal.close}
-                  </button>
+                  <button onClick={() => setShowAdModal(false)} className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition font-medium">{t.adModal.close}</button>
                   <button onClick={handleWatchAd} disabled={dailyAdsWatched >= MAX_DAILY_ADS} className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium">
                     {dailyAdsWatched >= MAX_DAILY_ADS ? t.adModal.limitReached : t.adModal.earnBtn}
                   </button>

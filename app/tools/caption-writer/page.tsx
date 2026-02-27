@@ -14,7 +14,7 @@ const texts: Record<Language, any> = {
   fr: { back: '← Retour', title: 'Rédacteur de légendes', subtitle: 'Écrivez des légendes pour les réseaux sociaux', credits: '2 Crédits', inputLabel: 'Décrivez votre post', inputPlaceholder: 'ex: Photo de coucher de soleil à la plage...', platformLabel: 'Plateforme', platforms: { instagram: 'Instagram', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook', tiktok: 'TikTok' }, toneLabel: 'Ton', tones: { casual: 'Décontracté', professional: 'Professionnel', humorous: 'Humoristique', inspirational: 'Inspirant' }, generate: 'Générer la légende', generating: 'Écriture...', result: 'Votre légende', copy: 'Copier', copied: 'Copié!', emptyInput: 'Décrivez le contenu', success: 'Légende créée!', error: 'Erreur' }
 }
 
-const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+const langs: { code: Language; flag: string; name: string }[] = [{ code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }]
 
 export default function CaptionWriterPage() {
   const [input, setInput] = useState('')

@@ -12,7 +12,7 @@ const texts: Record<Language, any> = {
   de: { back: '← Zurück', title: 'Text zu Sprache', subtitle: 'Wandeln Sie Text in natürliche Sprache um', credits: '3 Credits', inputLabel: 'Text eingeben', inputPlaceholder: 'Geben Sie den Text ein...', voiceLabel: 'Stimme', voices: { male: 'Männlich', female: 'Weiblich' }, generate: 'Audio erstellen', generating: 'Konvertierung...', result: 'Audio', play: 'Abspielen', download: 'Herunterladen', emptyInput: 'Bitte Text eingeben', success: 'Audio erstellt!', error: 'Fehler' },
   fr: { back: '← Retour', title: 'Synthèse vocale', subtitle: 'Convertissez le texte en voix naturelle', credits: '3 Crédits', inputLabel: 'Entrez le texte', inputPlaceholder: 'Tapez le texte à convertir...', voiceLabel: 'Voix', voices: { male: 'Masculine', female: 'Féminine' }, generate: 'Générer l\'audio', generating: 'Conversion...', result: 'Audio', play: 'Lecture', download: 'Télécharger', emptyInput: 'Veuillez entrer du texte', success: 'Audio créé!', error: 'Erreur' }
 }
-const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+const langs: { code: Language; flag: string; name: string }[] = [{ code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }]
 
 export default function TextToSpeechPage() {
   const [input, setInput] = useState(''); const [voice, setVoice] = useState('female'); const [audioUrl, setAudioUrl] = useState(''); const [loading, setLoading] = useState(false); const [userId, setUserId] = useState<string | null>(null)

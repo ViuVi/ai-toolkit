@@ -14,7 +14,7 @@ const texts: Record<Language, any> = {
   fr: { back: '← Retour', title: 'Générateur de hashtags', subtitle: 'Hashtags tendance pour une portée maximale', credits: 'GRATUIT', inputLabel: 'De quoi parle votre contenu?', inputPlaceholder: 'Décrivez votre post, photo ou vidéo...', platformLabel: 'Plateforme', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Nombre de hashtags', counts: { '10': '10 hashtags', '20': '20 hashtags', '30': '30 hashtags' }, generate: 'Générer les hashtags', generating: 'Recherche des meilleurs hashtags...', result: 'Vos hashtags', copy: 'Tout copier', copied: 'Copié!', emptyInput: 'Décrivez le contenu', success: 'Hashtags créés!', error: 'Erreur' }
 }
 
-const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
+const langs: { code: Language; flag: string; name: string }[] = [{ code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }]
 
 export default function HashtagGeneratorPage() {
   const [input, setInput] = useState('')
@@ -49,7 +49,7 @@ export default function HashtagGeneratorPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
           <div className="flex items-center gap-3">
-            <div className="flex bg-gray-800 rounded-xl p-1 border border-gray-700">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2.5 py-1.5 rounded-lg text-sm transition ${language === l.code ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}>{l.flag}</button>))}</div>
+            <div className="relative group"><button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700 hover:bg-gray-700 transition"><span>🌐</span><span>{language.toUpperCase()}</span></button><div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}</div></div>
             <span className="text-2xl">#️⃣</span>
           </div>
         </div>
