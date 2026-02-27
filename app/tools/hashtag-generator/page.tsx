@@ -6,405 +6,70 @@ import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
-const languages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
+const texts: Record<Language, any> = {
+  en: { back: '← Back', title: 'Hashtag Generator', subtitle: 'Generate trending hashtags for maximum reach', credits: 'FREE', inputLabel: 'What is your content about?', inputPlaceholder: 'Describe your post, photo, or video...', platformLabel: 'Platform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Number of hashtags', counts: { '10': '10 hashtags', '20': '20 hashtags', '30': '30 hashtags' }, generate: 'Generate Hashtags', generating: 'Finding best hashtags...', result: 'Your Hashtags', copy: 'Copy All', copied: 'Copied!', emptyInput: 'Please describe your content', success: 'Hashtags generated!', error: 'Error occurred' },
+  tr: { back: '← Geri', title: 'Hashtag Üretici', subtitle: 'Maksimum erişim için trend hashtagler', credits: 'ÜCRETSİZ', inputLabel: 'İçeriğiniz ne hakkında?', inputPlaceholder: 'Postunuzu, fotoğrafınızı veya videonuzu tanımlayın...', platformLabel: 'Platform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Hashtag sayısı', counts: { '10': '10 hashtag', '20': '20 hashtag', '30': '30 hashtag' }, generate: 'Hashtag Oluştur', generating: 'En iyi hashtagler bulunuyor...', result: 'Hashtagleriniz', copy: 'Tümünü Kopyala', copied: 'Kopyalandı!', emptyInput: 'Lütfen içeriğinizi tanımlayın', success: 'Hashtagler oluşturuldu!', error: 'Hata oluştu' },
+  ru: { back: '← Назад', title: 'Генератор хэштегов', subtitle: 'Трендовые хэштеги для максимального охвата', credits: 'БЕСПЛАТНО', inputLabel: 'О чём ваш контент?', inputPlaceholder: 'Опишите ваш пост, фото или видео...', platformLabel: 'Платформа', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Количество хэштегов', counts: { '10': '10 хэштегов', '20': '20 хэштегов', '30': '30 хэштегов' }, generate: 'Создать хэштеги', generating: 'Поиск лучших хэштегов...', result: 'Ваши хэштеги', copy: 'Копировать все', copied: 'Скопировано!', emptyInput: 'Опишите контент', success: 'Хэштеги созданы!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Hashtag-Generator', subtitle: 'Trendige Hashtags für maximale Reichweite', credits: 'KOSTENLOS', inputLabel: 'Worum geht es in Ihrem Inhalt?', inputPlaceholder: 'Beschreiben Sie Ihren Post, Foto oder Video...', platformLabel: 'Plattform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Anzahl der Hashtags', counts: { '10': '10 Hashtags', '20': '20 Hashtags', '30': '30 Hashtags' }, generate: 'Hashtags generieren', generating: 'Suche beste Hashtags...', result: 'Ihre Hashtags', copy: 'Alle kopieren', copied: 'Kopiert!', emptyInput: 'Beschreiben Sie den Inhalt', success: 'Hashtags erstellt!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Générateur de hashtags', subtitle: 'Hashtags tendance pour une portée maximale', credits: 'GRATUIT', inputLabel: 'De quoi parle votre contenu?', inputPlaceholder: 'Décrivez votre post, photo ou vidéo...', platformLabel: 'Plateforme', platforms: { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', youtube: 'YouTube', linkedin: 'LinkedIn' }, countLabel: 'Nombre de hashtags', counts: { '10': '10 hashtags', '20': '20 hashtags', '30': '30 hashtags' }, generate: 'Générer les hashtags', generating: 'Recherche des meilleurs hashtags...', result: 'Vos hashtags', copy: 'Tout copier', copied: 'Copié!', emptyInput: 'Décrivez le contenu', success: 'Hashtags créés!', error: 'Erreur' }
+}
+
+const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
 
 export default function HashtagGeneratorPage() {
-  const [topic, setTopic] = useState('')
+  const [input, setInput] = useState('')
   const [platform, setPlatform] = useState('instagram')
-  const [niche, setNiche] = useState('')
-  const [hashtags, setHashtags] = useState<any>(null)
+  const [count, setCount] = useState('20')
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
-  const [copiedCategory, setCopiedCategory] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
+  const [copied, setCopied] = useState(false)
+  const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
+  const t = texts[language]
 
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
+  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) }) }, [])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      showToast(
-        language === 'en' ? 'Please enter a topic' : 'Lütfen bir konu girin',
-        'warning'
-      )
-      return
-    }
-
-    setLoading(true)
-    setHashtags(null)
-
+    if (!input.trim()) { showToast(t.emptyInput, 'warning'); return }
+    setLoading(true); setHashtags([])
     try {
-      const response = await fetch('/api/hashtag-generator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, niche, userId, language }),
-      })
-
+      const response = await fetch('/api/hashtag-generator', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input, platform, count: parseInt(count), userId, language }) })
       const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setHashtags(data.hashtags)
-        showToast(
-          language === 'tr'
-            ? 'Hashtagler oluşturuldu!'
-            : language === 'ru'
-            ? 'Хэштеги сгенерированы!'
-            : language === 'de'
-            ? 'Hashtags wurden generiert!'
-            : language === 'fr'
-            ? 'Hashtags générés !'
-            : 'Hashtags generated!',
-          'success'
-        )
-      }
-    } catch (err) {
-      showToast(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred',
-        'error'
-      )
-      console.error('Hashtag generation error:', err)
-    }
-
+      if (data.error) { showToast(data.error, 'error') } else { setHashtags(data.hashtags || []); showToast(t.success, 'success') }
+    } catch (err) { showToast(t.error, 'error') }
     setLoading(false)
   }
 
-  const copyCategory = (category: string, tags: string[]) => {
-    const text = tags.map(tag => `#${tag}`).join(' ')
-    navigator.clipboard.writeText(text)
-    setCopiedCategory(category)
-    showToast(
-      language === 'tr'
-        ? 'Panoya kopyalandı!'
-        : language === 'ru'
-        ? 'Скопировано в буфер обмена!'
-        : language === 'de'
-        ? 'In die Zwischenablage kopiert!'
-        : language === 'fr'
-        ? 'Copié dans le presse-papiers !'
-        : 'Copied to clipboard!',
-      'success'
-    )
-    setTimeout(() => setCopiedCategory(null), 2000)
-  }
-
-  const copyAll = () => {
-    if (!hashtags) return
-    
-    const allTags = [
-      ...hashtags.trending,
-      ...hashtags.niche,
-      ...hashtags.branded
-    ]
-    const text = allTags.map(tag => `#${tag}`).join(' ')
-    navigator.clipboard.writeText(text)
-    showToast(
-      language === 'tr'
-        ? 'Tüm hashtagler kopyalandı!'
-        : language === 'ru'
-        ? 'Все хэштеги скопированы!'
-        : language === 'de'
-        ? 'Alle Hashtags wurden kopiert!'
-        : language === 'fr'
-        ? 'Tous les hashtags ont été copiés !'
-        : 'All hashtags copied!',
-      'success'
-    )
-  }
-
-  const platforms = [
-    { value: 'instagram', label: 'Instagram', icon: '📸', color: 'from-pink-500 to-purple-500' },
-    { value: 'tiktok', label: 'TikTok', icon: '🎵', color: 'from-cyan-500 to-blue-500' },
-    { value: 'youtube', label: 'YouTube', icon: '📺', color: 'from-red-500 to-pink-500' },
-    { value: 'twitter', label: 'Twitter', icon: '🐦', color: 'from-blue-400 to-blue-600' },
-    { value: 'linkedin', label: 'LinkedIn', icon: '💼', color: 'from-blue-600 to-blue-800' },
-  ]
-
-  const quickTopics = [
-    { label: 'Fitness', icon: '💪' },
-    { label: 'Travel', icon: '✈️' },
-    { label: 'Food', icon: '🍕' },
-    { label: 'Fashion', icon: '👗' },
-    { label: 'Tech', icon: '💻' },
-    { label: 'Gaming', icon: '🎮' },
-  ]
+  const handleCopy = () => { navigator.clipboard.writeText(hashtags.join(' ')); setCopied(true); showToast(t.copied, 'success'); setTimeout(() => setCopied(false), 2000) }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === lang.code ? 'bg-blue-500 text-white' : 'text-gray-400'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">🏷️</span>
+      <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-800 rounded-xl p-1 border border-gray-700">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2.5 py-1.5 rounded-lg text-sm transition ${language === l.code ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}>{l.flag}</button>))}</div>
+            <span className="text-2xl">#️⃣</span>
           </div>
         </div>
       </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-green-400 text-sm font-medium">
-              {language === 'en' ? '✨ FREE - AI-POWERED HASHTAGS' : '✨ ÜCRETSİZ - AI DESTEKLİ HASHTAG'}
-            </span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">
-            {language === 'en' ? 'AI Hashtag Generator' : 'AI Hashtag Üretici'}
-          </h1>
-          <p className="text-gray-400">
-            {language === 'en' 
-              ? 'AI-powered viral hashtags for maximum reach' 
-              : 'Maksimum erişim için trend hashtagler oluştur'}
-          </p>
+          <div className="inline-flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>🎁</span><span>{t.credits}</span></div>
+          <div className="text-5xl mb-4">#️⃣</div>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t.title}</h1>
+          <p className="text-gray-400">{t.subtitle}</p>
         </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          {/* Platform Selection */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '1. Select Platform' : '1. Platform Seç'}
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-            {platforms.map(p => (
-              <button
-                key={p.value}
-                onClick={() => setPlatform(p.value)}
-                className={`p-4 rounded-xl border-2 transition ${
-                  platform === p.value
-                    ? 'border-blue-500 bg-blue-500/10'
-                    : 'border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                <div className="text-3xl mb-2">{p.icon}</div>
-                <div className="text-sm font-medium">{p.label}</div>
-              </button>
-            ))}
+        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6 space-y-5">
+          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t.inputLabel}</label><textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.inputPlaceholder} className="w-full h-32 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">{Object.entries(t.platforms).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}</select></div>
+            <div><label className="block text-sm font-medium text-gray-300 mb-2">{t.countLabel}</label><select value={count} onChange={(e) => setCount(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">{Object.entries(t.counts).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}</select></div>
           </div>
-
-          {/* Topic Input */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '2. Enter Topic' : '2. Konu Gir'}
-          </label>
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none transition mb-3"
-            placeholder={language === 'en' ? 'e.g., Fitness, Travel, Cooking...' : 'örn., Fitness, Seyahat, Yemek...'}
-          />
-
-          {/* Quick Topics */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {quickTopics.map((qt, i) => (
-              <button
-                key={i}
-                onClick={() => setTopic(qt.label)}
-                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition"
-              >
-                {qt.icon} {qt.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Niche Input (Optional) */}
-          <label className="block text-sm font-medium mb-3">
-            {language === 'en' ? '3. Niche (Optional)' : '3. Niş (İsteğe Bağlı)'}
-          </label>
-          <input
-            type="text"
-            value={niche}
-            onChange={(e) => setNiche(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none transition"
-            placeholder={language === 'en' ? 'e.g., Home Workouts, Vegan Food...' : 'örn., Evde Spor, Vegan Yemekler...'}
-          />
         </div>
-
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
-        >
-          {loading ? (
-            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
-          ) : (
-            <>🏷️ {language === 'en' ? 'Generate Hashtags' : 'Hashtag Oluştur'}</>
-          )}
-        </button>
-
-        {hashtags && (
-          <div className="animate-fade-in space-y-6">
-            {/* Copy All Button */}
-            <div className="flex justify-end">
-              <button
-                onClick={copyAll}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl font-medium transition"
-              >
-                📋 {language === 'en' ? 'Copy All Hashtags' : 'Tüm Hashtagleri Kopyala'}
-              </button>
-            </div>
-
-            {/* Trending Hashtags */}
-            <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    🔥 {language === 'en' ? 'Trending Hashtags' : 'Trend Hashtagler'}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    {language === 'en' ? 'High engagement, viral potential' : 'Yüksek etkileşim, viral potansiyel'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => copyCategory('trending', hashtags.trending)}
-                  className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm transition"
-                >
-                  {copiedCategory === 'trending' ? '✓' : '📋'} {language === 'en' ? 'Copy' : 'Kopyala'}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {hashtags.trending.map((tag: string, i: number) => (
-                  <span key={i} className="bg-red-500/20 text-red-300 px-3 py-2 rounded-lg text-sm font-mono">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Niche Hashtags */}
-            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    🎯 {language === 'en' ? 'Niche Hashtags' : 'Niş Hashtagler'}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    {language === 'en' ? 'Target audience, organic growth' : 'Hedef kitle, organik büyüme'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => copyCategory('niche', hashtags.niche)}
-                  className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-sm transition"
-                >
-                  {copiedCategory === 'niche' ? '✓' : '📋'} {language === 'en' ? 'Copy' : 'Kopyala'}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {hashtags.niche.map((tag: string, i: number) => (
-                  <span key={i} className="bg-blue-500/20 text-blue-300 px-3 py-2 rounded-lg text-sm font-mono">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Branded Hashtags */}
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    🏷️ {language === 'en' ? 'Branded Hashtags' : 'Marka Hashtagleri'}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    {language === 'en' ? 'Campaign ideas, memorable tags' : 'Kampanya fikirleri, akılda kalıcı'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => copyCategory('branded', hashtags.branded)}
-                  className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg text-sm transition"
-                >
-                  {copiedCategory === 'branded' ? '✓' : '📋'} {language === 'en' ? 'Copy' : 'Kopyala'}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {hashtags.branded.map((tag: string, i: number) => (
-                  <span key={i} className="bg-purple-500/20 text-purple-300 px-3 py-2 rounded-lg text-sm font-mono">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Tips */}
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                💡 {language === 'en' ? 'Pro Tips' : 'Pro İpuçları'}
-              </h3>
-              <ul className="text-gray-400 text-sm space-y-2">
-                <li>• {language === 'en' 
-                  ? 'Mix trending and niche hashtags for best results' 
-                  : 'En iyi sonuç için trend ve niş hashtagleri karıştır'}</li>
-                <li>• {language === 'en' 
-                  ? 'Instagram: 10-15 hashtags | TikTok: 3-5 hashtags' 
-                  : 'Instagram: 10-15 hashtag | TikTok: 3-5 hashtag'}</li>
-                <li>• {language === 'en' 
-                  ? 'Update your hashtag strategy every 2-3 weeks' 
-                  : 'Hashtag stratejini her 2-3 haftada bir güncelle'}</li>
-                <li>• {language === 'en' 
-                  ? 'Avoid banned or spam hashtags' 
-                  : 'Yasaklı veya spam hashtaglerden kaçın'}</li>
-              </ul>
-            </div>
-          </div>
-        )}
-
-        {!hashtags && (
-          <div className="mt-8 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-6">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              💡 {language === 'en' ? 'How it works' : 'Nasıl Çalışır'}
-            </h3>
-            <ul className="text-gray-400 text-sm space-y-2">
-              <li>• {language === 'en' ? 'Select your social media platform' : 'Sosyal medya platformunu seç'}</li>
-              <li>• {language === 'en' ? 'Enter your content topic' : 'İçerik konunu gir'}</li>
-              <li>• {language === 'en' ? 'AI generates 3 categories of hashtags' : 'AI 3 kategori hashtag üretir'}</li>
-              <li>• {language === 'en' ? 'Copy and paste to your posts' : 'Kopyala ve postlarına yapıştır'}</li>
-            </ul>
-          </div>
-        )}
+        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.generating}</>) : (<><span>#️⃣</span>{t.generate}</>)}</button>
+        {hashtags.length > 0 && (<div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6"><div className="flex items-center justify-between mb-4"><h2 className="text-xl font-semibold">{t.result}</h2><button onClick={handleCopy} className={`px-4 py-2 rounded-xl text-sm font-medium transition ${copied ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'}`}>{copied ? t.copied : t.copy}</button></div><div className="flex flex-wrap gap-2">{hashtags.map((tag, i) => (<span key={i} className="px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-lg text-sm font-medium">{tag}</span>))}</div></div>)}
       </main>
     </div>
   )

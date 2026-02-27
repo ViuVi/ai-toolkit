@@ -1,194 +1,33 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
+import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
-const languages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'tr', label: 'TR' },
-  { code: 'ru', label: 'RU' },
-  { code: 'de', label: 'DE' },
-  { code: 'fr', label: 'FR' }
-]
+const texts: Record<Language, any> = {
+  en: { back: '← Back', title: 'Text Summarizer', subtitle: 'Summarize long texts into key points', credits: '2 Credits', inputLabel: 'Paste your text', inputPlaceholder: 'Paste the article, document, or text you want to summarize...', lengthLabel: 'Summary length', lengths: { short: 'Short (1-2 sentences)', medium: 'Medium (1 paragraph)', long: 'Detailed (2-3 paragraphs)' }, generate: 'Summarize', generating: 'Summarizing...', result: 'Summary', copy: 'Copy', copied: 'Copied!', emptyInput: 'Please paste some text', success: 'Summarized!', error: 'Error occurred' },
+  tr: { back: '← Geri', title: 'Metin Özetleyici', subtitle: 'Uzun metinleri ana noktalara özetle', credits: '2 Kredi', inputLabel: 'Metninizi yapıştırın', inputPlaceholder: 'Özetlemek istediğiniz makale, belge veya metni yapıştırın...', lengthLabel: 'Özet uzunluğu', lengths: { short: 'Kısa (1-2 cümle)', medium: 'Orta (1 paragraf)', long: 'Detaylı (2-3 paragraf)' }, generate: 'Özetle', generating: 'Özetleniyor...', result: 'Özet', copy: 'Kopyala', copied: 'Kopyalandı!', emptyInput: 'Lütfen metin yapıştırın', success: 'Özetlendi!', error: 'Hata oluştu' },
+  ru: { back: '← Назад', title: 'Суммаризатор', subtitle: 'Сокращайте тексты до ключевых моментов', credits: '2 кредита', inputLabel: 'Вставьте текст', inputPlaceholder: 'Вставьте статью или документ...', lengthLabel: 'Длина резюме', lengths: { short: 'Короткое', medium: 'Среднее', long: 'Подробное' }, generate: 'Сократить', generating: 'Сокращение...', result: 'Резюме', copy: 'Копировать', copied: 'Скопировано!', emptyInput: 'Вставьте текст', success: 'Сокращено!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Text-Zusammenfasser', subtitle: 'Fassen Sie lange Texte zusammen', credits: '2 Credits', inputLabel: 'Fügen Sie Ihren Text ein', inputPlaceholder: 'Fügen Sie den Artikel oder Text ein...', lengthLabel: 'Zusammenfassungslänge', lengths: { short: 'Kurz', medium: 'Mittel', long: 'Detailliert' }, generate: 'Zusammenfassen', generating: 'Wird zusammengefasst...', result: 'Zusammenfassung', copy: 'Kopieren', copied: 'Kopiert!', emptyInput: 'Bitte Text einfügen', success: 'Zusammengefasst!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Résumeur de texte', subtitle: 'Résumez les textes longs en points clés', credits: '2 Crédits', inputLabel: 'Collez votre texte', inputPlaceholder: 'Collez l\'article ou le document...', lengthLabel: 'Longueur du résumé', lengths: { short: 'Court', medium: 'Moyen', long: 'Détaillé' }, generate: 'Résumer', generating: 'Résumé en cours...', result: 'Résumé', copy: 'Copier', copied: 'Copié!', emptyInput: 'Collez du texte', success: 'Résumé!', error: 'Erreur' }
+}
+const langs: { code: Language; flag: string }[] = [{ code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }]
 
 export default function SummarizePage() {
-  const [inputText, setInputText] = useState('')
-  const [summary, setSummary] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const { t, language, setLanguage } = useLanguage()
-
-  useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUser()
-  }, [])
-
-  const handleSummarize = async () => {
-    if (!inputText.trim()) {
-      setError(language === 'en' ? 'Please enter text to summarize' : 'Lütfen özetlenecek metin girin')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    setSummary('')
-
-    try {
-      const response = await fetch('/api/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText, userId }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        if (data.error === 'Insufficient credits') {
-          setError(
-            language === 'tr'
-              ? 'Yeterli kredi yok! Lütfen kredi satın alın.'
-              : language === 'ru'
-              ? 'Недостаточно кредитов! Пожалуйста, купите ещё.'
-              : language === 'de'
-              ? 'Nicht genug Guthaben! Bitte kaufen Sie weitere Credits.'
-              : language === 'fr'
-              ? 'Crédits insuffisants ! Veuillez en acheter davantage.'
-              : 'Not enough credits! Please buy more credits.'
-          )
-        } else {
-          setError(data.error)
-        }
-      } else {
-        setSummary(data.summary)
-      }
-    } catch (err) {
-      setError(
-        language === 'tr'
-          ? 'Hata oluştu'
-          : language === 'ru'
-          ? 'Произошла ошибка'
-          : language === 'de'
-          ? 'Ein Fehler ist aufgetreten'
-          : language === 'fr'
-          ? 'Une erreur est survenue'
-          : 'An error occurred'
-      )
-    }
-
-    setLoading(false)
-  }
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(summary)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const exampleText = `Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals. The term "artificial intelligence" had previously been used to describe machines that mimic and display "human" cognitive skills that are associated with the human mind, such as "learning" and "problem-solving".`
-
+  const [input, setInput] = useState(''); const [length, setLength] = useState('medium'); const [result, setResult] = useState(''); const [loading, setLoading] = useState(false); const [userId, setUserId] = useState<string | null>(null); const [copied, setCopied] = useState(false)
+  const { language, setLanguage } = useLanguage(); const { showToast } = useToast(); const t = texts[language]
+  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) }) }, [])
+  const handleGenerate = async () => { if (!input.trim()) { showToast(t.emptyInput, 'warning'); return }; setLoading(true); setResult(''); try { const response = await fetch('/api/summarize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input, length, userId, language }) }); const data = await response.json(); if (data.error) { showToast(data.error, 'error') } else { setResult(data.summary || JSON.stringify(data)); showToast(t.success, 'success') } } catch (err) { showToast(t.error, 'error') }; setLoading(false) }
+  const handleCopy = () => { navigator.clipboard.writeText(result); setCopied(true); showToast(t.copied, 'success'); setTimeout(() => setCopied(false), 2000) }
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <span>←</span>
-            <span>
-              {language === 'tr'
-                ? 'Panele Dön'
-                : language === 'ru'
-                ? 'Назад к панели'
-                : language === 'de'
-                ? 'Zurück zum Dashboard'
-                : language === 'fr'
-                ? 'Retour au tableau de bord'
-                : 'Back to Dashboard'}
-            </span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 rounded text-xs transition ${
-                    language === lang.code ? 'bg-blue-600 text-white' : 'text-gray-400'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-            <span className="text-2xl">📝</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Main */}
+      <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50"><div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between"><Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link><div className="flex items-center gap-3"><div className="flex bg-gray-800 rounded-xl p-1 border border-gray-700">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2.5 py-1.5 rounded-lg text-sm transition ${language === l.code ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}>{l.flag}</button>))}</div><span className="text-2xl">📝</span></div></div></header>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-4">
-            <span className="text-blue-400 text-sm">{(language === 'tr' ? '2 Kredi' : '2 Credits')}</span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">{(language === 'tr' ? 'Metin Özetleyici' : 'Text Summarizer')}</h1>
-          <p className="text-gray-400">{(language === 'tr' ? 'Metninizi özetleyin' : 'Summarize your text')}</p>
-        </div>
-
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium mb-3">{(language === 'tr' ? 'Metin' : 'Text')}</label>
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            className="w-full h-48 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none resize-none transition"
-            placeholder={(language === 'tr' ? 'Metninizi girin...' : 'Enter your text...')}
-          />
-          <button
-            onClick={() => setInputText(exampleText)}
-            className="mt-3 text-sm text-blue-400 hover:underline"
-          >
-            📌 {language === 'en' ? 'Load example text' : 'Örnek metin yükle'}
-          </button>
-        </div>
-
-        <button
-          onClick={handleSummarize}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-6"
-        >
-          {loading ? (
-            <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</>
-          ) : (
-            <>✨ {(language === 'tr' ? 'Özetle' : 'Summarize')}</>
-          )}
-        </button>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-6">
-            {error}
-          </div>
-        )}
-
-        {summary && (
-          <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium">{(language === 'tr' ? 'Özet' : 'Summary')}</label>
-              <button onClick={handleCopy} className="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg transition">
-                {copied ? <>✓ {(language === 'tr' ? 'Kopyalandı!' : 'Copied!')}</> : <>📋 {(language === 'tr' ? 'Kopyala' : 'Copy')}</>}
-              </button>
-            </div>
-            <div className="bg-gray-900 rounded-xl p-4">
-              <p className="text-gray-200 leading-relaxed">{summary}</p>
-            </div>
-          </div>
-        )}
+        <div className="text-center mb-8"><div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>⚡</span><span>{t.credits}</span></div><div className="text-5xl mb-4">📝</div><h1 className="text-3xl sm:text-4xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6 space-y-5"><div><label className="block text-sm font-medium text-gray-300 mb-2">{t.inputLabel}</label><textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.inputPlaceholder} className="w-full h-48 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" /></div><div><label className="block text-sm font-medium text-gray-300 mb-2">{t.lengthLabel}</label><select value={length} onChange={(e) => setLength(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">{Object.entries(t.lengths).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}</select></div></div>
+        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.generating}</>) : (<><span>📝</span>{t.generate}</>)}</button>
+        {result && (<div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6"><div className="flex items-center justify-between mb-4"><h2 className="text-xl font-semibold">{t.result}</h2><button onClick={handleCopy} className={`px-4 py-2 rounded-xl text-sm font-medium transition ${copied ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'}`}>{copied ? t.copied : t.copy}</button></div><div className="bg-gray-900/50 rounded-xl p-5 border border-gray-700"><p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{result}</p></div></div>)}
       </main>
     </div>
   )
