@@ -10,7 +10,7 @@ import { useLanguage, Language } from '@/lib/LanguageContext'
 const texts: Record<Language, any> = {
   en: {
     nav: { features: 'Features', tools: 'Tools', pricing: 'Pricing', dashboard: 'Dashboard', signIn: 'Sign In', getStarted: 'Get Started' },
-    hero: { badge: '18 Professional Tools Available', title: 'Create Viral Content', highlight: '10x Faster', subtitle: 'AI-powered tools for content creators. Generate captions, analyze trends, schedule posts, and predict viral potential - all in one platform.', cta: 'Start Free Trial', cta2: 'Explore Tools' },
+    hero: { badge: '17 Professional Tools Available', title: 'Create Viral Content', highlight: '10x Faster', subtitle: 'AI-powered tools for content creators. Generate captions, analyze trends, schedule posts, and predict viral potential - all in one platform.', cta: 'Start Free Trial', cta2: 'Explore Tools' },
     stats: { tools: 'Tools', users: 'Users', contents: 'Contents Created', rating: 'Rating' },
     features: { title: 'Everything You Need to', highlight: 'Go Viral', subtitle: 'Professional tools designed for modern content creators', items: [
       { icon: '📹', title: 'Video Tools', desc: 'Subtitle generator, script writer and more' },
@@ -20,7 +20,7 @@ const texts: Record<Language, any> = {
       { icon: '🚀', title: 'AI-Powered', desc: 'Viral score predictor, brand voice analyzer' },
       { icon: '🗓️', title: 'Planning', desc: 'Content calendar, post scheduler' }
     ]},
-    toolsSection: { title: '18 Powerful Tools', subtitle: 'One Platform', desc: "From content creation to analytics, we've got you covered", freeTitle: 'Free Tools', freeDesc: 'No credit card required', premiumTitle: 'Premium Tools', premiumDesc: 'AI-powered features', freeItems: ['Bio Generator', 'QR Code Generator', 'Hashtag Generator'], premiumItems: ['Subtitle Generator', 'Video Script Writer', 'Competitor Analysis', 'Trend Detector', 'And more...'] },
+    toolsSection: { title: '17 Powerful Tools', subtitle: 'One Platform', desc: "From content creation to analytics, we've got you covered", freeTitle: 'Free Tools', freeDesc: 'No credit card required', premiumTitle: 'Premium Tools', premiumDesc: 'AI-powered features', freeItems: ['Bio Generator', 'QR Code Generator', 'Hashtag Generator'], premiumItems: ['Subtitle Generator', 'Video Script Writer', 'Competitor Analysis', 'Trend Detector', 'And more...'] },
     pricing: { title: 'Simple, Transparent', highlight: 'Pricing', subtitle: 'Start free, upgrade when you need more', free: { name: 'Free', price: '$0', period: '/month', credits: '50 credits/month', features: ['Access to free tools', 'Basic support', 'Watch ads for credits'], cta: 'Start Free' }, pro: { name: 'Pro', price: '$4.99', period: '/month', credits: '1000 credits/month', badge: 'RECOMMENDED', features: ['All AI tools', 'Priority support', 'No ads', 'Unlimited generations'], cta: 'Upgrade to Pro' } },
     cta: { title: 'Ready to Go Viral?', subtitle: 'Join thousands of creators using Media Tool Kit', button: 'Start Free Trial - 50 Credits Free' },
     footer: { desc: 'AI-powered content creation tools for modern creators.', product: 'Product', info: 'Info', about: 'About', contact: 'Contact', privacy: 'Privacy', copyright: '© 2025 Media Tool Kit. All rights reserved.' },
@@ -53,7 +53,7 @@ const texts: Record<Language, any> = {
   },
   tr: {
     nav: { features: 'Özellikler', tools: 'Araçlar', pricing: 'Fiyatlandırma', dashboard: 'Panel', signIn: 'Giriş Yap', getStarted: 'Başla' },
-    hero: { badge: '18 Profesyonel Araç Mevcut', title: 'Viral İçerikler Üret', highlight: '10x Daha Hızlı', subtitle: 'İçerik üreticileri için yapay zeka destekli araçlar. Caption oluştur, trendleri analiz et, paylaşımları planla ve viral potansiyeli tahmin et.', cta: 'Ücretsiz Dene', cta2: 'Araçları Keşfet' },
+    hero: { badge: '17 Profesyonel Araç Mevcut', title: 'Viral İçerikler Üret', highlight: '10x Daha Hızlı', subtitle: 'İçerik üreticileri için yapay zeka destekli araçlar. Caption oluştur, trendleri analiz et, paylaşımları planla ve viral potansiyeli tahmin et.', cta: 'Ücretsiz Dene', cta2: 'Araçları Keşfet' },
     stats: { tools: 'Araç', users: 'Kullanıcı', contents: 'Oluşturulan İçerik', rating: 'Puan' },
     features: { title: 'Viral Olman İçin', highlight: 'Gereken Her Şey', subtitle: 'Modern içerik üreticileri için tasarlanmış profesyonel araçlar', items: [
       { icon: '📹', title: 'Video Araçları', desc: 'Alt yazı ekleme, script yazma ve daha fazlası' },
@@ -63,7 +63,7 @@ const texts: Record<Language, any> = {
       { icon: '🚀', title: 'Yapay Zeka', desc: 'Viral tahmin, marka sesi analizi' },
       { icon: '🗓️', title: 'Planlama', desc: 'İçerik takvimi, paylaşım planlayıcı' }
     ]},
-    toolsSection: { title: '18 Güçlü Araç', subtitle: 'Tek Platform', desc: 'İçerik üretiminden analize, her şeyi kapsıyoruz', freeTitle: 'Ücretsiz Araçlar', freeDesc: 'Kredi kartı gerekmez', premiumTitle: 'Premium Araçlar', premiumDesc: 'Yapay zeka destekli', freeItems: ['Bio Oluşturucu', 'QR Kod Oluşturucu', 'Hashtag Üretici'], premiumItems: ['Alt Yazı Ekleyici', 'Video Script Yazıcı', 'Rakip Analizi', 'Trend Dedektörü', 've daha fazlası...'] },
+    toolsSection: { title: '17 Güçlü Araç', subtitle: 'Tek Platform', desc: 'İçerik üretiminden analize, her şeyi kapsıyoruz', freeTitle: 'Ücretsiz Araçlar', freeDesc: 'Kredi kartı gerekmez', premiumTitle: 'Premium Araçlar', premiumDesc: 'Yapay zeka destekli', freeItems: ['Bio Oluşturucu', 'QR Kod Oluşturucu', 'Hashtag Üretici'], premiumItems: ['Alt Yazı Ekleyici', 'Video Script Yazıcı', 'Rakip Analizi', 'Trend Dedektörü', 've daha fazlası...'] },
     pricing: { title: 'Basit, Şeffaf', highlight: 'Fiyatlandırma', subtitle: 'Ücretsiz başla, ihtiyacın olduğunda yükselt', free: { name: 'Ücretsiz', price: '$0', period: '/ay', credits: '50 kredi/ay', features: ['Ücretsiz araçlara erişim', 'Temel destek', 'Reklam izle kredi kazan'], cta: 'Ücretsiz Başla' }, pro: { name: 'Pro', price: '$4.99', period: '/ay', credits: '1000 kredi/ay', badge: 'ÖNERİLEN', features: ['Tüm AI araçlarına erişim', 'Öncelikli destek', 'Reklamsız kullanım', 'Sınırsız üretim'], cta: "Pro'ya Geç" } },
     cta: { title: 'Viral Olmaya Hazır mısın?', subtitle: 'Media Tool Kit kullanan binlerce içerik üreticiye katıl', button: 'Ücretsiz Dene - 50 Kredi Bedava' },
     footer: { desc: 'Modern içerik üreticiler için yapay zeka destekli araçlar.', product: 'Ürün', info: 'Bilgi', about: 'Hakkımızda', contact: 'İletişim', privacy: 'Gizlilik', copyright: '© 2025 Media Tool Kit. Tüm hakları saklıdır.' },
@@ -106,7 +106,7 @@ const texts: Record<Language, any> = {
       { icon: '🚀', title: 'AI', desc: 'Прогноз вирусности, голос бренда' },
       { icon: '🗓️', title: 'Планирование', desc: 'Календарь контента' }
     ]},
-    toolsSection: { title: '18 мощных инструментов', subtitle: 'Одна платформа', desc: 'От создания контента до аналитики', freeTitle: 'Бесплатные', freeDesc: 'Без карты', premiumTitle: 'Премиум', premiumDesc: 'AI функции', freeItems: ['Генератор био', 'QR коды', 'Хэштеги'], premiumItems: ['Субтитры', 'Сценарии', 'Анализ конкурентов', 'Тренды', 'И ещё...'] },
+    toolsSection: { title: '17 мощных инструментов', subtitle: 'Одна платформа', desc: 'От создания контента до аналитики', freeTitle: 'Бесплатные', freeDesc: 'Без карты', premiumTitle: 'Премиум', premiumDesc: 'AI функции', freeItems: ['Генератор био', 'QR коды', 'Хэштеги'], premiumItems: ['Субтитры', 'Сценарии', 'Анализ конкурентов', 'Тренды', 'И ещё...'] },
     pricing: { title: 'Простые, прозрачные', highlight: 'цены', subtitle: 'Начните бесплатно', free: { name: 'Бесплатно', price: '$0', period: '/мес', credits: '50 кредитов/мес', features: ['Бесплатные инструменты', 'Базовая поддержка', 'Реклама за кредиты'], cta: 'Начать бесплатно' }, pro: { name: 'Pro', price: '$4.99', period: '/мес', credits: '1000 кредитов/мес', badge: 'РЕКОМЕНДУЕТСЯ', features: ['Все AI инструменты', 'Приоритетная поддержка', 'Без рекламы', 'Безлимит'], cta: 'Перейти на Pro' } },
     cta: { title: 'Готовы стать вирусными?', subtitle: 'Присоединяйтесь к тысячам создателей', button: 'Начать бесплатно - 50 кредитов' },
     footer: { desc: 'AI инструменты для создателей контента.', product: 'Продукт', info: 'Информация', about: 'О нас', contact: 'Контакты', privacy: 'Конфиденциальность', copyright: '© 2025 Media Tool Kit.' },
@@ -134,7 +134,7 @@ const texts: Record<Language, any> = {
       { icon: '🚀', title: 'KI-gestützt', desc: 'Viral-Score, Markenstimme' },
       { icon: '🗓️', title: 'Planung', desc: 'Content-Kalender' }
     ]},
-    toolsSection: { title: '18 leistungsstarke Tools', subtitle: 'Eine Plattform', desc: 'Von Content-Erstellung bis Analytik', freeTitle: 'Kostenlose Tools', freeDesc: 'Keine Karte nötig', premiumTitle: 'Premium Tools', premiumDesc: 'KI-Funktionen', freeItems: ['Bio-Generator', 'QR-Codes', 'Hashtags'], premiumItems: ['Untertitel', 'Video-Skripte', 'Wettbewerbsanalyse', 'Trends', 'Und mehr...'] },
+    toolsSection: { title: '17 leistungsstarke Tools', subtitle: 'Eine Plattform', desc: 'Von Content-Erstellung bis Analytik', freeTitle: 'Kostenlose Tools', freeDesc: 'Keine Karte nötig', premiumTitle: 'Premium Tools', premiumDesc: 'KI-Funktionen', freeItems: ['Bio-Generator', 'QR-Codes', 'Hashtags'], premiumItems: ['Untertitel', 'Video-Skripte', 'Wettbewerbsanalyse', 'Trends', 'Und mehr...'] },
     pricing: { title: 'Einfache, transparente', highlight: 'Preise', subtitle: 'Kostenlos starten', free: { name: 'Kostenlos', price: '$0', period: '/Mo', credits: '50 Credits/Mo', features: ['Kostenlose Tools', 'Basis-Support', 'Werbung für Credits'], cta: 'Kostenlos starten' }, pro: { name: 'Pro', price: '$4.99', period: '/Mo', credits: '1000 Credits/Mo', badge: 'EMPFOHLEN', features: ['Alle AI-Tools', 'Prioritäts-Support', 'Keine Werbung', 'Unbegrenzt'], cta: 'Auf Pro upgraden' } },
     cta: { title: 'Bereit viral zu gehen?', subtitle: 'Schließen Sie sich tausenden Content-Erstellern an', button: 'Kostenlos starten - 50 Credits' },
     footer: { desc: 'KI-Tools für Content-Ersteller.', product: 'Produkt', info: 'Info', about: 'Über uns', contact: 'Kontakt', privacy: 'Datenschutz', copyright: '© 2025 Media Tool Kit.' },

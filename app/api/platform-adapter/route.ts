@@ -6,215 +6,109 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const PLATFORMS: Record<string, { name: string; maxChars: number; style: string }> = {
+  instagram: { name: 'Instagram', maxChars: 2200, style: 'visual, emoji-friendly, storytelling' },
+  twitter: { name: 'Twitter/X', maxChars: 280, style: 'concise, punchy, witty' },
+  linkedin: { name: 'LinkedIn', maxChars: 3000, style: 'professional, insightful, value-driven' },
+  tiktok: { name: 'TikTok', maxChars: 2200, style: 'trendy, casual, hook-focused' },
+  facebook: { name: 'Facebook', maxChars: 5000, style: 'conversational, community-focused' },
+  youtube: { name: 'YouTube', maxChars: 5000, style: 'SEO-optimized, descriptive' }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { content, userId } = await request.json()
+    const { content, targetPlatforms, userId, language = 'en' } = await request.json()
 
-    if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    if (!content || !targetPlatforms?.length) {
+      return NextResponse.json({ error: language === 'tr' ? 'İçerik ve platform gerekli' : 'Content and platforms required' }, { status: 400 })
     }
 
-    // Kredi kontrolü
     if (userId) {
-      const { data: credits } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
-
+      const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
       if (!credits || credits.balance < 3) {
-        return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 })
+        return NextResponse.json({ error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits' }, { status: 403 })
       }
     }
 
-    console.log('🔄 Adapting content to platforms...')
+    const adaptations = await adaptContent(content, targetPlatforms, language)
 
-    // Önce içeriği özetle
-    const summaryResponse = await fetch(
-      'https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn',
-      {
+    if (userId) {
+      const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
+      if (c) {
+        await supabase.from('credits').update({ balance: c.balance - 3, total_used: c.total_used + 3, updated_at: new Date().toISOString() }).eq('user_id', userId)
+      }
+    }
+
+    return NextResponse.json({ adaptations })
+  } catch (error) {
+    console.error('Platform Adapter Error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
+async function adaptContent(content: string, targetPlatforms: string[], language: string) {
+  const results = []
+
+  for (const platform of targetPlatforms) {
+    const spec = PLATFORMS[platform]
+    if (!spec) continue
+
+    const prompt = language === 'tr'
+      ? `Bu içeriği ${spec.name} için uyarla. Stil: ${spec.style}. Max ${spec.maxChars} karakter. Sadece uyarlanmış metni yaz:\n\n"${content}"`
+      : `Adapt this content for ${spec.name}. Style: ${spec.style}. Max ${spec.maxChars} chars. Only write the adapted text:\n\n"${content}"`
+
+    let adaptedContent = ''
+
+    try {
+      const response = await fetch('https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: content.substring(0, 1500),
-          parameters: { max_length: 100, min_length: 30 },
+          inputs: prompt,
+          parameters: { max_new_tokens: 400, temperature: 0.7, return_full_text: false }
         }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        adaptedContent = (result[0]?.generated_text || '').replace(/```[\s\S]*?```/g, '').replace(/^["']|["']$/g, '').trim()
       }
-    )
+    } catch (e) { console.error('AI Error:', e) }
 
-    const summaryResult = await summaryResponse.json()
-    const summary = summaryResult[0]?.summary_text || content.substring(0, 200)
-
-    // Platform versiyonları oluştur
-    const platforms = {
-      instagram: generateInstagram(content, summary),
-      linkedin: generateLinkedIn(content, summary),
-      twitter: generateTwitter(content, summary),
-      tiktok: generateTikTok(content, summary),
+    if (!adaptedContent || adaptedContent.length < 10) {
+      adaptedContent = adaptFallback(content, platform, spec, language)
     }
 
-    // Kredi düşür
-    if (userId) {
-      const { data: currentCredits } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
-
-      if (currentCredits) {
-        await supabase
-          .from('credits')
-          .update({
-            balance: currentCredits.balance - 3,
-            total_used: currentCredits.total_used + 3,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-
-        await supabase
-          .from('usage_history')
-          .insert({
-            user_id: userId,
-            tool_name: 'platform-adapter',
-            tool_display_name: 'Platform Adapter',
-            credits_used: 3,
-            input_preview: content.substring(0, 200),
-            output_preview: '4 platform versions generated',
-          })
-      }
+    if (adaptedContent.length > spec.maxChars) {
+      adaptedContent = adaptedContent.substring(0, spec.maxChars - 3) + '...'
     }
 
-    return NextResponse.json({ platforms, summary })
-
-  } catch (error) {
-    console.log('❌ Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    results.push({
+      platform,
+      platformName: spec.name,
+      content: adaptedContent,
+      characterCount: adaptedContent.length,
+      maxCharacters: spec.maxChars
+    })
   }
+
+  return results
 }
 
-function generateInstagram(content: string, summary: string): string {
-  const hashtags = extractHashtags(content)
-  const emojis = ['✨', '🔥', '💡', '🚀', '💪', '🎯', '⭐', '💯']
-  const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
+function adaptFallback(content: string, platform: string, spec: any, language: string) {
+  const short = content.length > 200 ? content.substring(0, 200) + '...' : content
   
-  return `${randomEmoji} ${summary}
-
-${getKeyPoints(content)}
-
-💬 What do you think? Drop a comment below!
-
-${hashtags}
-
-#contentcreator #socialmedia #growthmindset`
-}
-
-function generateLinkedIn(content: string, summary: string): string {
-  return `${summary}
-
-Here's what I've learned:
-
-${getKeyPoints(content)}
-
-The key takeaway? ${getConclusion(content)}
-
-What's your experience with this? I'd love to hear your thoughts in the comments.
-
----
-♻️ Repost if this resonates with you
-🔔 Follow for more insights`
-}
-
-function generateTwitter(content: string, summary: string): string {
-  const shortSummary = summary.length > 200 ? summary.substring(0, 197) + '...' : summary
-  
-  return `🧵 Thread:
-
-${shortSummary}
-
-1/ ${getFirstPoint(content)}
-
-2/ ${getSecondPoint(content)}
-
-3/ ${getThirdPoint(content)}
-
-Like & repost if you found this useful! 🔄`
-}
-
-function generateTikTok(content: string, summary: string): string {
-  return `🎬 TIKTOK SCRIPT:
-
-[HOOK - First 3 seconds]
-"Did you know that ${getHook(content)}?"
-
-[MAIN CONTENT]
-${getBulletPoints(content)}
-
-[CALL TO ACTION]
-"Follow for more tips like this! And comment below with your thoughts."
-
-[CAPTION]
-${summary.substring(0, 100)}... #fyp #viral #tips`
-}
-
-function extractHashtags(content: string): string {
-  const words = content.toLowerCase().split(/\s+/)
-  const commonWords = ['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'whom', 'whose', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']
-  
-  const filteredWords = words.filter(function(word: string) { return word.length > 4 && !commonWords.includes(word) })
-  const uniqueWords = filteredWords.filter(function(word: string, index: number, self: string[]) { return self.indexOf(word) === index })
-  const topWords = uniqueWords.slice(0, 5)
-  const keywords = topWords.map(function(word: string) { return '#' + word.replace(/[^a-z]/g, '') })
-  
-  return keywords.join(' ')
-}
-
-function getKeyPoints(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const filteredSentences = allSentences.filter(function(s: string) { return s.trim().length > 20 })
-  const topSentences = filteredSentences.slice(0, 3)
-  const formattedSentences = topSentences.map(function(s: string) { return '→ ' + s.trim() })
-  return formattedSentences.join('\n')
-}
-
-function getConclusion(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const sentences = allSentences.filter(function(s: string) { return s.trim().length > 10 })
-  return sentences[sentences.length - 1]?.trim() || 'Action leads to results.'
-}
-
-function getFirstPoint(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const sentences = allSentences.filter(function(s: string) { return s.trim().length > 20 })
-  return sentences[0]?.trim().substring(0, 250) || 'Key insight here'
-}
-
-function getSecondPoint(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const sentences = allSentences.filter(function(s: string) { return s.trim().length > 20 })
-  return sentences[1]?.trim().substring(0, 250) || 'Another important point'
-}
-
-function getThirdPoint(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const sentences = allSentences.filter(function(s: string) { return s.trim().length > 20 })
-  return sentences[2]?.trim().substring(0, 250) || 'Final thought'
-}
-
-function getHook(content: string): string {
-  const firstSentence = content.split(/[.!?]+/)[0]?.trim()
-  return firstSentence?.substring(0, 100) || 'this simple trick can change everything'
-}
-
-function getBulletPoints(content: string): string {
-  const allSentences = content.split(/[.!?]+/)
-  const filtered = allSentences.filter(function(s: string) { return s.trim().length > 15 })
-  const sentences = filtered.slice(0, 4)
-  const bullets: string[] = []
-  for (let i = 0; i < sentences.length; i++) {
-    bullets.push((i + 1) + '. ' + sentences[i].trim())
+  const templates: Record<string, Record<string, string>> = {
+    twitter: { tr: `💡 ${short.substring(0, 250)}`, en: `💡 ${short.substring(0, 250)}` },
+    instagram: { tr: `✨ ${content}\n\n💬 Yorumlarda buluşalım!\n\n#içerik #keşfet`, en: `✨ ${content}\n\n💬 Let me know in comments!\n\n#content #explore` },
+    linkedin: { tr: `${content}\n\nSiz ne düşünüyorsunuz? 👇\n\n#kariyer #gelişim`, en: `${content}\n\nWhat are your thoughts? 👇\n\n#career #growth` },
+    tiktok: { tr: `🔥 ${short} #fyp #viral`, en: `🔥 ${short} #fyp #viral` },
+    facebook: { tr: `${content}\n\n👍 Beğen ve paylaş!`, en: `${content}\n\n👍 Like and share!` },
+    youtube: { tr: `${content}\n\n🔔 Abone olmayı unutma!`, en: `${content}\n\n🔔 Don't forget to subscribe!` }
   }
-  return bullets.join('\n')
+
+  return templates[platform]?.[language] || templates[platform]?.en || content
 }

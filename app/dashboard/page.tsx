@@ -44,7 +44,6 @@ const texts: Record<Language, any> = {
     tools: {
       videoScript: { name: 'Video Script Writer', desc: 'Create engaging scripts for YouTube, TikTok & Reels' },
       textToSpeech: { name: 'Text to Speech', desc: 'Convert your text into natural-sounding voice' },
-      subtitleGenerator: { name: 'Subtitle Generator', desc: 'Auto-generate subtitles for your videos' },
       hookGenerator: { name: 'Hook Generator', desc: 'Create attention-grabbing opening hooks' },
       captionWriter: { name: 'Caption Writer', desc: 'Write engaging captions that convert' },
       platformAdapter: { name: 'Platform Adapter', desc: 'Adapt content for different platforms' },
@@ -98,7 +97,6 @@ const texts: Record<Language, any> = {
     tools: {
       videoScript: { name: 'Video Script Yazarı', desc: 'YouTube, TikTok ve Reels için script oluştur' },
       textToSpeech: { name: 'Seslendirme', desc: 'Metni doğal sese dönüştür' },
-      subtitleGenerator: { name: 'Altyazı Üretici', desc: 'Videolar için otomatik altyazı oluştur' },
       hookGenerator: { name: 'Hook Üretici', desc: 'Dikkat çeken açılış hooklarını oluştur' },
       captionWriter: { name: 'Caption Yazarı', desc: 'Etkileşim getiren captionlar yaz' },
       platformAdapter: { name: 'Platform Uyarlayıcı', desc: 'İçeriği farklı platformlara uyarla' },
@@ -137,7 +135,6 @@ const texts: Record<Language, any> = {
     tools: {
       videoScript: { name: 'Сценарист видео', desc: 'Создавайте сценарии для YouTube и TikTok' },
       textToSpeech: { name: 'Озвучка текста', desc: 'Превращайте текст в естественную речь' },
-      subtitleGenerator: { name: 'Генератор субтитров', desc: 'Автоматические субтитры для видео' },
       hookGenerator: { name: 'Генератор хуков', desc: 'Создавайте привлекающие внимание хуки' },
       captionWriter: { name: 'Автор подписей', desc: 'Пишите вовлекающие подписи' },
       platformAdapter: { name: 'Адаптер платформ', desc: 'Адаптируйте контент для разных платформ' },
@@ -176,7 +173,6 @@ const texts: Record<Language, any> = {
     tools: {
       videoScript: { name: 'Video-Skript-Autor', desc: 'Erstellen Sie Skripte für YouTube und TikTok' },
       textToSpeech: { name: 'Text zu Sprache', desc: 'Wandeln Sie Text in natürliche Sprache um' },
-      subtitleGenerator: { name: 'Untertitel-Generator', desc: 'Automatische Untertitel für Videos' },
       hookGenerator: { name: 'Hook-Generator', desc: 'Erstellen Sie aufmerksamkeitsstarke Hooks' },
       captionWriter: { name: 'Caption-Autor', desc: 'Schreiben Sie ansprechende Captions' },
       platformAdapter: { name: 'Plattform-Adapter', desc: 'Passen Sie Inhalte für Plattformen an' },
@@ -215,7 +211,6 @@ const texts: Record<Language, any> = {
     tools: {
       videoScript: { name: 'Scénariste vidéo', desc: 'Créez des scripts pour YouTube et TikTok' },
       textToSpeech: { name: 'Synthèse vocale', desc: 'Convertissez le texte en voix naturelle' },
-      subtitleGenerator: { name: 'Générateur de sous-titres', desc: 'Sous-titres automatiques pour vidéos' },
       hookGenerator: { name: 'Générateur de hooks', desc: 'Créez des hooks accrocheurs' },
       captionWriter: { name: 'Rédacteur de légendes', desc: 'Écrivez des légendes engageantes' },
       platformAdapter: { name: 'Adaptateur de plateforme', desc: 'Adaptez le contenu pour les plateformes' },
@@ -324,7 +319,6 @@ export default function DashboardPage() {
   const tools = [
     { id: 'videoScript', icon: '🎬', path: '/tools/video-script', credits: 4, category: 'video' },
     { id: 'textToSpeech', icon: '🔊', path: '/tools/text-to-speech', credits: 3, category: 'video', new: true },
-    { id: 'subtitleGenerator', icon: '📺', path: '/tools/subtitle-generator', credits: 5, category: 'video', hot: true },
     { id: 'hookGenerator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content' },
     { id: 'captionWriter', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content' },
     { id: 'platformAdapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content' },

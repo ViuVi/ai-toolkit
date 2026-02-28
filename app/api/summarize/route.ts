@@ -1,101 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, userId } = await request.json()
+    const { text, length, style, userId, language = 'en' } = await request.json()
+    if (!text) return NextResponse.json({ error: language === 'tr' ? 'Metin gerekli' : 'Text required' }, { status: 400 })
 
-    if (!text) {
-      return NextResponse.json({ error: 'Text is required' }, { status: 400 })
-    }
-
-    // Kredi kontrolü
     if (userId) {
-      const { data: credits, error: creditsError } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
-
-      console.log('💳 Credits check:', credits, creditsError)
-
-      if (creditsError || !credits) {
-        return NextResponse.json({ error: 'Credits not found' }, { status: 403 })
-      }
-
-      if (credits.balance < 2) {
-        return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 })
-      }
+      const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
+      if (!credits || credits.balance < 2) return NextResponse.json({ error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits' }, { status: 403 })
     }
 
-    console.log('📝 Summarizing text...')
+    const summary = await summarizeText(text, length, style, language)
 
-    const response = await fetch(
-      'https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: text,
-          parameters: { max_length: 150, min_length: 30 },
-        }),
-      }
-    )
-
-    const result = await response.json()
-
-    if (result.error) {
-      if (result.error.includes('loading')) {
-        return NextResponse.json({ error: 'Model is loading. Please try again in 20 seconds.' }, { status: 503 })
-      }
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
-    const summary = result[0]?.summary_text || 'Could not generate summary'
-
-    // Kredi düşür ve geçmişe ekle
     if (userId) {
-      const { data: currentCredits } = await supabase
-        .from('credits')
-        .select('balance, total_used')
-        .eq('user_id', userId)
-        .single()
-
-      if (currentCredits) {
-        await supabase
-          .from('credits')
-          .update({
-            balance: currentCredits.balance - 2,
-            total_used: currentCredits.total_used + 2,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-
-        await supabase
-          .from('usage_history')
-          .insert({
-            user_id: userId,
-            tool_name: 'summarize',
-            tool_display_name: 'Text Summarizer',
-            credits_used: 2,
-            input_preview: text.substring(0, 200),
-            output_preview: summary.substring(0, 200),
-          })
-      }
+      const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
+      if (c) await supabase.from('credits').update({ balance: c.balance - 2, total_used: c.total_used + 2, updated_at: new Date().toISOString() }).eq('user_id', userId)
     }
 
     return NextResponse.json({ summary })
-
   } catch (error) {
-    console.log('❌ Error:', error)
+    console.error('Summarize Error:', error)
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
   }
+}
+
+async function summarizeText(text: string, length: string, style: string, language: string) {
+  const lengthDesc = length === 'short' ? '1-2 cümle' : length === 'medium' ? '3-4 cümle' : '5-6 cümle'
+  const prompt = language === 'tr'
+    ? `Bu metni ${lengthDesc} ile özetle:\n\n"${text.substring(0, 2000)}"`
+    : `Summarize this text in ${length === 'short' ? '1-2' : length === 'medium' ? '3-4' : '5-6'} sentences:\n\n"${text.substring(0, 2000)}"`
+
+  try {
+    const response = await fetch('https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 300, temperature: 0.5, return_full_text: false } }),
+    })
+    if (response.ok) {
+      const result = await response.json()
+      const summary = (result[0]?.generated_text || '').replace(/^["']|["']$/g, '').trim()
+      if (summary.length > 30) {
+        return { summary, originalLength: text.length, summaryLength: summary.length, reduction: Math.round((1 - summary.length / text.length) * 100) + '%' }
+      }
+    }
+  } catch (e) { console.error('AI Error:', e) }
+
+  const words = text.split(' ')
+  const targetLen = length === 'short' ? 30 : length === 'medium' ? 60 : 100
+  const summary = words.slice(0, targetLen).join(' ') + '...'
+  return { summary, originalLength: text.length, summaryLength: summary.length, reduction: Math.round((1 - summary.length / text.length) * 100) + '%' }
 }
