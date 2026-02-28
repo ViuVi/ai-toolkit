@@ -8,265 +8,140 @@ import { supabase } from '@/lib/supabase'
 
 const texts: Record<Language, any> = {
   en: {
-    back: '← Back to Dashboard',
-    title: 'Hook Generator',
-    subtitle: 'Create scroll-stopping hooks that grab attention instantly',
-    credits: '2 Credits',
-    inputLabel: 'What\'s your topic or content theme?',
-    inputPlaceholder: 'e.g., productivity tips, fitness motivation, cooking hacks, tech reviews...',
-    generate: 'Generate 5 Hooks',
-    generating: 'Creating your hooks...',
-    result: 'Your Hooks',
-    copy: 'Copy',
-    copied: 'Copied!',
-    copyAll: 'Copy All',
-    hookTypes: { question: 'Question', statement: 'Bold Statement', statistic: 'Statistic', story: 'Story Hook', controversial: 'Controversial' },
-    emptyInput: 'Please enter a topic first',
-    success: 'Hooks generated successfully!',
-    error: 'Something went wrong. Please try again.',
-    whyWorks: 'Why it works'
+    back: '← Back', title: 'Hook Generator', subtitle: 'Create attention-grabbing opening hooks', credits: '2 Credits',
+    topicLabel: 'Topic/Subject', topicPlaceholder: 'What is your content about?',
+    platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' },
+    hookTypeLabel: 'Hook Style', hookTypes: { question: 'Question', shocking: 'Shocking Statement', story: 'Story Opening', curiosity: 'Curiosity Gap' },
+    countLabel: 'Number of Hooks',
+    generate: 'Generate Hooks', generating: 'Creating hooks...',
+    results: 'Your Hooks', copy: 'Copy', copied: 'Copied!',
+    emptyInput: 'Please enter a topic', success: 'Hooks generated!', error: 'Error occurred'
   },
   tr: {
-    back: '← Panele Dön',
-    title: 'Hook Üretici',
-    subtitle: 'Kaydırmayı durduran, anında dikkat çeken hooklar oluşturun',
-    credits: '2 Kredi',
-    inputLabel: 'Konunuz veya içerik temanız nedir?',
-    inputPlaceholder: 'örn: verimlilik ipuçları, fitness motivasyonu, yemek hileleri, teknoloji incelemeleri...',
-    generate: '5 Hook Oluştur',
-    generating: 'Hooklar oluşturuluyor...',
-    result: 'Hooklarınız',
-    copy: 'Kopyala',
-    copied: 'Kopyalandı!',
-    copyAll: 'Tümünü Kopyala',
-    hookTypes: { question: 'Soru', statement: 'Cesur İfade', statistic: 'İstatistik', story: 'Hikaye', controversial: 'Tartışmalı' },
-    emptyInput: 'Lütfen önce bir konu girin',
-    success: 'Hooklar başarıyla oluşturuldu!',
-    error: 'Bir şeyler ters gitti. Lütfen tekrar deneyin.',
-    whyWorks: 'Neden işe yarar'
+    back: '← Geri', title: 'Hook Üretici', subtitle: 'Dikkat çeken açılış hooklarını oluşturun', credits: '2 Kredi',
+    topicLabel: 'Konu', topicPlaceholder: 'İçeriğiniz ne hakkında?',
+    platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' },
+    hookTypeLabel: 'Hook Stili', hookTypes: { question: 'Soru', shocking: 'Şok Edici', story: 'Hikaye Açılışı', curiosity: 'Merak Uyandırıcı' },
+    countLabel: 'Hook Sayısı',
+    generate: 'Hook Oluştur', generating: 'Hooklar oluşturuluyor...',
+    results: 'Hooklarınız', copy: 'Kopyala', copied: 'Kopyalandı!',
+    emptyInput: 'Lütfen konu girin', success: 'Hooklar oluşturuldu!', error: 'Hata oluştu'
   },
-  ru: {
-    back: '← Назад к панели',
-    title: 'Генератор хуков',
-    subtitle: 'Создавайте хуки, которые мгновенно привлекают внимание',
-    credits: '2 кредита',
-    inputLabel: 'Какая ваша тема или тема контента?',
-    inputPlaceholder: 'например: советы по продуктивности, фитнес-мотивация...',
-    generate: 'Создать 5 хуков',
-    generating: 'Создаём хуки...',
-    result: 'Ваши хуки',
-    copy: 'Копировать',
-    copied: 'Скопировано!',
-    copyAll: 'Копировать все',
-    hookTypes: { question: 'Вопрос', statement: 'Утверждение', statistic: 'Статистика', story: 'История', controversial: 'Спорный' },
-    emptyInput: 'Сначала введите тему',
-    success: 'Хуки успешно созданы!',
-    error: 'Что-то пошло не так. Попробуйте снова.',
-    whyWorks: 'Почему это работает'
-  },
-  de: {
-    back: '← Zurück zum Dashboard',
-    title: 'Hook-Generator',
-    subtitle: 'Erstellen Sie Hooks, die sofort Aufmerksamkeit erregen',
-    credits: '2 Credits',
-    inputLabel: 'Was ist Ihr Thema?',
-    inputPlaceholder: 'z.B.: Produktivitätstipps, Fitness-Motivation...',
-    generate: '5 Hooks generieren',
-    generating: 'Hooks werden erstellt...',
-    result: 'Ihre Hooks',
-    copy: 'Kopieren',
-    copied: 'Kopiert!',
-    copyAll: 'Alle kopieren',
-    hookTypes: { question: 'Frage', statement: 'Aussage', statistic: 'Statistik', story: 'Geschichte', controversial: 'Kontrovers' },
-    emptyInput: 'Bitte geben Sie zuerst ein Thema ein',
-    success: 'Hooks erfolgreich generiert!',
-    error: 'Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.',
-    whyWorks: 'Warum es funktioniert'
-  },
-  fr: {
-    back: '← Retour au tableau de bord',
-    title: 'Générateur de Hooks',
-    subtitle: 'Créez des hooks qui captent l\'attention instantanément',
-    credits: '2 Crédits',
-    inputLabel: 'Quel est votre sujet ou thème de contenu?',
-    inputPlaceholder: 'ex: conseils de productivité, motivation fitness...',
-    generate: 'Générer 5 Hooks',
-    generating: 'Création des hooks...',
-    result: 'Vos Hooks',
-    copy: 'Copier',
-    copied: 'Copié!',
-    copyAll: 'Tout copier',
-    hookTypes: { question: 'Question', statement: 'Déclaration', statistic: 'Statistique', story: 'Histoire', controversial: 'Controversé' },
-    emptyInput: 'Veuillez d\'abord entrer un sujet',
-    success: 'Hooks générés avec succès!',
-    error: 'Quelque chose s\'est mal passé. Veuillez réessayer.',
-    whyWorks: 'Pourquoi ça marche'
-  }
+  ru: { back: '← Назад', title: 'Генератор хуков', subtitle: 'Создавайте привлекающие внимание хуки', credits: '2 кредита', topicLabel: 'Тема', topicPlaceholder: 'О чём ваш контент?', platformLabel: 'Платформа', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, hookTypeLabel: 'Стиль', hookTypes: { question: 'Вопрос', shocking: 'Шокирующий', story: 'История', curiosity: 'Интрига' }, countLabel: 'Количество', generate: 'Создать', generating: 'Создание...', results: 'Ваши хуки', copy: 'Копировать', copied: 'Скопировано!', emptyInput: 'Введите тему', success: 'Готово!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Hook-Generator', subtitle: 'Erstellen Sie aufmerksamkeitsstarke Hooks', credits: '2 Credits', topicLabel: 'Thema', topicPlaceholder: 'Worum geht es?', platformLabel: 'Plattform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, hookTypeLabel: 'Stil', hookTypes: { question: 'Frage', shocking: 'Schockierend', story: 'Geschichte', curiosity: 'Neugier' }, countLabel: 'Anzahl', generate: 'Erstellen', generating: 'Wird erstellt...', results: 'Ihre Hooks', copy: 'Kopieren', copied: 'Kopiert!', emptyInput: 'Thema eingeben', success: 'Fertig!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Générateur de hooks', subtitle: 'Créez des hooks accrocheurs', credits: '2 crédits', topicLabel: 'Sujet', topicPlaceholder: 'De quoi parle votre contenu?', platformLabel: 'Plateforme', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, hookTypeLabel: 'Style', hookTypes: { question: 'Question', shocking: 'Choquant', story: 'Histoire', curiosity: 'Curiosité' }, countLabel: 'Nombre', generate: 'Créer', generating: 'Création...', results: 'Vos hooks', copy: 'Copier', copied: 'Copié!', emptyInput: 'Entrez un sujet', success: 'Terminé!', error: 'Erreur' }
 }
 
-const langs: { code: Language; flag: string }[] = [
-  { code: 'en', flag: '🇺🇸' }, { code: 'tr', flag: '🇹🇷' }, { code: 'ru', flag: '🇷🇺' }, { code: 'de', flag: '🇩🇪' }, { code: 'fr', flag: '🇫🇷' }
+const langs: { code: Language; flag: string; name: string }[] = [
+  { code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
+  { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }
 ]
 
 export default function HookGeneratorPage() {
   const [topic, setTopic] = useState('')
-  const [hooks, setHooks] = useState<any[]>([])
+  const [platform, setPlatform] = useState('tiktok')
+  const [hookType, setHookType] = useState('question')
+  const [count, setCount] = useState(5)
+  const [result, setResult] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  const [copied, setCopied] = useState<number | null>(null)
   const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
   const t = texts[language]
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
-    })
-  }, [])
+  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) }) }, [])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      showToast(t.emptyInput, 'warning')
-      return
-    }
-
-    setLoading(true)
-    setHooks([])
-
+    if (!topic.trim()) { showToast(t.emptyInput, 'warning'); return }
+    setLoading(true); setResult([])
     try {
-      const response = await fetch('/api/hook-generator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, userId, language }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        showToast(data.error, 'error')
-      } else {
-        setHooks(data.hooks || [])
-        showToast(t.success, 'success')
-      }
-    } catch (err) {
-      showToast(t.error, 'error')
-    }
+      const res = await fetch('/api/hook-generator', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, hookType, count, userId, language }) })
+      const data = await res.json()
+      if (data.error) showToast(data.error, 'error')
+      else { setResult(data.hooks); showToast(t.success, 'success') }
+    } catch { showToast(t.error, 'error') }
     setLoading(false)
   }
 
-  const handleCopy = (index: number, text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(index)
-    showToast(t.copied, 'success')
-    setTimeout(() => setCopied(null), 2000)
-  }
-
-  const handleCopyAll = () => {
-    const allHooks = hooks.map(h => h.text).join('\n\n')
-    navigator.clipboard.writeText(allHooks)
-    showToast(t.copied, 'success')
+  const handleCopy = (text: string, id: number) => {
+    navigator.clipboard.writeText(text); setCopiedId(id)
+    showToast(t.copied, 'success'); setTimeout(() => setCopiedId(null), 2000)
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
       <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center bg-gray-800 rounded-xl p-1 border border-gray-700">
-                {langs.map((l) => (
-                  <button key={l.code} onClick={() => setLanguage(l.code)} className={`px-2.5 py-1.5 rounded-lg text-sm transition ${language === l.code ? 'bg-yellow-600 text-white' : 'text-gray-400 hover:text-white'}`}>
-                    {l.flag}
-                  </button>
-                ))}
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700 hover:bg-gray-700 transition">
+                <span>🌐</span><span>{language.toUpperCase()}</span>
+              </button>
+              <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                {langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}
               </div>
-              <span className="text-2xl">🎣</span>
             </div>
+            <span className="text-3xl">🎣</span>
           </div>
         </div>
       </header>
 
-      {/* Main */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
-            <span>⚡</span>
-            <span>{t.credits}</span>
-          </div>
-          <div className="text-5xl mb-4">🎣</div>
+          <div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>💎</span><span>{t.credits}</span></div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t.title}</h1>
           <p className="text-gray-400">{t.subtitle}</p>
         </div>
 
-        {/* Input */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-3">{t.inputLabel}</label>
-          <textarea
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder={t.inputPlaceholder}
-            className="w-full h-32 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 resize-none transition"
-          />
+        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6 space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.topicLabel}</label>
+            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t.topicPlaceholder} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">
+                {Object.entries(t.platforms).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t.hookTypeLabel}</label>
+              <select value={hookType} onChange={(e) => setHookType(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">
+                {Object.entries(t.hookTypes).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t.countLabel}</label>
+              <select value={count} onChange={(e) => setCount(Number(e.target.value))} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">
+                {[3, 5, 7, 10].map(n => (<option key={n} value={n}>{n}</option>))}
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Generate Button */}
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-xl font-semibold text-lg text-black transition flex items-center justify-center gap-3 mb-8 shadow-lg shadow-yellow-500/25"
-        >
-          {loading ? (
-            <>
-              <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-              {t.generating}
-            </>
-          ) : (
-            <>
-              <span>🎣</span>
-              {t.generate}
-            </>
-          )}
+        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">
+          {loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.generating}</>) : (<><span>🎣</span>{t.generate}</>)}
         </button>
 
-        {/* Results */}
-        {hooks.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t.result}</h2>
-              <button onClick={handleCopyAll} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-sm font-medium transition">
-                {t.copyAll}
-              </button>
-            </div>
-
-            {hooks.map((hook, index) => (
-              <div key={index} className="bg-gray-800/50 rounded-2xl border border-gray-700 p-5 hover:border-yellow-500/50 transition group">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{hook.emoji || '💡'}</span>
-                      <span className="px-2.5 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-medium">
-                        {t.hookTypes[hook.type as keyof typeof t.hookTypes] || hook.type}
-                      </span>
-                    </div>
-                    <p className="text-lg text-white mb-3 leading-relaxed">"{hook.text}"</p>
-                    {hook.reason && (
-                      <p className="text-sm text-gray-400">
-                        <span className="text-yellow-400 font-medium">{t.whyWorks}:</span> {hook.reason}
-                      </p>
-                    )}
+        {result.length > 0 && (
+          <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><span>✨</span>{t.results}</h2>
+            <div className="space-y-3">
+              {result.map((hook, i) => (
+                <div key={i} className="bg-gray-900/50 rounded-xl p-4 border border-gray-700 flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <span className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">{hook.id}</span>
+                    <p className="text-gray-200 leading-relaxed">{hook.hook}</p>
                   </div>
-                  <button
-                    onClick={() => handleCopy(index, hook.text)}
-                    className={`p-3 rounded-xl transition shrink-0 ${copied === index ? 'bg-green-600 text-white' : 'bg-gray-700 hover:bg-yellow-600 text-white'}`}
-                  >
-                    {copied === index ? '✓' : '📋'}
+                  <button onClick={() => handleCopy(hook.hook, hook.id)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition flex-shrink-0 ${copiedId === hook.id ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
+                    {copiedId === hook.id ? t.copied : t.copy}
                   </button>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </main>
