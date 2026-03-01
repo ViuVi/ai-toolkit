@@ -8,6 +8,21 @@ const supabase = createClient(
 
 const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
 
+const platformNames: Record<string, string> = {
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  twitter: 'Twitter/X'
+}
+
+const regionNames: Record<string, Record<string, string>> = {
+  global: { en: 'Global', tr: 'Global' },
+  us: { en: 'United States', tr: 'Amerika' },
+  eu: { en: 'Europe', tr: 'Avrupa' },
+  asia: { en: 'Asia', tr: 'Asya' },
+  tr: { en: 'Turkey', tr: 'Türkiye' }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { niche, platform, region, userId, language = 'en' } = await request.json()
@@ -23,8 +38,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const platformName = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }[platform] || 'TikTok'
-    const regionName = { global: 'Global', us: 'USA', eu: 'Europe', asia: 'Asia', tr: 'Turkey' }[region] || 'Global'
+    const platformName = platformNames[platform] || 'TikTok'
+    const langKey = language === 'tr' ? 'tr' : 'en'
+    const regionName = regionNames[region]?.[langKey] || 'Global'
 
     const prompt = language === 'tr'
       ? `Sen sosyal medya trend analisti ve içerik stratejistisin. "${niche}" nişi için ${platformName} platformunda ${regionName} bölgesindeki güncel trendleri analiz et.
@@ -102,18 +118,17 @@ NOTE: Identify at least 5 different and SPECIFIC trends. Not generic trends, but
       body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 2000, temperature: 0.8, return_full_text: false } })
     })
 
-    let trends: any = null
+    let trends: Record<string, unknown> | null = null
     if (response.ok) {
       const result = await response.json()
       const text = result[0]?.generated_text || ''
       const match = text.match(/\{[\s\S]*\}/)
       if (match) {
-        try { trends = JSON.parse(match[0]) } catch {}
+        try { trends = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
       }
     }
 
-    // Fallback
-    if (!trends || !trends.trends || trends.trends.length < 3) {
+    if (!trends || !(trends as { trends?: unknown[] }).trends || ((trends as { trends?: unknown[] }).trends as unknown[]).length < 3) {
       const nicheClean = niche.toLowerCase().replace(/\s+/g, '')
       trends = {
         trends: language === 'tr' ? [

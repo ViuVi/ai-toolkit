@@ -8,6 +8,13 @@ const supabase = createClient(
 
 const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
 
+const platformNames: Record<string, string> = {
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  twitter: 'Twitter/X'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { competitorHandle, platform, userId, language = 'en' } = await request.json()
@@ -24,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const handle = competitorHandle.replace(/[@\s]/g, '').toLowerCase()
-    const platformName = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }[platform] || 'Instagram'
+    const platformName = platformNames[platform] || 'Instagram'
 
     const prompt = language === 'tr' 
       ? `Sen sosyal medya analiz uzmanısın. "${handle}" kullanıcı adlı ${platformName} hesabını analiz et.
@@ -94,13 +101,13 @@ Respond only in JSON format:
       body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1500, temperature: 0.7, return_full_text: false } })
     })
 
-    let analysis: any = null
+    let analysis: Record<string, unknown> | null = null
     if (response.ok) {
       const result = await response.json()
       const text = result[0]?.generated_text || ''
       const match = text.match(/\{[\s\S]*\}/)
       if (match) {
-        try { analysis = JSON.parse(match[0]) } catch {}
+        try { analysis = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
       }
     }
 

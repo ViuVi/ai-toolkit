@@ -2,34 +2,35 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
 
+const platformNames: Record<string, string> = {
+  tiktok: 'TikTok',
+  instagram: 'Instagram Reels',
+  youtube: 'YouTube Shorts'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const videoFile = formData.get('video') as File | null
-    const platform = formData.get('platform') as string || 'tiktok'
-    const language = formData.get('language') as string || 'en'
-    const description = formData.get('description') as string || ''
+    const platform = (formData.get('platform') as string) || 'tiktok'
+    const language = (formData.get('language') as string) || 'en'
+    const description = (formData.get('description') as string) || ''
 
-    // Video dosyası kontrolü
     if (!videoFile) {
       return NextResponse.json({ 
         error: language === 'tr' ? 'Video dosyası gerekli' : 'Video file required' 
       }, { status: 400 })
     }
 
-    // Dosya boyutu kontrolü (50MB max)
     if (videoFile.size > 50 * 1024 * 1024) {
       return NextResponse.json({ 
         error: language === 'tr' ? 'Video 50MB\'dan küçük olmalı' : 'Video must be under 50MB' 
       }, { status: 400 })
     }
 
-    // Video süre tahmini (dosya boyutuna göre yaklaşık)
-    const estimatedDuration = Math.min(60, Math.floor(videoFile.size / (500 * 1024))) // ~500KB per second estimate
+    const estimatedDuration = Math.min(60, Math.floor(videoFile.size / (500 * 1024)))
+    const platformName = platformNames[platform] || 'TikTok'
 
-    const platformName = { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' }[platform] || 'TikTok'
-
-    // AI'dan video analizi iste (açıklama ve metadata bazlı)
     const prompt = language === 'tr'
       ? `Sen viral video analiz uzmanısın. Aşağıdaki ${platformName} videosunu analiz et:
 
@@ -92,17 +93,16 @@ Respond in JSON:
       body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1000, temperature: 0.7, return_full_text: false } })
     })
 
-    let analysis: any = null
+    let analysis: Record<string, unknown> | null = null
     if (response.ok) {
       const result = await response.json()
       const text = result[0]?.generated_text || ''
       const match = text.match(/\{[\s\S]*\}/)
       if (match) {
-        try { analysis = JSON.parse(match[0]) } catch {}
+        try { analysis = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
       }
     }
 
-    // Fallback
     if (!analysis) {
       const baseScore = 50 + Math.floor(Math.random() * 30)
       analysis = {
