@@ -2,59 +2,171 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useLanguage, Language } from '@/lib/LanguageContext'
+import { useLanguage } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
+import QRCode from 'qrcode'
 
-const texts: Record<Language, any> = {
-  en: { back: '← Back', title: 'QR Code Generator', subtitle: 'Create custom QR codes for your links instantly', credits: 'FREE', inputLabel: 'Enter URL or text', inputPlaceholder: 'https://your-website.com or any text...', generate: 'Generate QR Code', generating: 'Creating QR code...', result: 'Your QR Code', download: 'Download', emptyInput: 'Please enter a URL or text', success: 'QR Code generated!' },
-  tr: { back: '← Geri', title: 'QR Kod Üretici', subtitle: 'Linkleriniz için anında özel QR kodlar oluşturun', credits: 'ÜCRETSİZ', inputLabel: 'URL veya metin girin', inputPlaceholder: 'https://siteniz.com veya herhangi bir metin...', generate: 'QR Kod Oluştur', generating: 'QR kod oluşturuluyor...', result: 'QR Kodunuz', download: 'İndir', emptyInput: 'Lütfen URL veya metin girin', success: 'QR Kod oluşturuldu!' },
-  ru: { back: '← Назад', title: 'Генератор QR кодов', subtitle: 'Создавайте QR коды для ваших ссылок', credits: 'БЕСПЛАТНО', inputLabel: 'Введите URL или текст', inputPlaceholder: 'https://ваш-сайт.com или любой текст...', generate: 'Создать QR код', generating: 'Создание QR кода...', result: 'Ваш QR код', download: 'Скачать', emptyInput: 'Введите URL или текст', success: 'QR код создан!' },
-  de: { back: '← Zurück', title: 'QR-Code-Generator', subtitle: 'Erstellen Sie QR-Codes für Ihre Links', credits: 'KOSTENLOS', inputLabel: 'URL oder Text eingeben', inputPlaceholder: 'https://ihre-website.com oder Text...', generate: 'QR-Code erstellen', generating: 'QR-Code wird erstellt...', result: 'Ihr QR-Code', download: 'Herunterladen', emptyInput: 'Bitte URL oder Text eingeben', success: 'QR-Code erstellt!' },
-  fr: { back: '← Retour', title: 'Générateur de QR Code', subtitle: 'Créez des QR codes pour vos liens', credits: 'GRATUIT', inputLabel: 'Entrez URL ou texte', inputPlaceholder: 'https://votre-site.com ou texte...', generate: 'Générer le QR Code', generating: 'Création du QR code...', result: 'Votre QR Code', download: 'Télécharger', emptyInput: 'Entrez une URL ou du texte', success: 'QR Code créé!' }
-}
-
-const langs: { code: Language; flag: string; name: string }[] = [{ code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }]
-
-export default function QRCodeGeneratorPage() {
-  const [input, setInput] = useState('')
-  const [qrUrl, setQrUrl] = useState('')
+export default function QRGeneratorPage() {
+  const [text, setText] = useState('')
+  const [qrImage, setQrImage] = useState('')
+  const [size, setSize] = useState(300)
+  const [color, setColor] = useState('#000000')
+  const [bgColor, setBgColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
-  const { language, setLanguage } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
   const { showToast } = useToast()
-  const t = texts[language]
 
-  const handleGenerate = () => {
-    if (!input.trim()) { showToast(t.emptyInput, 'warning'); return }
+  const handleGenerate = async () => {
+    if (!text.trim()) {
+      showToast(language === 'en' ? 'Please enter text or URL' : 'Lütfen bir metin veya URL girin', 'warning')
+      return
+    }
+
     setLoading(true)
-    const encoded = encodeURIComponent(input)
-    setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encoded}`)
-    setTimeout(() => { setLoading(false); showToast(t.success, 'success') }, 500)
+
+    try {
+      const qr = await QRCode.toDataURL(text, {
+        width: size,
+        margin: 2,
+        color: {
+          dark: color,
+          light: bgColor
+        }
+      })
+      setQrImage(qr)
+      showToast(language === 'en' ? 'QR Code generated!' : 'QR Kod oluşturuldu!', 'success')
+    } catch (err) {
+      showToast((language === 'tr' ? 'Hata oluştu' : 'An error occurred'), 'error')
+    }
+
+    setLoading(false)
+  }
+
+  const downloadQR = () => {
+    const link = document.createElement('a')
+    link.download = 'qr-code.png'
+    link.href = qrImage
+    link.click()
+    showToast(language === 'en' ? 'Downloaded!' : 'İndirildi!', 'success')
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
-          <div className="flex items-center gap-3">
-            <div className="relative group"><button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700 hover:bg-gray-700 transition"><span>🌐</span><span>{language.toUpperCase()}</span></button><div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}</div></div>
+      <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
+            <span>←</span>
+            <span>{(language === 'tr' ? 'Panele Dön' : 'Back to Dashboard')}</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center bg-gray-800 rounded-lg p-1">
+              <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded text-xs transition ${language === 'en' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}>EN</button>
+              <button onClick={() => setLanguage('tr')} className={`px-2 py-1 rounded text-xs transition ${language === 'tr' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}>TR</button>
+            </div>
             <span className="text-2xl">📱</span>
           </div>
         </div>
       </header>
+
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>🎁</span><span>{t.credits}</span></div>
-          <div className="text-5xl mb-4">📱</div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t.title}</h1>
-          <p className="text-gray-400">{t.subtitle}</p>
+          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-4">
+            <span className="text-green-400 text-sm font-medium">
+              {language === 'en' ? '📱 FREE TOOL' : '📱 ÜCRETSİZ ARAÇ'}
+            </span>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">
+            {language === 'en' ? 'QR Code Generator' : 'QR Kod Oluşturucu'}
+          </h1>
+          <p className="text-gray-400">
+            {language === 'en' ? 'Create custom QR codes for links, text, and more' : 'Link, metin ve daha fazlası için özel QR kodlar oluşturun'}
+          </p>
         </div>
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">{t.inputLabel}</label>
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.inputPlaceholder} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500" />
+
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
+          <label className="block text-sm font-medium mb-2">
+            {language === 'en' ? 'Text or URL' : 'Metin veya URL'}
+          </label>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={3}
+            className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none mb-4"
+            placeholder={language === 'en' ? 'Enter text, URL, or any data...' : 'Metin, URL veya herhangi bir veri girin...'}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {language === 'en' ? 'Size' : 'Boyut'}
+              </label>
+              <select value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:border-blue-500 focus:outline-none">
+                <option value={200}>200x200</option>
+                <option value={300}>300x300</option>
+                <option value={400}>400x400</option>
+                <option value={500}>500x500</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {language === 'en' ? 'QR Color' : 'QR Rengi'}
+              </label>
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-full h-12 rounded-xl bg-gray-900 border border-gray-700 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {language === 'en' ? 'Background' : 'Arka Plan'}
+              </label>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="w-full h-12 rounded-xl bg-gray-900 border border-gray-700 cursor-pointer"
+              />
+            </div>
+          </div>
         </div>
-        <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.generating}</>) : (<><span>📱</span>{t.generate}</>)}</button>
-        {qrUrl && (<div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 text-center"><h2 className="text-xl font-semibold mb-4">{t.result}</h2><div className="bg-white p-4 rounded-xl inline-block mb-4"><img src={qrUrl} alt="QR Code" className="w-64 h-64" /></div><br /><a href={qrUrl} download="qrcode.png" className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-medium transition"><span>⬇️</span>{t.download}</a></div>)}
+
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 py-4 rounded-xl font-semibold transition flex items-center justify-center gap-2 text-lg mb-8"
+        >
+          {loading ? <><span className="animate-spin">⏳</span> {(language === 'tr' ? 'Yükleniyor...' : 'Loading...')}</> : <>📱 {language === 'en' ? 'Generate QR Code' : 'QR Kod Oluştur'}</>}
+        </button>
+
+        {qrImage && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-8 text-center">
+              <img src={qrImage} alt="QR Code" className="mx-auto mb-6 rounded-xl shadow-2xl" />
+              <button
+                onClick={downloadQR}
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition"
+              >
+                ⬇️ {language === 'en' ? 'Download QR Code' : 'QR Kodu İndir'}
+              </button>
+            </div>
+
+            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                💡 {language === 'en' ? 'Tips' : 'İpuçları'}
+              </h3>
+              <ul className="space-y-2 text-gray-300 text-sm">
+                <li>• {language === 'en' ? 'Test your QR code before printing' : 'Yazdırmadan önce QR kodunuzu test edin'}</li>
+                <li>• {language === 'en' ? 'Use high contrast colors for better scanning' : 'Daha iyi tarama için yüksek kontrast renkler kullanın'}</li>
+                <li>• {language === 'en' ? 'Keep URLs short for simpler QR codes' : 'Daha basit QR kodlar için URL\'leri kısa tutun'}</li>
+                <li>• {language === 'en' ? 'Larger sizes work better for printing' : 'Büyük boyutlar yazdırma için daha iyidir'}</li>
+              </ul>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

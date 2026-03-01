@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
@@ -7,35 +6,13 @@ import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 
 const texts: Record<Language, any> = {
-  en: {
-    back: '← Back', title: 'Competitor Analysis', subtitle: 'Analyze competitor strategies and get actionable insights', credits: '8 Credits',
-    handleLabel: 'Competitor Username', handlePlaceholder: '@username', platformLabel: 'Platform',
-    platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' },
-    analyze: 'Analyze Competitor', analyzing: 'Analyzing...', overview: 'Overview', strategy: 'Content Strategy',
-    strengths: 'Strengths', weaknesses: 'Weaknesses', recommendations: 'Recommendations', aiInsights: 'AI Insights',
-    followers: 'Followers', posts: 'Posts', engagement: 'Engagement', avgLikes: 'Avg Likes', avgComments: 'Avg Comments',
-    frequency: 'Posting Frequency', bestTimes: 'Best Times', contentTypes: 'Content Types', topHashtags: 'Top Hashtags',
-    emptyInput: 'Please enter username', success: 'Analysis complete!', error: 'Error occurred'
-  },
-  tr: {
-    back: '← Geri', title: 'Rakip Analizi', subtitle: 'Rakip stratejilerini analiz edin ve içgörüler edinin', credits: '8 Kredi',
-    handleLabel: 'Rakip Kullanıcı Adı', handlePlaceholder: '@kullaniciadi', platformLabel: 'Platform',
-    platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' },
-    analyze: 'Rakibi Analiz Et', analyzing: 'Analiz ediliyor...', overview: 'Genel Bakış', strategy: 'İçerik Stratejisi',
-    strengths: 'Güçlü Yönler', weaknesses: 'Zayıf Yönler', recommendations: 'Öneriler', aiInsights: 'AI Değerlendirmesi',
-    followers: 'Takipçi', posts: 'Gönderi', engagement: 'Etkileşim', avgLikes: 'Ort. Beğeni', avgComments: 'Ort. Yorum',
-    frequency: 'Paylaşım Sıklığı', bestTimes: 'En İyi Saatler', contentTypes: 'İçerik Türleri', topHashtags: 'Popüler Hashtagler',
-    emptyInput: 'Lütfen kullanıcı adı girin', success: 'Analiz tamamlandı!', error: 'Hata oluştu'
-  },
-  ru: { back: '← Назад', title: 'Анализ конкурентов', subtitle: 'Анализируйте стратегии конкурентов', credits: '8 кредитов', handleLabel: 'Имя пользователя', handlePlaceholder: '@username', platformLabel: 'Платформа', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Анализировать', analyzing: 'Анализ...', overview: 'Обзор', strategy: 'Стратегия', strengths: 'Сильные стороны', weaknesses: 'Слабые стороны', recommendations: 'Рекомендации', aiInsights: 'AI анализ', followers: 'Подписчики', posts: 'Посты', engagement: 'Вовлеченность', avgLikes: 'Ср. лайки', avgComments: 'Ср. комментарии', frequency: 'Частота', bestTimes: 'Лучшее время', contentTypes: 'Типы', topHashtags: 'Хэштеги', emptyInput: 'Введите имя', success: 'Готово!', error: 'Ошибка' },
-  de: { back: '← Zurück', title: 'Wettbewerbsanalyse', subtitle: 'Analysieren Sie Wettbewerberstrategien', credits: '8 Credits', handleLabel: 'Benutzername', handlePlaceholder: '@benutzername', platformLabel: 'Plattform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analysieren', analyzing: 'Analyse...', overview: 'Übersicht', strategy: 'Strategie', strengths: 'Stärken', weaknesses: 'Schwächen', recommendations: 'Empfehlungen', aiInsights: 'KI-Analyse', followers: 'Follower', posts: 'Beiträge', engagement: 'Engagement', avgLikes: 'Ø Likes', avgComments: 'Ø Kommentare', frequency: 'Frequenz', bestTimes: 'Beste Zeiten', contentTypes: 'Inhaltstypen', topHashtags: 'Hashtags', emptyInput: 'Name eingeben', success: 'Fertig!', error: 'Fehler' },
-  fr: { back: '← Retour', title: 'Analyse concurrentielle', subtitle: 'Analysez les stratégies des concurrents', credits: '8 crédits', handleLabel: 'Nom d\'utilisateur', handlePlaceholder: '@utilisateur', platformLabel: 'Plateforme', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analyser', analyzing: 'Analyse...', overview: 'Aperçu', strategy: 'Stratégie', strengths: 'Points forts', weaknesses: 'Points faibles', recommendations: 'Recommandations', aiInsights: 'Analyse IA', followers: 'Abonnés', posts: 'Publications', engagement: 'Engagement', avgLikes: 'Moy. likes', avgComments: 'Moy. commentaires', frequency: 'Fréquence', bestTimes: 'Meilleurs horaires', contentTypes: 'Types', topHashtags: 'Hashtags', emptyInput: 'Entrez un nom', success: 'Terminé!', error: 'Erreur' }
+  en: { back: '← Back', title: 'Competitor Analysis', subtitle: 'Analyze competitor strategies', credits: '8 Credits', handleLabel: 'Username', handlePlaceholder: '@username', platformLabel: 'Platform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analyze', analyzing: 'Analyzing...', overview: 'Overview', followers: 'Followers', posts: 'Posts', engagement: 'Engagement', strategy: 'Strategy', strengths: 'Strengths', weaknesses: 'Weaknesses', recommendations: 'Recommendations', emptyInput: 'Enter username', success: 'Done!', error: 'Error' },
+  tr: { back: '← Geri', title: 'Rakip Analizi', subtitle: 'Rakip stratejilerini analiz edin', credits: '8 Kredi', handleLabel: 'Kullanıcı Adı', handlePlaceholder: '@kullaniciadi', platformLabel: 'Platform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analiz Et', analyzing: 'Analiz ediliyor...', overview: 'Genel Bakış', followers: 'Takipçi', posts: 'Gönderi', engagement: 'Etkileşim', strategy: 'Strateji', strengths: 'Güçlü Yönler', weaknesses: 'Zayıf Yönler', recommendations: 'Öneriler', emptyInput: 'Kullanıcı adı girin', success: 'Tamamlandı!', error: 'Hata' },
+  ru: { back: '← Назад', title: 'Анализ конкурентов', subtitle: 'Анализируйте стратегии', credits: '8 кредитов', handleLabel: 'Имя', handlePlaceholder: '@username', platformLabel: 'Платформа', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Анализ', analyzing: 'Анализ...', overview: 'Обзор', followers: 'Подписчики', posts: 'Посты', engagement: 'Вовлеченность', strategy: 'Стратегия', strengths: 'Сильные', weaknesses: 'Слабые', recommendations: 'Рекомендации', emptyInput: 'Введите имя', success: 'Готово!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Wettbewerbsanalyse', subtitle: 'Strategien analysieren', credits: '8 Credits', handleLabel: 'Benutzername', handlePlaceholder: '@name', platformLabel: 'Plattform', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analysieren', analyzing: 'Analyse...', overview: 'Übersicht', followers: 'Follower', posts: 'Beiträge', engagement: 'Engagement', strategy: 'Strategie', strengths: 'Stärken', weaknesses: 'Schwächen', recommendations: 'Empfehlungen', emptyInput: 'Name eingeben', success: 'Fertig!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Analyse concurrentielle', subtitle: 'Analysez les stratégies', credits: '8 crédits', handleLabel: 'Nom', handlePlaceholder: '@utilisateur', platformLabel: 'Plateforme', platforms: { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', twitter: 'Twitter/X' }, analyze: 'Analyser', analyzing: 'Analyse...', overview: 'Aperçu', followers: 'Abonnés', posts: 'Posts', engagement: 'Engagement', strategy: 'Stratégie', strengths: 'Forces', weaknesses: 'Faiblesses', recommendations: 'Recommandations', emptyInput: 'Entrez nom', success: 'Terminé!', error: 'Erreur' }
 }
-
-const langs: { code: Language; flag: string; name: string }[] = [
-  { code: 'en', flag: '🇺🇸', name: 'English' }, { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
-  { code: 'ru', flag: '🇷🇺', name: 'Русский' }, { code: 'de', flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr', flag: '🇫🇷', name: 'Français' }
-]
+const langs = [{ code: 'en' as Language, flag: '🇺🇸', name: 'English' }, { code: 'tr' as Language, flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru' as Language, flag: '🇷🇺', name: 'Русский' }, { code: 'de' as Language, flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr' as Language, flag: '🇫🇷', name: 'Français' }]
 
 export default function CompetitorAnalyzerPage() {
   const [handle, setHandle] = useState('')
@@ -66,90 +43,18 @@ export default function CompetitorAnalyzerPage() {
       <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700"><span>🌐</span><span>{language.toUpperCase()}</span></button>
-              <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                {langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}
-              </div>
-            </div>
-            <span className="text-3xl">🔍</span>
-          </div>
+          <div className="flex items-center gap-3"><div className="relative group"><button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 rounded-lg text-sm font-medium text-gray-300 border border-gray-700"><span>🌐</span><span>{language.toUpperCase()}</span></button><div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">{langs.map((l) => (<button key={l.code} onClick={() => setLanguage(l.code)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${language === l.code ? 'text-purple-400' : 'text-gray-300'}`}>{l.flag} {l.name}</button>))}</div></div><span className="text-3xl">🔍</span></div>
         </div>
       </header>
-
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>💎</span><span>{t.credits}</span></div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t.title}</h1>
-          <p className="text-gray-400">{t.subtitle}</p>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t.handleLabel}</label>
-              <input type="text" value={handle} onChange={(e) => setHandle(e.target.value)} placeholder={t.handlePlaceholder} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label>
-              <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">
-                {Object.entries(t.platforms).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <button onClick={handleAnalyze} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">
-          {loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.analyzing}</>) : (<><span>🔍</span>{t.analyze}</>)}
-        </button>
-
+        <div className="text-center mb-8"><div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>💎</span><span>{t.credits}</span></div><h1 className="text-3xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-sm font-medium text-gray-300 mb-2">{t.handleLabel}</label><input type="text" value={handle} onChange={(e) => setHandle(e.target.value)} placeholder={t.handlePlaceholder} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" /></div><div><label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">{Object.entries(t.platforms).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}</select></div></div></div>
+        <button onClick={handleAnalyze} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.analyzing}</>) : (<><span>🔍</span>{t.analyze}</>)}</button>
         {result && (
           <div className="space-y-6">
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><span>📊</span>{t.overview}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {[{ v: result.overview?.followers, l: t.followers, c: 'purple' }, { v: result.overview?.posts, l: t.posts, c: 'blue' }, { v: result.overview?.engagementRate, l: t.engagement, c: 'green' }, { v: result.overview?.avgLikes, l: t.avgLikes, c: 'pink' }, { v: result.overview?.avgComments, l: t.avgComments, c: 'yellow' }].map((item, i) => (
-                  <div key={i} className="bg-gray-900/50 rounded-xl p-4 text-center">
-                    <p className={`text-2xl font-bold text-${item.c}-400`}>{item.v}</p>
-                    <p className="text-xs text-gray-400">{item.l}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><span>📈</span>{t.strategy}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-900/50 rounded-xl p-4"><p className="text-sm text-gray-400 mb-1">{t.frequency}</p><p className="font-medium">{result.contentStrategy?.postingFrequency}</p></div>
-                <div className="bg-gray-900/50 rounded-xl p-4"><p className="text-sm text-gray-400 mb-1">{t.bestTimes}</p><p className="font-medium">{result.contentStrategy?.bestTimes?.join(', ')}</p></div>
-                <div className="bg-gray-900/50 rounded-xl p-4"><p className="text-sm text-gray-400 mb-1">{t.contentTypes}</p><div className="flex flex-wrap gap-2 mt-1">{result.contentStrategy?.topContentTypes?.map((type: string, i: number) => (<span key={i} className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs">{type}</span>))}</div></div>
-                <div className="bg-gray-900/50 rounded-xl p-4"><p className="text-sm text-gray-400 mb-1">{t.topHashtags}</p><p className="font-medium text-blue-400">{result.contentStrategy?.topHashtags?.join(' ')}</p></div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-800/50 rounded-2xl border border-green-500/30 p-6">
-                <h2 className="text-lg font-semibold mb-3 text-green-400 flex items-center gap-2"><span>💪</span>{t.strengths}</h2>
-                <ul className="space-y-2">{result.strengths?.map((s: string, i: number) => (<li key={i} className="flex items-start gap-2 text-sm"><span className="text-green-400">✓</span>{s}</li>))}</ul>
-              </div>
-              <div className="bg-gray-800/50 rounded-2xl border border-red-500/30 p-6">
-                <h2 className="text-lg font-semibold mb-3 text-red-400 flex items-center gap-2"><span>⚠️</span>{t.weaknesses}</h2>
-                <ul className="space-y-2">{result.weaknesses?.map((w: string, i: number) => (<li key={i} className="flex items-start gap-2 text-sm"><span className="text-red-400">✗</span>{w}</li>))}</ul>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl border border-purple-500/30 p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2"><span>💡</span>{t.recommendations}</h2>
-              <ul className="space-y-3">{result.recommendations?.map((r: string, i: number) => (<li key={i} className="flex items-start gap-3 bg-gray-800/50 rounded-xl p-3"><span className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span><span>{r}</span></li>))}</ul>
-            </div>
-
-            {result.aiInsights && (
-              <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6">
-                <h2 className="text-xl font-semibold mb-3 flex items-center gap-2"><span>🤖</span>{t.aiInsights}</h2>
-                <p className="text-gray-300 leading-relaxed">{result.aiInsights}</p>
-              </div>
-            )}
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6"><h2 className="text-xl font-semibold mb-4">{t.overview}</h2><div className="grid grid-cols-3 gap-4"><div className="bg-gray-900/50 rounded-xl p-4 text-center"><p className="text-2xl font-bold text-purple-400">{result.overview?.followers}</p><p className="text-xs text-gray-400">{t.followers}</p></div><div className="bg-gray-900/50 rounded-xl p-4 text-center"><p className="text-2xl font-bold text-blue-400">{result.overview?.posts}</p><p className="text-xs text-gray-400">{t.posts}</p></div><div className="bg-gray-900/50 rounded-xl p-4 text-center"><p className="text-2xl font-bold text-green-400">{result.overview?.engagementRate}</p><p className="text-xs text-gray-400">{t.engagement}</p></div></div></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-gray-800/50 rounded-2xl border border-green-500/30 p-6"><h2 className="text-lg font-semibold mb-3 text-green-400">{t.strengths}</h2><ul className="space-y-2">{result.strengths?.map((s: string, i: number) => (<li key={i} className="flex items-start gap-2 text-sm"><span className="text-green-400">✓</span>{s}</li>))}</ul></div><div className="bg-gray-800/50 rounded-2xl border border-red-500/30 p-6"><h2 className="text-lg font-semibold mb-3 text-red-400">{t.weaknesses}</h2><ul className="space-y-2">{result.weaknesses?.map((w: string, i: number) => (<li key={i} className="flex items-start gap-2 text-sm"><span className="text-red-400">✗</span>{w}</li>))}</ul></div></div>
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl border border-purple-500/30 p-6"><h2 className="text-xl font-semibold mb-4">{t.recommendations}</h2><ul className="space-y-3">{result.recommendations?.map((r: string, i: number) => (<li key={i} className="flex items-start gap-3 bg-gray-800/50 rounded-xl p-3"><span className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">{i+1}</span><span>{r}</span></li>))}</ul></div>
           </div>
         )}
       </main>
