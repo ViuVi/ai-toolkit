@@ -8,6 +8,16 @@ const supabase = createClient(
 
 const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
 
+const platformLimits: Record<string, number> = { instagram: 2200, tiktok: 300, twitter: 280, linkedin: 3000, facebook: 500 }
+const platformNames: Record<string, string> = { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }
+
+const toneGuide: Record<string, Record<string, string>> = {
+  professional: { tr: 'profesyonel, güvenilir, otoriter ama samimi', en: 'professional, trustworthy, authoritative yet approachable' },
+  casual: { tr: 'samimi, arkadaşça, doğal ve rahat', en: 'casual, friendly, natural and relaxed' },
+  humorous: { tr: 'eğlenceli, espritüel, zeki ve eğlendirici', en: 'funny, witty, clever and entertaining' },
+  inspirational: { tr: 'ilham verici, motive edici, güçlendirici', en: 'inspiring, motivating, empowering' }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { topic, platform, tone, includeEmojis, includeHashtags, contentType, userId, language = 'en' } = await request.json()
@@ -23,17 +33,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const platformLimits: Record<string, number> = { instagram: 2200, tiktok: 300, twitter: 280, linkedin: 3000, facebook: 500 }
     const maxChars = platformLimits[platform] || 500
-
-    const toneGuide: Record<string, Record<string, string>> = {
-      professional: { tr: 'profesyonel, güvenilir, otoriter ama samimi', en: 'professional, trustworthy, authoritative yet approachable' },
-      casual: { tr: 'samimi, arkadaşça, doğal ve rahat', en: 'casual, friendly, natural and relaxed' },
-      humorous: { tr: 'eğlenceli, espritüel, zeki ve eğlendirici', en: 'funny, witty, clever and entertaining' },
-      inspirational: { tr: 'ilham verici, motive edici, güçlendirici', en: 'inspiring, motivating, empowering' }
-    }
-
-    const platformName = { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }[platform]
+    const platformName = platformNames[platform] || 'Instagram'
     const toneDesc = toneGuide[tone]?.[language === 'tr' ? 'tr' : 'en'] || toneGuide.casual.en
 
     const prompt = language === 'tr'
@@ -92,7 +93,7 @@ Respond in JSON:
       body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1500, temperature: 0.8, return_full_text: false } })
     })
 
-    let captions: any[] = []
+    let captions: { id: number; caption: string; hookType: string; cta: string; characterCount: number }[] = []
     if (response.ok) {
       const result = await response.json()
       const text = result[0]?.generated_text || ''
@@ -100,8 +101,10 @@ Respond in JSON:
       if (match) {
         try {
           const parsed = JSON.parse(match[0])
-          captions = parsed.captions?.map((c: any) => ({ ...c, characterCount: c.caption?.length || 0 })) || []
-        } catch {}
+          captions = parsed.captions?.map((c: { id: number; caption: string; hookType: string; cta: string }) => ({ ...c, characterCount: c.caption?.length || 0 })) || []
+        } catch (e) {
+          console.error('Parse error:', e)
+        }
       }
     }
 
