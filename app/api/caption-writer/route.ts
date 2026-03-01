@@ -6,9 +6,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
+
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, tone, includeEmojis, includeHashtags, userId, language = 'en' } = await request.json()
+    const { topic, platform, tone, includeEmojis, includeHashtags, contentType, userId, language = 'en' } = await request.json()
 
     if (!topic) {
       return NextResponse.json({ error: language === 'tr' ? 'Konu gerekli' : 'Topic required' }, { status: 400 })
@@ -21,89 +23,107 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const captions = await generateCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
+    const platformLimits: Record<string, number> = { instagram: 2200, tiktok: 300, twitter: 280, linkedin: 3000, facebook: 500 }
+    const maxChars = platformLimits[platform] || 500
+
+    const toneGuide: Record<string, Record<string, string>> = {
+      professional: { tr: 'profesyonel, güvenilir, otoriter ama samimi', en: 'professional, trustworthy, authoritative yet approachable' },
+      casual: { tr: 'samimi, arkadaşça, doğal ve rahat', en: 'casual, friendly, natural and relaxed' },
+      humorous: { tr: 'eğlenceli, espritüel, zeki ve eğlendirici', en: 'funny, witty, clever and entertaining' },
+      inspirational: { tr: 'ilham verici, motive edici, güçlendirici', en: 'inspiring, motivating, empowering' }
+    }
+
+    const platformName = { instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', linkedin: 'LinkedIn', facebook: 'Facebook' }[platform]
+    const toneDesc = toneGuide[tone]?.[language === 'tr' ? 'tr' : 'en'] || toneGuide.casual.en
+
+    const prompt = language === 'tr'
+      ? `Sen viral sosyal medya içerik yazarısın. ${platformName} için 3 profesyonel caption yaz.
+
+KONU: ${topic}
+TON: ${toneDesc}
+KARAKTER LİMİTİ: ${maxChars}
+${contentType ? `İÇERİK TİPİ: ${contentType}` : ''}
+
+KURALLAR:
+1. Her caption benzersiz ve yaratıcı olsun
+2. Dikkat çekici hook ile başla
+3. Değer kat veya duygu uyandır
+4. ${includeEmojis ? 'Uygun emojiler kullan (2-4 adet)' : 'Emoji kullanma'}
+5. ${includeHashtags ? 'Sona 3-5 alakalı hashtag ekle' : 'Hashtag ekleme'}
+6. Net CTA (eylem çağrısı) ekle
+7. ${platform === 'linkedin' ? 'Profesyonel ve iş odaklı ol' : platform === 'tiktok' ? 'Kısa, vurucu ve trend odaklı ol' : 'Platforma uygun ol'}
+
+JSON formatında yanıt ver:
+{
+  "captions": [
+    {"id": 1, "caption": "caption metni", "hookType": "kullanılan hook", "cta": "CTA tipi"},
+    {"id": 2, "caption": "caption metni", "hookType": "kullanılan hook", "cta": "CTA tipi"},
+    {"id": 3, "caption": "caption metni", "hookType": "kullanılan hook", "cta": "CTA tipi"}
+  ]
+}`
+      : `You are a viral social media content writer. Write 3 professional captions for ${platformName}.
+
+TOPIC: ${topic}
+TONE: ${toneDesc}
+CHARACTER LIMIT: ${maxChars}
+${contentType ? `CONTENT TYPE: ${contentType}` : ''}
+
+RULES:
+1. Each caption must be unique and creative
+2. Start with attention-grabbing hook
+3. Add value or evoke emotion
+4. ${includeEmojis ? 'Use appropriate emojis (2-4)' : 'No emojis'}
+5. ${includeHashtags ? 'Add 3-5 relevant hashtags at end' : 'No hashtags'}
+6. Include clear CTA
+7. ${platform === 'linkedin' ? 'Be professional and business-focused' : platform === 'tiktok' ? 'Be short, punchy and trend-focused' : 'Be platform-appropriate'}
+
+Respond in JSON:
+{
+  "captions": [
+    {"id": 1, "caption": "caption text", "hookType": "hook used", "cta": "CTA type"},
+    {"id": 2, "caption": "caption text", "hookType": "hook used", "cta": "CTA type"},
+    {"id": 3, "caption": "caption text", "hookType": "hook used", "cta": "CTA type"}
+  ]
+}`
+
+    const response = await fetch(HF_API, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1500, temperature: 0.8, return_full_text: false } })
+    })
+
+    let captions: any[] = []
+    if (response.ok) {
+      const result = await response.json()
+      const text = result[0]?.generated_text || ''
+      const match = text.match(/\{[\s\S]*\}/)
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[0])
+          captions = parsed.captions?.map((c: any) => ({ ...c, characterCount: c.caption?.length || 0 })) || []
+        } catch {}
+      }
+    }
+
+    // Fallback
+    if (captions.length === 0) {
+      const emoji = includeEmojis ? '✨ ' : ''
+      const hashtags = includeHashtags ? '\n\n#' + topic.split(' ')[0].toLowerCase() + ' #content #viral' : ''
+      captions = [
+        { id: 1, caption: `${emoji}${language === 'tr' ? 'Dur ve bunu oku' : 'Stop and read this'}.\n\n${topic}${language === 'tr' ? ' hakkında bilmeniz gereken tek şey bu.' : ' - this is all you need to know.'}\n\n${language === 'tr' ? 'Kaydet ve sonra bana teşekkür et' : 'Save this and thank me later'}.${hashtags}`, hookType: "Pattern interrupt", cta: "Save", characterCount: 0 },
+        { id: 2, caption: `${emoji}${language === 'tr' ? 'Çoğu kişi bunu yanlış yapıyor' : 'Most people get this wrong'}:\n\n${topic}\n\n${language === 'tr' ? 'İşte doğrusu' : "Here's the truth"}...\n\n${language === 'tr' ? 'Katılıyor musun? Yorumlarda söyle' : 'Agree? Tell me in comments'}.${hashtags}`, hookType: "Controversy", cta: "Comment", characterCount: 0 },
+        { id: 3, caption: `${emoji}${language === 'tr' ? '3 ay önce' : '3 months ago'}, ${topic} ${language === 'tr' ? 'hakkında hiçbir şey bilmiyordum' : 'was a mystery to me'}.\n\n${language === 'tr' ? 'Şimdi? Her şey değişti' : "Now? Everything changed"}.\n\n${language === 'tr' ? 'Nasıl mı? Takip et ve öğren' : 'How? Follow to learn'}.${hashtags}`, hookType: "Transformation", cta: "Follow", characterCount: 0 }
+      ].map(c => ({ ...c, characterCount: c.caption.length }))
+    }
 
     if (userId) {
       const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
-      if (c) {
-        await supabase.from('credits').update({ balance: c.balance - 2, total_used: c.total_used + 2, updated_at: new Date().toISOString() }).eq('user_id', userId)
-      }
+      if (c) await supabase.from('credits').update({ balance: c.balance - 2, total_used: c.total_used + 2 }).eq('user_id', userId)
     }
 
     return NextResponse.json({ captions })
   } catch (error) {
-    console.error('Caption Writer Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    console.error('Caption Error:', error)
+    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
   }
-}
-
-async function generateCaptions(topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string) {
-  const prompt = language === 'tr'
-    ? `${platform} için "${topic}" hakkında ${tone} tonda 3 farklı caption yaz. ${includeEmojis ? 'Emoji kullan.' : 'Emoji kullanma.'} Her birini ayrı satırda ver. Sadece caption metinlerini yaz, açıklama ekleme.`
-    : `Write 3 different captions for ${platform} about "${topic}" in ${tone} tone. ${includeEmojis ? 'Include emojis.' : 'No emojis.'} Put each on a new line. Only write the caption text, no explanations.`
-
-  try {
-    const response = await fetch('https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: { max_new_tokens: 400, temperature: 0.8, return_full_text: false }
-      }),
-    })
-
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      const lines = text.split('\n').filter((l: string) => l.trim().length > 15 && !l.startsWith('#') && !l.includes('Caption'))
-      
-      if (lines.length >= 2) {
-        return lines.slice(0, 3).map((caption: string, index: number) => {
-          let finalCaption = caption.replace(/^\d+[\.\):\-]\s*/, '').replace(/^["']|["']$/g, '').trim()
-          if (includeHashtags) {
-            const hashtags = generateHashtags(topic, language)
-            finalCaption += '\n\n' + hashtags
-          }
-          return { id: index + 1, caption: finalCaption, platform, tone, characterCount: finalCaption.length }
-        })
-      }
-    }
-  } catch (e) { console.error('AI Error:', e) }
-
-  return generateFallbackCaptions(topic, platform, tone, includeEmojis, includeHashtags, language)
-}
-
-function generateFallbackCaptions(topic: string, platform: string, tone: string, includeEmojis: boolean, includeHashtags: boolean, language: string) {
-  const templates: Record<string, Record<string, string[]>> = {
-    tr: {
-      professional: [`${topic} hakkında bilmeniz gerekenler.`, `${topic} konusunda profesyonel çözümler.`, `${topic} ile başarıya ulaşın.`],
-      casual: [`${topic} hakkında konuşalım mı? ${includeEmojis ? '😊' : ''}`, `Hey! ${topic} ile ilgili harika bir şey ${includeEmojis ? '✨' : ''}`, `${topic} sevenlere ${includeEmojis ? '🔥' : ''}`],
-      humorous: [`${topic} benim hayatım ${includeEmojis ? '😂' : ''}`, `${topic} olmadan bir gün bile geçmiyor ${includeEmojis ? '😅' : ''}`, `POV: ${topic} keşfediyorsun ${includeEmojis ? '🤯' : ''}`],
-      inspirational: [`${topic} ile hayallerine bir adım daha yaklaş ${includeEmojis ? '💫' : ''}`, `Başarı küçük adımlarla başlar. ${topic} yolculuğun bugün başlıyor ${includeEmojis ? '🚀' : ''}`, `${topic} ile potansiyelini keşfet ${includeEmojis ? '✨' : ''}`]
-    },
-    en: {
-      professional: [`Everything you need to know about ${topic}.`, `Professional solutions for ${topic}.`, `Achieve success with ${topic}.`],
-      casual: [`Let's talk about ${topic}? ${includeEmojis ? '😊' : ''}`, `Hey! Something amazing about ${topic} ${includeEmojis ? '✨' : ''}`, `For ${topic} lovers ${includeEmojis ? '🔥' : ''}`],
-      humorous: [`${topic} is my whole life ${includeEmojis ? '😂' : ''}`, `Can't go a day without ${topic} ${includeEmojis ? '😅' : ''}`, `POV: You discover ${topic} ${includeEmojis ? '🤯' : ''}`],
-      inspirational: [`Get closer to your dreams with ${topic} ${includeEmojis ? '💫' : ''}`, `Success starts with small steps. Your ${topic} journey begins today ${includeEmojis ? '🚀' : ''}`, `Discover your potential with ${topic} ${includeEmojis ? '✨' : ''}`]
-    }
-  }
-
-  const lang = templates[language] || templates.en
-  const toneTemplates = lang[tone] || lang.casual
-
-  return toneTemplates.map((caption, index) => {
-    let finalCaption = caption
-    if (includeHashtags) finalCaption += '\n\n' + generateHashtags(topic, language)
-    return { id: index + 1, caption: finalCaption, platform, tone, characterCount: finalCaption.length }
-  })
-}
-
-function generateHashtags(topic: string, language: string) {
-  const words = topic.toLowerCase().replace(/[^a-zğüşıöç0-9\s]/g, '').split(' ').filter(w => w.length > 2).slice(0, 2)
-  const base = language === 'tr' ? ['içerik', 'keşfet', 'viral', 'trend'] : ['content', 'explore', 'viral', 'trending']
-  return `#${words.join('')} #${base[0]} #${base[1]} #${base[2]}`
 }

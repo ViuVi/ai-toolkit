@@ -1,44 +1,90 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useLanguage, Language } from '@/lib/LanguageContext'
 import { useToast } from '@/components/Toast'
-import { supabase } from '@/lib/supabase'
 
 const texts: Record<Language, any> = {
-  en: { back: '← Back', title: 'Viral Score', subtitle: 'Check if your content has viral potential', credits: '3 Credits', contentLabel: 'Content', contentPlaceholder: 'Enter your content...', platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, check: 'Check Score', checking: 'Analyzing...', score: 'Viral Score', factors: 'Viral Factors', improvements: 'Improvements', words: 'words', emptyInput: 'Enter content', success: 'Done!', error: 'Error' },
-  tr: { back: '← Geri', title: 'Viral Skoru', subtitle: 'İçeriğinizin viral potansiyelini kontrol edin', credits: '3 Kredi', contentLabel: 'İçerik', contentPlaceholder: 'İçeriğinizi girin...', platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, check: 'Skor Kontrol', checking: 'Analiz ediliyor...', score: 'Viral Skoru', factors: 'Viral Faktörler', improvements: 'İyileştirmeler', words: 'kelime', emptyInput: 'İçerik girin', success: 'Tamamlandı!', error: 'Hata' },
-  ru: { back: '← Назад', title: 'Вирусный рейтинг', subtitle: 'Проверьте вирусный потенциал', credits: '3 кредита', contentLabel: 'Контент', contentPlaceholder: 'Введите контент...', platformLabel: 'Платформа', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, check: 'Проверить', checking: 'Анализ...', score: 'Рейтинг', factors: 'Факторы', improvements: 'Улучшения', words: 'слов', emptyInput: 'Введите контент', success: 'Готово!', error: 'Ошибка' },
-  de: { back: '← Zurück', title: 'Viral-Score', subtitle: 'Virales Potenzial prüfen', credits: '3 Credits', contentLabel: 'Inhalt', contentPlaceholder: 'Inhalt eingeben...', platformLabel: 'Plattform', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, check: 'Prüfen', checking: 'Analyse...', score: 'Score', factors: 'Faktoren', improvements: 'Verbesserungen', words: 'Wörter', emptyInput: 'Inhalt eingeben', success: 'Fertig!', error: 'Fehler' },
-  fr: { back: '← Retour', title: 'Score viral', subtitle: 'Vérifiez le potentiel viral', credits: '3 crédits', contentLabel: 'Contenu', contentPlaceholder: 'Entrez contenu...', platformLabel: 'Plateforme', platforms: { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', twitter: 'Twitter/X' }, check: 'Vérifier', checking: 'Analyse...', score: 'Score', factors: 'Facteurs', improvements: 'Améliorations', words: 'mots', emptyInput: 'Entrez contenu', success: 'Terminé!', error: 'Erreur' }
+  en: { 
+    back: '← Back', title: 'Viral Video Analyzer', subtitle: 'Upload your short video and get AI analysis', credits: 'FREE',
+    uploadLabel: 'Upload Video', uploadHint: 'MP4, MOV, WebM • Max 60 sec • Max 50MB',
+    dragDrop: 'Drag & drop or click to upload', selectedFile: 'Selected',
+    descLabel: 'Video Description (Optional)', descPlaceholder: 'Describe what happens in your video...',
+    platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' },
+    analyze: 'Analyze Video', analyzing: 'AI analyzing your video...',
+    score: 'Viral Score', breakdown: 'Score Breakdown', strengths: 'Strengths', improvements: 'How to Improve',
+    performance: 'Predicted Performance', views: 'Views', bestTime: 'Best Time', probability: 'Viral Probability',
+    expertTip: 'Expert Tip', removeVideo: 'Remove',
+    hookStrength: 'Hook', contentQuality: 'Quality', emotionalImpact: 'Emotion', shareability: 'Shareability', trendAlignment: 'Trends',
+    noVideo: 'Please upload a video', tooLong: 'Video must be under 60 seconds', tooLarge: 'Video must be under 50MB',
+    success: 'Analysis complete!', error: 'Error occurred'
+  },
+  tr: { 
+    back: '← Geri', title: 'Viral Video Analizi', subtitle: 'Kısa videonuzu yükleyin, AI analiz etsin', credits: 'ÜCRETSİZ',
+    uploadLabel: 'Video Yükle', uploadHint: 'MP4, MOV, WebM • Maks 60 sn • Maks 50MB',
+    dragDrop: 'Sürükle bırak veya tıkla', selectedFile: 'Seçilen',
+    descLabel: 'Video Açıklaması (Opsiyonel)', descPlaceholder: 'Videoda ne olduğunu açıklayın...',
+    platformLabel: 'Platform', platforms: { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' },
+    analyze: 'Videoyu Analiz Et', analyzing: 'AI videonuzu analiz ediyor...',
+    score: 'Viral Skoru', breakdown: 'Skor Detayları', strengths: 'Güçlü Yönler', improvements: 'Nasıl Geliştirirsin',
+    performance: 'Tahmini Performans', views: 'Görüntülenme', bestTime: 'En İyi Zaman', probability: 'Viral Olasılığı',
+    expertTip: 'Uzman Tavsiyesi', removeVideo: 'Kaldır',
+    hookStrength: 'Hook', contentQuality: 'Kalite', emotionalImpact: 'Duygu', shareability: 'Paylaşılabilirlik', trendAlignment: 'Trend',
+    noVideo: 'Lütfen video yükleyin', tooLong: 'Video 60 saniyeden kısa olmalı', tooLarge: 'Video 50MB\'dan küçük olmalı',
+    success: 'Analiz tamamlandı!', error: 'Hata oluştu'
+  },
+  ru: { back: '← Назад', title: 'Анализ вирусного видео', subtitle: 'Загрузите видео для AI анализа', credits: 'БЕСПЛАТНО', uploadLabel: 'Загрузить', uploadHint: 'MP4, MOV • Макс 60 сек', dragDrop: 'Перетащите или нажмите', selectedFile: 'Выбрано', descLabel: 'Описание', descPlaceholder: 'Опишите видео...', platformLabel: 'Платформа', platforms: { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' }, analyze: 'Анализировать', analyzing: 'AI анализирует...', score: 'Рейтинг', breakdown: 'Детали', strengths: 'Сильные стороны', improvements: 'Улучшения', performance: 'Прогноз', views: 'Просмотры', bestTime: 'Лучшее время', probability: 'Вероятность', expertTip: 'Совет', removeVideo: 'Удалить', hookStrength: 'Хук', contentQuality: 'Качество', emotionalImpact: 'Эмоции', shareability: 'Распространение', trendAlignment: 'Тренды', noVideo: 'Загрузите видео', tooLong: 'Макс 60 сек', tooLarge: 'Макс 50MB', success: 'Готово!', error: 'Ошибка' },
+  de: { back: '← Zurück', title: 'Viral Video Analyse', subtitle: 'Video hochladen für AI-Analyse', credits: 'KOSTENLOS', uploadLabel: 'Hochladen', uploadHint: 'MP4, MOV • Max 60 Sek', dragDrop: 'Ziehen oder klicken', selectedFile: 'Ausgewählt', descLabel: 'Beschreibung', descPlaceholder: 'Video beschreiben...', platformLabel: 'Plattform', platforms: { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' }, analyze: 'Analysieren', analyzing: 'AI analysiert...', score: 'Score', breakdown: 'Details', strengths: 'Stärken', improvements: 'Verbesserungen', performance: 'Prognose', views: 'Views', bestTime: 'Beste Zeit', probability: 'Wahrscheinlichkeit', expertTip: 'Tipp', removeVideo: 'Entfernen', hookStrength: 'Hook', contentQuality: 'Qualität', emotionalImpact: 'Emotion', shareability: 'Teilbarkeit', trendAlignment: 'Trends', noVideo: 'Video hochladen', tooLong: 'Max 60 Sek', tooLarge: 'Max 50MB', success: 'Fertig!', error: 'Fehler' },
+  fr: { back: '← Retour', title: 'Analyse vidéo virale', subtitle: 'Téléchargez votre vidéo pour l\'analyse AI', credits: 'GRATUIT', uploadLabel: 'Télécharger', uploadHint: 'MP4, MOV • Max 60 sec', dragDrop: 'Glisser ou cliquer', selectedFile: 'Sélectionné', descLabel: 'Description', descPlaceholder: 'Décrivez la vidéo...', platformLabel: 'Plateforme', platforms: { tiktok: 'TikTok', instagram: 'Instagram Reels', youtube: 'YouTube Shorts' }, analyze: 'Analyser', analyzing: 'AI analyse...', score: 'Score', breakdown: 'Détails', strengths: 'Forces', improvements: 'Améliorations', performance: 'Prévisions', views: 'Vues', bestTime: 'Meilleur moment', probability: 'Probabilité', expertTip: 'Conseil', removeVideo: 'Supprimer', hookStrength: 'Hook', contentQuality: 'Qualité', emotionalImpact: 'Émotion', shareability: 'Partage', trendAlignment: 'Tendances', noVideo: 'Téléchargez vidéo', tooLong: 'Max 60 sec', tooLarge: 'Max 50MB', success: 'Terminé!', error: 'Erreur' }
 }
 const langs = [{ code: 'en' as Language, flag: '🇺🇸', name: 'English' }, { code: 'tr' as Language, flag: '🇹🇷', name: 'Türkçe' }, { code: 'ru' as Language, flag: '🇷🇺', name: 'Русский' }, { code: 'de' as Language, flag: '🇩🇪', name: 'Deutsch' }, { code: 'fr' as Language, flag: '🇫🇷', name: 'Français' }]
 
 export default function ViralScorePage() {
-  const [content, setContent] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoPreview, setVideoPreview] = useState<string | null>(null)
+  const [description, setDescription] = useState('')
   const [platform, setPlatform] = useState('tiktok')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { language, setLanguage } = useLanguage()
   const { showToast } = useToast()
   const t = texts[language]
 
-  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id) }) }, [])
+  const handleFileSelect = (file: File) => {
+    if (!file.type.startsWith('video/')) { showToast('Please select a video file', 'warning'); return }
+    if (file.size > 50 * 1024 * 1024) { showToast(t.tooLarge, 'warning'); return }
+    setVideoFile(file)
+    setVideoPreview(URL.createObjectURL(file))
+  }
 
-  const handleCheck = async () => {
-    if (!content.trim()) { showToast(t.emptyInput, 'warning'); return }
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file) handleFileSelect(file)
+  }
+
+  const handleAnalyze = async () => {
+    if (!videoFile) { showToast(t.noVideo, 'warning'); return }
     setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/viral-score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, platform, userId, language }) })
+      const formData = new FormData()
+      formData.append('video', videoFile)
+      formData.append('platform', platform)
+      formData.append('description', description)
+      formData.append('language', language)
+
+      const res = await fetch('/api/viral-score', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.error) showToast(data.error, 'error')
-      else { setResult(data.analysis); showToast(t.success, 'success') }
+      else { setResult(data); showToast(t.success, 'success') }
     } catch { showToast(t.error, 'error') }
     setLoading(false)
   }
 
-  const getScoreColor = (score: number) => score >= 70 ? 'from-green-500 to-emerald-500' : score >= 50 ? 'from-yellow-500 to-orange-500' : 'from-red-500 to-pink-500'
+  const removeVideo = () => { setVideoFile(null); setVideoPreview(null); setResult(null) }
+  const getScoreColor = (s: number) => s >= 70 ? 'from-green-500 to-emerald-500' : s >= 50 ? 'from-yellow-500 to-orange-500' : 'from-red-500 to-pink-500'
+  const getBarColor = (s: number) => s >= 70 ? 'bg-green-500' : s >= 50 ? 'bg-yellow-500' : 'bg-red-500'
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -49,17 +95,87 @@ export default function ViralScorePage() {
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8"><div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>💎</span><span>{t.credits}</span></div><h1 className="text-3xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6 space-y-4">
-          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t.contentLabel}</label><textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-32 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" /><p className="text-xs text-gray-500 mt-1">{content.split(/\s+/).filter(Boolean).length} {t.words}</p></div>
-          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white">{Object.entries(t.platforms).map(([k, v]) => (<option key={k} value={k}>{v as string}</option>))}</select></div>
+        <div className="text-center mb-8"><div className="inline-flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium mb-4"><span>🎁</span><span>{t.credits}</span></div><h1 className="text-3xl font-bold mb-2">{t.title}</h1><p className="text-gray-400">{t.subtitle}</p></div>
+        
+        <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 mb-6 space-y-5">
+          {/* Video Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.uploadLabel}</label>
+            {!videoFile ? (
+              <div onClick={() => fileInputRef.current?.click()} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()} className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-purple-500 transition">
+                <div className="text-4xl mb-3">📹</div>
+                <p className="text-gray-300 font-medium">{t.dragDrop}</p>
+                <p className="text-gray-500 text-sm mt-1">{t.uploadHint}</p>
+              </div>
+            ) : (
+              <div className="bg-gray-900/50 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  {videoPreview && <video src={videoPreview} className="w-32 h-20 object-cover rounded-lg" />}
+                  <div className="flex-1">
+                    <p className="font-medium">{videoFile.name}</p>
+                    <p className="text-sm text-gray-400">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  </div>
+                  <button onClick={removeVideo} className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30">{t.removeVideo}</button>
+                </div>
+              </div>
+            )}
+            <input ref={fileInputRef} type="file" accept="video/*" onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])} className="hidden" />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.descLabel}</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t.descPlaceholder} className="w-full h-20 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" />
+          </div>
+
+          {/* Platform */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.platformLabel}</label>
+            <div className="flex gap-2">{Object.entries(t.platforms).map(([k, v]) => (<button key={k} onClick={() => setPlatform(k)} className={`px-4 py-2 rounded-xl font-medium transition ${platform === k ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'}`}>{v as string}</button>))}</div>
+          </div>
         </div>
-        <button onClick={handleCheck} disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.checking}</>) : (<><span>🚀</span>{t.check}</>)}</button>
-        {result && (
+
+        <button onClick={handleAnalyze} disabled={loading || !videoFile} className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 py-4 rounded-xl font-semibold text-lg transition flex items-center justify-center gap-3 mb-8">{loading ? (<><span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>{t.analyzing}</>) : (<><span>🚀</span>{t.analyze}</>)}</button>
+
+        {result?.analysis && (
           <div className="space-y-6">
-            <div className={`bg-gradient-to-r ${getScoreColor(result.viralScore)} rounded-2xl p-8 text-center`}><h2 className="text-lg text-white/80 mb-2">{t.score}</h2><p className="text-6xl font-bold text-white">{result.viralScore}<span className="text-2xl">/100</span></p></div>
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6"><h2 className="text-xl font-semibold mb-4">{t.factors}</h2><div className="space-y-3">{result.factors?.map((f: any, i: number) => (<div key={i} className="flex items-center gap-3"><span className="text-xl">{f.present ? '✅' : f.partial ? '⚠️' : '❌'}</span><span className={f.present ? 'text-green-400' : f.partial ? 'text-yellow-400' : 'text-gray-400'}>{f.factor}</span></div>))}</div></div>
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl border border-purple-500/30 p-6"><h2 className="text-xl font-semibold mb-4">{t.improvements}</h2><ul className="space-y-3">{result.improvements?.map((imp: string, i: number) => (<li key={i} className="flex items-start gap-3 bg-gray-800/50 rounded-xl p-3"><span className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold">{i+1}</span><span>{imp}</span></li>))}</ul></div>
+            {/* Score */}
+            <div className={`bg-gradient-to-r ${getScoreColor(result.analysis.viralScore)} rounded-2xl p-8 text-center`}>
+              <h2 className="text-lg text-white/80 mb-2">{t.score}</h2>
+              <p className="text-7xl font-bold text-white">{result.analysis.viralScore}<span className="text-3xl">/100</span></p>
+              <p className="text-white/80 mt-2">{t.probability}: {result.analysis.viralProbability}</p>
+            </div>
+
+            {/* Breakdown */}
+            {result.analysis.breakdown && (
+              <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6">
+                <h3 className="text-xl font-semibold mb-4">{t.breakdown}</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {[{k:'hookStrength',l:t.hookStrength},{k:'contentQuality',l:t.contentQuality},{k:'emotionalImpact',l:t.emotionalImpact},{k:'shareability',l:t.shareability},{k:'trendAlignment',l:t.trendAlignment}].map(item => (
+                    <div key={item.k} className="bg-gray-900/50 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-400 mb-1">{item.l}</p>
+                      <p className={`text-xl font-bold ${result.analysis.breakdown[item.k] >= 70 ? 'text-green-400' : result.analysis.breakdown[item.k] >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{result.analysis.breakdown[item.k]}</p>
+                      <div className="w-full h-1.5 bg-gray-700 rounded-full mt-2 overflow-hidden"><div className={`h-full ${getBarColor(result.analysis.breakdown[item.k])}`} style={{width:`${result.analysis.breakdown[item.k]}%`}}></div></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Performance */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 text-center"><span className="text-3xl">👁️</span><p className="text-2xl font-bold mt-2">{result.analysis.predictedViews}</p><p className="text-sm text-gray-400">{t.views}</p></div>
+              <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 text-center"><span className="text-3xl">⏰</span><p className="text-xl font-bold mt-2 text-green-400">{result.analysis.bestPostingTime}</p><p className="text-sm text-gray-400">{t.bestTime}</p></div>
+            </div>
+
+            {/* Strengths */}
+            {result.analysis.strengths && (<div className="bg-gray-800/50 rounded-2xl border border-green-500/30 p-6"><h3 className="text-lg font-semibold mb-3 text-green-400">{t.strengths}</h3><ul className="space-y-2">{result.analysis.strengths.map((s: string, i: number) => (<li key={i} className="flex items-start gap-2"><span className="text-green-400">✓</span>{s}</li>))}</ul></div>)}
+
+            {/* Improvements */}
+            {result.analysis.improvements && (<div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl border border-purple-500/30 p-6"><h3 className="text-lg font-semibold mb-3">{t.improvements}</h3><ul className="space-y-2">{result.analysis.improvements.map((s: string, i: number) => (<li key={i} className="flex items-start gap-3 bg-gray-800/50 rounded-lg p-2"><span className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i+1}</span>{s}</li>))}</ul></div>)}
+
+            {/* Expert Tip */}
+            {result.analysis.expertTip && (<div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6"><h3 className="font-semibold mb-2 flex items-center gap-2"><span>💡</span>{t.expertTip}</h3><p className="text-gray-300">{result.analysis.expertTip}</p></div>)}
           </div>
         )}
       </main>
