@@ -6,15 +6,28 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
+
+const styleGuide: Record<string, Record<string, string>> = {
+  question: { tr: 'Soru sorarak merak uyandır, izleyiciyi düşündür', en: 'Create curiosity with questions, make viewer think' },
+  shocking: { tr: 'Şok edici ve dikkat çekici açılış', en: 'Shocking and attention-grabbing opening' },
+  storytelling: { tr: 'Hikaye anlatımı ile duygusal bağ kur', en: 'Connect emotionally through storytelling' }
+}
+
+const platformGuide: Record<string, Record<string, string>> = {
+  tiktok: { tr: 'Kısa, enerjik, trend odaklı, hızlı geçişler', en: 'Short, energetic, trend-focused, quick transitions' },
+  youtube: { tr: 'Detaylı, bilgilendirici, değer odaklı', en: 'Detailed, informative, value-focused' },
+  instagram: { tr: 'Görsel odaklı, estetik, kısa ve öz', en: 'Visual-focused, aesthetic, short and concise' }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { topic, platform, duration, style, userId, language = 'en' } = await request.json()
 
-    if (!topic) {
-      return NextResponse.json({ error: language === 'tr' ? 'Konu gerekli' : 'Topic required' }, { status: 400 })
+    if (!topic || !platform) {
+      return NextResponse.json({ error: language === 'tr' ? 'Konu ve platform gerekli' : 'Topic and platform required' }, { status: 400 })
     }
 
-    // Kredi kontrolü
     if (userId) {
       const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
       if (!credits || credits.balance < 4) {
@@ -22,144 +35,106 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const script = await generateScript(topic, platform, duration, style, language)
+    const styleDesc = styleGuide[style]?.[language === 'tr' ? 'tr' : 'en'] || styleGuide.question.en
+    const platformDesc = platformGuide[platform]?.[language === 'tr' ? 'tr' : 'en'] || platformGuide.tiktok.en
+    const seed = Date.now()
 
-    // Kredi düş
+    const prompt = language === 'tr'
+      ? `[SEED:${seed}] Sen profesyonel bir video script yazarısın. "${topic}" konusu için ${platform} platformunda ${duration} saniyelik bir video scripti yaz.
+
+PLATFORM TARZI: ${platformDesc}
+HOOK STİLİ: ${styleDesc}
+
+ZORUNLU FORMAT:
+1. HOOK (0:00-0:03): İlk 3 saniyede izleyiciyi yakala. Güçlü, merak uyandırıcı bir açılış.
+2. ANA İÇERİK (0:03-${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}): Ana mesajı akıcı bir şekilde anlat. Madde madde değil, doğal konuşma gibi.
+3. CTA (son 8 saniye): Güçlü bir eylem çağrısı ile bitir.
+
+KURALLAR:
+- Samimi ve doğal konuşma dili kullan
+- Klişelerden kaçın, özgün ol
+- Her cümle değer katsın
+- Platform için uygun uzunlukta tut
+
+JSON formatında yanıt ver:
+{
+  "sections": [
+    {"timestamp": "0:00", "title": "Hook", "content": "hook metni"},
+    {"timestamp": "0:03", "title": "Ana İçerik", "content": "ana içerik metni"},
+    {"timestamp": "${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}", "title": "CTA", "content": "kapanış metni"}
+  ]
+}`
+      : `[SEED:${seed}] You are a professional video script writer. Write a ${duration}-second video script for ${platform} about "${topic}".
+
+PLATFORM STYLE: ${platformDesc}
+HOOK STYLE: ${styleDesc}
+
+REQUIRED FORMAT:
+1. HOOK (0:00-0:03): Capture viewer in first 3 seconds. Strong, curiosity-inducing opening.
+2. MAIN CONTENT (0:03-${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}): Deliver main message in flowing narrative. Not bullet points, natural speech.
+3. CTA (last 8 seconds): End with strong call to action.
+
+RULES:
+- Use friendly, natural conversational tone
+- Avoid clichés, be original
+- Every sentence should add value
+- Keep appropriate length for platform
+
+Respond in JSON format:
+{
+  "sections": [
+    {"timestamp": "0:00", "title": "Hook", "content": "hook text"},
+    {"timestamp": "0:03", "title": "Main Content", "content": "main content text"},
+    {"timestamp": "${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}", "title": "CTA", "content": "closing text"}
+  ]
+}`
+
+    const response = await fetch(HF_API, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1500, temperature: 0.85, top_p: 0.9, return_full_text: false } })
+    })
+
+    let script: any = null
+    if (response.ok) {
+      const result = await response.json()
+      const text = result[0]?.generated_text || ''
+      const match = text.match(/\{[\s\S]*\}/)
+      if (match) {
+        try { script = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
+      }
+    }
+
+    if (!script || !script.sections || script.sections.length < 2) {
+      script = {
+        sections: language === 'tr' ? [
+          { timestamp: "0:00", title: "Hook", content: `${topic} hakkında bilmediğiniz bir şey söyleyeceğim...` },
+          { timestamp: "0:03", title: "Ana İçerik", content: `${topic} konusunda çoğu kişi bunu atlıyor. Ama aslında en önemli nokta şu: Temel prensipleri anlamadan ilerlemeye çalışmak, temelsiz bir bina inşa etmek gibi. Size tam olarak nasıl yapmanız gerektiğini göstereceğim.` },
+          { timestamp: duration === '30' ? "0:22" : "0:50", title: "CTA", content: "Videoyu kaydedin ve daha fazlası için takipte kalın!" }
+        ] : [
+          { timestamp: "0:00", title: "Hook", content: `I'm going to tell you something about ${topic} you didn't know...` },
+          { timestamp: "0:03", title: "Main Content", content: `Most people skip this when it comes to ${topic}. But the most important thing is: trying to progress without understanding the basics is like building a house without a foundation. Let me show you exactly how to do it right.` },
+          { timestamp: duration === '30' ? "0:22" : "0:50", title: "CTA", content: "Save this video and follow for more!" }
+        ]
+      }
+    }
+
+    const totalWords = script.sections.reduce((acc: number, s: any) => acc + (s.content?.split(' ').length || 0), 0)
+    script.topic = topic
+    script.platform = platform
+    script.duration = `${duration}s`
+    script.style = style
+    script.totalWords = totalWords
+    script.estimatedReadingTime = `${Math.ceil(totalWords / 150)} min`
+
     if (userId) {
       const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
-      if (c) {
-        await supabase.from('credits').update({ 
-          balance: c.balance - 4, 
-          total_used: c.total_used + 4, 
-          updated_at: new Date().toISOString() 
-        }).eq('user_id', userId)
-      }
+      if (c) await supabase.from('credits').update({ balance: c.balance - 4, total_used: c.total_used + 4 }).eq('user_id', userId)
     }
 
     return NextResponse.json({ script })
   } catch (error) {
     console.error('Video Script Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
-  }
-}
-
-async function generateScript(topic: string, platform: string, duration: string, style: string, language: string) {
-  const secs = parseInt(duration) || 30
-  
-  const prompt = language === 'tr'
-    ? `${platform} için ${secs} saniyelik "${topic}" konulu viral video scripti yaz. Hook, ana içerik ve CTA bölümleri olsun. Kısa, net ve etkileyici yaz.`
-    : `Write a ${secs}-second viral video script for ${platform} about "${topic}". Include hook, main content, and CTA sections. Keep it short, clear, and impactful.`
-
-  try {
-    const response = await fetch('https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: { max_new_tokens: 500, temperature: 0.7, return_full_text: false }
-      }),
-    })
-
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      if (text.length > 50) {
-        return formatScript(text, topic, platform, secs, language)
-      }
-    }
-  } catch (e) { 
-    console.error('AI Error:', e) 
-  }
-
-  return generateFallbackScript(topic, platform, secs, style, language)
-}
-
-function formatScript(text: string, topic: string, platform: string, secs: number, language: string) {
-  const cleanText = text.replace(/```[\s\S]*?```/g, '').replace(/\*\*/g, '').replace(/^\s*[-•]\s*/gm, '').trim()
-  const lines = cleanText.split('\n').filter(l => l.trim().length > 10)
-  
-  const hookTime = '0:00-0:03'
-  const mainTime = secs === 15 ? '0:03-0:12' : secs === 30 ? '0:03-0:25' : '0:03-0:50'
-  const ctaTime = secs === 15 ? '0:12-0:15' : secs === 30 ? '0:25-0:30' : '0:50-1:00'
-
-  let hookContent = ''
-  let mainContent = ''
-  let ctaContent = ''
-
-  if (lines.length >= 3) {
-    hookContent = lines[0].replace(/^(hook|giriş|açılış)[:\s]*/i, '').trim()
-    mainContent = lines.slice(1, -1).join(' ').replace(/^(ana içerik|main|content)[:\s]*/i, '').trim()
-    ctaContent = lines[lines.length - 1].replace(/^(cta|kapanış|call)[:\s]*/i, '').trim()
-  } else if (lines.length > 0) {
-    const allText = lines.join(' ')
-    const words = allText.split(' ')
-    const third = Math.floor(words.length / 3)
-    hookContent = words.slice(0, third).join(' ')
-    mainContent = words.slice(third, third * 2).join(' ')
-    ctaContent = words.slice(third * 2).join(' ')
-  }
-
-  return {
-    topic,
-    platform,
-    duration: `${secs}s`,
-    sections: [
-      { timestamp: hookTime, title: language === 'tr' ? '🎯 Hook' : '🎯 Hook', content: hookContent || topic },
-      { timestamp: mainTime, title: language === 'tr' ? '📝 Ana İçerik' : '📝 Main Content', content: mainContent || `${topic} hakkında bilmeniz gerekenler...` },
-      { timestamp: ctaTime, title: language === 'tr' ? '🚀 CTA' : '🚀 CTA', content: ctaContent || (language === 'tr' ? 'Takip et!' : 'Follow for more!') }
-    ],
-    totalWords: cleanText.split(' ').length,
-    readingTime: `~${secs}s`
-  }
-}
-
-function generateFallbackScript(topic: string, platform: string, secs: number, style: string, language: string) {
-  const hookTime = '0:00-0:03'
-  const mainTime = secs === 15 ? '0:03-0:12' : secs === 30 ? '0:03-0:25' : '0:03-0:50'
-  const ctaTime = secs === 15 ? '0:12-0:15' : secs === 30 ? '0:25-0:30' : '0:50-1:00'
-
-  const hooks: Record<string, Record<string, string[]>> = {
-    question: {
-      tr: [`${topic} hakkında hiç düşündün mü?`, `Neden herkes ${topic} konusunda yanılıyor?`],
-      en: [`Have you ever thought about ${topic}?`, `Why is everyone wrong about ${topic}?`]
-    },
-    shocking: {
-      tr: [`${topic} hakkında kimsenin bilmediği gerçek...`, `Bu ${topic} bilgisi her şeyi değiştirecek!`],
-      en: [`The truth about ${topic} nobody knows...`, `This ${topic} info will change everything!`]
-    },
-    story: {
-      tr: [`${topic} hikayem böyle başladı...`, `${topic} ile tanışmam...`],
-      en: [`My ${topic} story began like this...`, `How I discovered ${topic}...`]
-    }
-  }
-
-  const mains: Record<string, string[]> = {
-    tr: [`${topic} konusunda en önemli nokta şu: Doğru strateji ile başarı kaçınılmaz. Adım adım ilerleyerek, tutarlı bir şekilde çalışarak sonuç alabilirsin.`],
-    en: [`The key point about ${topic} is this: With the right strategy, success is inevitable. By progressing step by step and working consistently, you can achieve results.`]
-  }
-
-  const ctas: Record<string, string[]> = {
-    tr: ['Beğen + Kaydet + Takip Et! 🔥', 'Yorumlarda düşünceni yaz! 👇'],
-    en: ['Like + Save + Follow! 🔥', 'Comment your thoughts below! 👇']
-  }
-
-  const hookList = hooks[style]?.[language] || hooks.question[language] || hooks.question.en
-  const mainList = mains[language] || mains.en
-  const ctaList = ctas[language] || ctas.en
-
-  return {
-    topic,
-    platform,
-    duration: `${secs}s`,
-    sections: [
-      { timestamp: hookTime, title: language === 'tr' ? '🎯 Hook' : '🎯 Hook', content: hookList[Math.floor(Math.random() * hookList.length)] },
-      { timestamp: mainTime, title: language === 'tr' ? '📝 Ana İçerik' : '📝 Main Content', content: mainList[0] },
-      { timestamp: ctaTime, title: language === 'tr' ? '🚀 CTA' : '🚀 CTA', content: ctaList[Math.floor(Math.random() * ctaList.length)] }
-    ],
-    totalWords: 60,
-    readingTime: `~${secs}s`
+    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
   }
 }

@@ -118,9 +118,10 @@ export default function DashboardPage() {
     // Content Creation
     { name: language === 'tr' ? 'Hook Üretici' : 'Hook Generator', icon: '🎣', path: '/tools/hook-generator', credits: 2, category: 'content', description: language === 'tr' ? 'Dikkat çeken hook\'lar' : 'Attention-grabbing hooks' },
     { name: language === 'tr' ? 'Caption Yazarı' : 'Caption Writer', icon: '✍️', path: '/tools/caption-writer', credits: 2, category: 'content', description: language === 'tr' ? 'Profesyonel caption\'lar' : 'Professional captions' },
+    { name: language === 'tr' ? 'Thread Yazarı' : 'Thread Writer', icon: '🧵', path: '/tools/thread-writer', credits: 4, category: 'content', description: language === 'tr' ? 'Viral Twitter/X thread\'leri' : 'Viral Twitter/X threads', new: true },
     { name: language === 'tr' ? 'Platform Uyarlayıcı' : 'Platform Adapter', icon: '🔄', path: '/tools/platform-adapter', credits: 3, category: 'content', description: language === 'tr' ? 'İçeriği platformlara uyarla' : 'Adapt content to platforms' },
     { name: language === 'tr' ? 'Metin Özetleyici' : 'Summarizer', icon: '📝', path: '/tools/summarize', credits: 2, category: 'content', description: language === 'tr' ? 'Metinleri özetle' : 'Summarize texts' },
-    { name: language === 'tr' ? 'İçerik Fikir Motoru' : 'Content Ideas', icon: '💡', path: '/tools/content-ideas', credits: 3, category: 'content', description: language === 'tr' ? '10 özgün içerik fikri' : '10 unique content ideas', new: true },
+    { name: language === 'tr' ? 'İçerik Fikir Motoru' : 'Content Ideas', icon: '💡', path: '/tools/content-ideas', credits: 3, category: 'content', description: language === 'tr' ? '10 özgün içerik fikri' : '10 unique content ideas' },
     
     // Communication
     { name: language === 'tr' ? 'Yorum Yanıtlayıcı' : 'Comment Reply', icon: '💬', path: '/tools/comment-reply', credits: 2, category: 'content', description: language === 'tr' ? 'Yorumlara akıllı yanıtlar' : 'Smart replies to comments', new: true },
