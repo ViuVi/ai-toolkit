@@ -1,9 +1,17 @@
 'use client'
 import Link from 'next/link'
-import { useLanguage } from '@/lib/LanguageContext'
+import { useLanguage, Language } from '@/lib/LanguageContext'
+
+const langs = [
+  { code: 'en' as Language, flag: '🇺🇸', name: 'EN' },
+  { code: 'tr' as Language, flag: '🇹🇷', name: 'TR' },
+  { code: 'ru' as Language, flag: '🇷🇺', name: 'RU' },
+  { code: 'de' as Language, flag: '🇩🇪', name: 'DE' },
+  { code: 'fr' as Language, flag: '🇫🇷', name: 'FR' },
+]
 
 export default function PrivacyPage() {
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   
   const content = language === 'tr' ? {
     title: 'Gizlilik Politikası',
@@ -149,8 +157,21 @@ Contact us to exercise these rights.`
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-gray-400 hover:text-white transition">← {language === 'tr' ? 'Ana Sayfa' : 'Home'}</Link>
-          <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Media Tool Kit</span>
+          <Link href="/" className="text-gray-400 hover:text-white transition">← {language === 'tr' ? 'Ana Sayfa' : language === 'ru' ? 'Главная' : language === 'de' ? 'Startseite' : language === 'fr' ? 'Accueil' : 'Home'}</Link>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1">
+              {langs.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLanguage(l.code)}
+                  className={`px-2 py-1 rounded text-xs font-medium transition ${language === l.code ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                >
+                  {l.flag}
+                </button>
+              ))}
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Media Tool Kit</span>
+          </div>
         </div>
       </header>
       

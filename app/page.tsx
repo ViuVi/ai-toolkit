@@ -10,7 +10,10 @@ export default function LandingPage() {
   const [user, setUser] = useState<any>(null)
   const [activeModal, setActiveModal] = useState<'about' | 'contact' | 'privacy' | null>(null)
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
+  const { language, setLanguage, t } = useLanguage()
+  
+  // Landing page translations
+  const l = t?.landing || {}
 
   useEffect(() => {
     checkUser()
@@ -33,55 +36,19 @@ export default function LandingPage() {
   }
 
   const features = [
-    {
-      icon: '📹',
-      title: 'Video Tools',
-      titleTr: 'Video Araçları',
-      description: 'Subtitle generator, script writer and more',
-      descriptionTr: 'Alt yazı ekleme, script yazma ve daha fazlası',
-    },
-    {
-      icon: '✍️',
-      title: 'Content Creation',
-      titleTr: 'İçerik Üretimi',
-      description: 'Hooks, captions, and platform adapters',
-      descriptionTr: 'Hook, caption ve platform adaptörleri',
-    },
-    {
-      icon: '📊',
-      title: 'Analytics',
-      titleTr: 'Analiz',
-      description: 'Competitor analysis, trends, engagement',
-      descriptionTr: 'Rakip analizi, trendler, etkileşim',
-    },
-    {
-      icon: '⚡',
-      title: 'Optimization',
-      titleTr: 'Optimizasyon',
-      description: 'Hashtags, bio generator, QR codes',
-      descriptionTr: 'Hashtag, bio oluşturma, QR kod',
-    },
-    {
-      icon: '🚀',
-      title: 'AI-Powered',
-      titleTr: 'Yapay Zeka',
-      description: 'Viral score predictor, brand voice analyzer',
-      descriptionTr: 'Viral tahmin, marka sesi analizi',
-    },
-    {
-      icon: '🗓️',
-      title: 'Planning',
-      titleTr: 'Planlama',
-      description: 'Content calendar, post scheduler',
-      descriptionTr: 'İçerik takvimi, paylaşım planlayıcı',
-    },
+    { icon: '📹', key: 'videoTools' },
+    { icon: '✍️', key: 'contentCreation' },
+    { icon: '📊', key: 'analytics' },
+    { icon: '⚡', key: 'optimization' },
+    { icon: '🚀', key: 'aiPowered' },
+    { icon: '🗓️', key: 'planning' },
   ]
 
   const stats = [
-    { number: '16+', label: 'Tools', labelTr: 'Araç' },
-    { number: '10K+', label: 'Users', labelTr: 'Kullanıcı' },
-    { number: '50K+', label: 'Contents Created', labelTr: 'Oluşturulan İçerik' },
-    { number: '4.9', label: 'Rating', labelTr: 'Puan' },
+    { number: '16+', label: 'Tools', key: 'tools' },
+    { number: '10K+', label: 'Users', key: 'users' },
+    { number: '50K+', label: 'Contents Created', key: 'contents' },
+    { number: '4.9', label: 'Rating', key: 'rating' },
   ]
 
   return (
@@ -108,13 +75,13 @@ export default function LandingPage() {
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-gray-300 hover:text-white transition">
-                {language === 'tr' ? 'Özellikler' : 'Features'}
+                {t?.nav?.features || 'Features'}
               </a>
               <a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-300 hover:text-white transition">
-                {language === 'tr' ? 'Araçlar' : 'Tools'}
+                {t?.nav?.pricing || 'Tools'}
               </a>
               <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-300 hover:text-white transition">
-                {language === 'tr' ? 'Fiyatlandırma' : 'Pricing'}
+                {t?.pricing?.title?.split(',')[0] || 'Pricing'}
               </a>
             </nav>
 
@@ -150,7 +117,7 @@ export default function LandingPage() {
                   href="/dashboard"
                   className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg font-semibold transition shadow-lg"
                 >
-                  {language === 'tr' ? 'Panel' : 'Dashboard'}
+                  {t?.nav?.dashboard || 'Dashboard'}
                 </Link>
               ) : (
                 <>
@@ -158,13 +125,13 @@ export default function LandingPage() {
                     href="/login"
                     className="hidden sm:block px-4 py-2 text-gray-300 hover:text-white transition"
                   >
-                    {language === 'tr' ? 'Giriş Yap' : 'Sign In'}
+                    {t?.nav?.login || 'Sign In'}
                   </Link>
                   <Link
                     href="/register"
                     className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg font-semibold transition shadow-lg"
                   >
-                    {language === 'tr' ? 'Başla' : 'Get Started'}
+                    {t?.nav?.signup || 'Get Started'}
                   </Link>
                 </>
               )}
@@ -190,25 +157,22 @@ export default function LandingPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
             </span>
             <span className="text-sm font-medium text-purple-300">
-              {language === 'tr' ? '16 Profesyonel Araç Mevcut' : '16 Professional Tools Available'}
+              {l?.toolsAvailable || '16 Professional Tools Available'}
             </span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            {language === 'tr' ? 'Viral İçerikler Üret' : 'Create Viral Content'}
+            {l?.heroTitle1 || 'Create Viral Content'}
             <br />
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-              {language === 'tr' ? '10x Daha Hızlı' : '10x Faster'}
+              {l?.heroTitle2 || '10x Faster'}
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-xl text-gray-400 mb-10 max-w-3xl mx-auto">
-            {language === 'tr' 
-              ? 'İçerik üreticileri için yapay zeka destekli araçlar. Caption oluştur, trendleri analiz et, paylaşımları planla ve viral potansiyeli tahmin et - hepsi tek platformda.'
-              : 'AI-powered tools for content creators. Generate captions, analyze trends, schedule posts, and predict viral potential - all in one platform.'
-            }
+            {l?.heroDesc || 'AI-powered tools for content creators. Generate captions, analyze trends, schedule posts, and predict viral potential - all in one platform.'}
           </p>
 
           {/* CTA Buttons */}
@@ -217,13 +181,13 @@ export default function LandingPage() {
               href="/register"
               className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl font-bold text-lg shadow-2xl shadow-purple-500/50 transition transform hover:scale-105"
             >
-              {language === 'tr' ? 'Ücretsiz Dene' : 'Start Free Trial'}
+              {l?.startFreeTrial || 'Start Free Trial'}
             </Link>
             <a
               href="#features"
               className="px-8 py-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl font-bold text-lg transition transform hover:scale-105"
             >
-              {language === 'tr' ? 'Araçları Keşfet' : 'Explore Tools'}
+              {l?.exploreTools || 'Explore Tools'}
             </a>
           </div>
 
@@ -234,7 +198,7 @@ export default function LandingPage() {
                 <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
                   {stat.number}
                 </div>
-                <div className="text-gray-400 text-sm">{language === 'tr' ? stat.labelTr : stat.label}</div>
+                <div className="text-gray-400 text-sm">{l?.stats?.[stat.key] || stat.label}</div>
               </div>
             ))}
           </div>
@@ -284,10 +248,10 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                {language === 'tr' ? '16 Güçlü Araç' : '16 Powerful Tools'}
+                {l?.toolsTitle1 || '16 Powerful Tools'}
               </span>
               <br />
-              {language === 'tr' ? 'Tek Platform' : 'One Platform'}
+              {l?.toolsTitle2 || 'One Platform'}
             </h2>
             <p className="text-xl text-gray-400">
               {language === 'tr' 
@@ -305,8 +269,8 @@ export default function LandingPage() {
                   <span className="text-2xl">🎁</span>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold">{language === 'tr' ? 'Ücretsiz Araçlar' : 'Free Tools'}</h3>
-                  <p className="text-green-400">{language === 'tr' ? 'Kredi kartı gerekmez' : 'No credit card required'}</p>
+                  <h3 className="text-2xl font-bold">{l?.freeTools || 'Free Tools'}</h3>
+                  <p className="text-green-400">{l?.noCreditCard || 'No credit card required'}</p>
                 </div>
               </div>
               <ul className="space-y-3">
