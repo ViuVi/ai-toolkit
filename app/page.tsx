@@ -12,8 +12,8 @@ export default function LandingPage() {
   const router = useRouter()
   const { language, setLanguage, t } = useLanguage()
   
-  // Landing page translations
-  const l = t?.landing || {}
+  // Landing page translations - any type to avoid TS errors with dynamic keys
+  const l: any = t?.landing || {}
 
   useEffect(() => {
     checkUser()
@@ -231,10 +231,10 @@ export default function LandingPage() {
               >
                 <div className="text-5xl mb-4">{feature.icon}</div>
                 <h3 className="text-xl font-bold mb-3 group-hover:text-purple-400 transition">
-                  {language === 'tr' ? feature.titleTr : feature.title}
+                  {l?.[feature.key] || feature.key}
                 </h3>
                 <p className="text-gray-400">
-                  {language === 'tr' ? feature.descriptionTr : feature.description}
+                  {l?.[`${feature.key}Desc`] || ''}
                 </p>
               </div>
             ))}
