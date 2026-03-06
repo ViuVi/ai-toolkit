@@ -124,6 +124,52 @@ interface TranslationData {
       terms: string
     }
   }
+  landing: {
+    toolsAvailable: string
+    heroTitle1: string
+    heroTitle2: string
+    heroDesc: string
+    startFreeTrial: string
+    exploreTools: string
+    stats: {
+      tools: string
+      users: string
+      contents: string
+      rating: string
+    }
+    featuresTitle1: string
+    featuresTitle2: string
+    featuresDesc: string
+    videoTools: string
+    videoToolsDesc: string
+    contentCreation: string
+    contentCreationDesc: string
+    analytics: string
+    analyticsDesc: string
+    optimization: string
+    optimizationDesc: string
+    aiPowered: string
+    aiPoweredDesc: string
+    planning: string
+    planningDesc: string
+    toolsTitle1: string
+    toolsTitle2: string
+    toolsDesc: string
+    freeTools: string
+    noCreditCard: string
+    premiumTools: string
+    creditsMonth: string
+    ctaTitle: string
+    ctaDesc: string
+    ctaButton: string
+    aboutTitle: string
+    aboutText1: string
+    aboutText2: string
+    aboutText3: string
+    contactTitle: string
+    contactEmail: string
+    contactSocial: string
+  }
 }
 
 export const translations: Record<Language, TranslationData> = {
