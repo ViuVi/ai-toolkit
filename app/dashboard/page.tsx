@@ -174,9 +174,9 @@ export default function DashboardPage() {
       <header className="bg-gray-800/50 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+            {/* Logo - Tıklanabilir */}
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition group">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition">
                 <span className="text-xl font-bold text-white">M</span>
               </div>
               <div>
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-xs text-gray-400">{language === 'tr' ? 'İçerik Üretim Platformu' : 'Content Creation Platform'}</p>
               </div>
-            </div>
+            </Link>
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
