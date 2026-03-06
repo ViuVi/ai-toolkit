@@ -434,19 +434,16 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 border border-purple-500/20 rounded-3xl p-12">
           <h2 className="text-4xl font-bold mb-6">
-            {language === 'tr' ? 'Viral Olmaya Hazır mısın?' : 'Ready to Go Viral?'}
+            {l?.ctaTitle || 'Ready to Go Viral?'}
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            {language === 'tr'
-              ? 'Harika içerikler üretmek için Media Tool Kit kullanan binlerce içerik üreticiye katıl'
-              : 'Join thousands of creators using Media Tool Kit to create amazing content'
-            }
+            {l?.ctaDesc || 'Join thousands of creators using Media Tool Kit to create amazing content'}
           </p>
           <Link
             href="/register"
             className="inline-block px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl font-bold text-lg shadow-2xl shadow-purple-500/50 transition transform hover:scale-105"
           >
-            {language === 'tr' ? 'Ücretsiz Dene - 50 Kredi Bedava' : 'Start Free Trial - 50 Credits Free'}
+            {l?.ctaButton || 'Start Free Trial'} - 50 {t?.common?.credits || 'Credits'}
           </Link>
         </div>
       </section>
@@ -662,9 +659,9 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-gray-800 py-12 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             {/* Logo & About */}
-            <div className="md:col-span-2">
+            <div>
               <Link href="/" className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-xl font-bold text-white">M</span>
@@ -679,49 +676,36 @@ export default function LandingPage() {
                 </div>
               </Link>
               <p className="text-gray-400 mb-4">
-                {language === 'tr'
-                  ? 'Modern içerik üreticiler için yapay zeka destekli araçlar. 10x daha hızlı viral içerikler üretin.'
-                  : 'AI-powered content creation tools for modern creators. Create viral content 10x faster.'
-                }
+                {t?.footer?.description || 'AI-powered content creation tools for modern creators. Create viral content 10x faster.'}
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-bold mb-4">{language === 'tr' ? 'Ürün' : 'Product'}</h4>
+              <h4 className="font-bold mb-4">{t?.footer?.product || 'Product'}</h4>
               <ul className="space-y-2">
-                <li><a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Özellikler' : 'Features'}</a></li>
-                <li><a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Araçlar' : 'Tools'}</a></li>
-                <li><a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Fiyatlandırma' : 'Pricing'}</a></li>
+                <li><a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-gray-400 hover:text-white transition">{t?.nav?.features || 'Features'}</a></li>
+                <li><a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-400 hover:text-white transition">{t?.footer?.links?.pricing || 'Tools'}</a></li>
+                <li><a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-400 hover:text-white transition">{t?.nav?.pricing || 'Pricing'}</a></li>
               </ul>
             </div>
 
             {/* Company */}
             <div>
-              <h4 className="font-bold mb-4">{language === 'tr' ? 'Bilgi' : 'Info'}</h4>
+              <h4 className="font-bold mb-4">{t?.footer?.company || 'Info'}</h4>
               <ul className="space-y-2">
-                <li><button onClick={() => setActiveModal('about')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Hakkımızda' : 'About'}</button></li>
-                <li><button onClick={() => setActiveModal('contact')} className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'İletişim' : 'Contact'}</button></li>
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-bold mb-4">{language === 'tr' ? 'Yasal' : 'Legal'}</h4>
-              <ul className="space-y-2">
-                <li><Link href="/terms" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Kullanım Şartları' : 'Terms of Service'}</Link></li>
-                <li><Link href="/privacy" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}</Link></li>
-                <li><Link href="/refund" className="text-gray-400 hover:text-white transition">{language === 'tr' ? 'İade Politikası' : 'Refund Policy'}</Link></li>
+                <li><button onClick={() => setActiveModal('about')} className="text-gray-400 hover:text-white transition">{t?.footer?.links?.about || 'About'}</button></li>
+                <li><button onClick={() => setActiveModal('contact')} className="text-gray-400 hover:text-white transition">{l?.contactTitle || 'Contact'}</button></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-400">
-            <p>{language === 'tr' ? '© 2025 Media Tool Kit. Tüm hakları saklıdır.' : '© 2025 Media Tool Kit. All rights reserved.'}</p>
+            <p>{t?.footer?.copyright || '© 2025 Media Tool Kit. All rights reserved.'}</p>
             <div className="flex items-center gap-6 text-sm">
-              <Link href="/terms" className="hover:text-purple-400 transition">{language === 'tr' ? 'Şartlar' : 'Terms'}</Link>
-              <Link href="/privacy" className="hover:text-purple-400 transition">{language === 'tr' ? 'Gizlilik' : 'Privacy'}</Link>
-              <Link href="/refund" className="hover:text-purple-400 transition">{language === 'tr' ? 'İade' : 'Refund'}</Link>
+              <Link href="/terms" className="hover:text-purple-400 transition">{t?.footer?.links?.terms || 'Terms'}</Link>
+              <Link href="/privacy" className="hover:text-purple-400 transition">{t?.footer?.links?.privacy || 'Privacy'}</Link>
+              <Link href="/refund" className="hover:text-purple-400 transition">{l?.ctaButton?.split(' ')[0] === 'Начать' ? 'Возврат' : language === 'de' ? 'Rückerstattung' : language === 'fr' ? 'Remboursement' : language === 'tr' ? 'İade' : 'Refund'}</Link>
             </div>
           </div>
         </div>
