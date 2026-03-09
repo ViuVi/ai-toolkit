@@ -1,8 +1,10 @@
+// Checkout API Route - Creates Lemon Squeezy checkout session
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createCheckout, PLANS } from '@/lib/lemonsqueezy'
+import { createCheckout, VARIANT_IDS } from '@/lib/lemonsqueezy'
 
-const supabase = createClient(
+// Supabase admin client (service role key ile)
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -10,63 +12,60 @@ const supabase = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const planId = body.planId
-    const billingPeriod = body.billingPeriod
-    const userId = body.userId
+    const { variantId, billingPeriod } = body
 
-    if (!planId || !billingPeriod || !userId) {
+    // Auth header'dan token al
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: 'Unauthorized - No token provided' },
+        { status: 401 }
       )
     }
 
-    // Kullanıcıyı doğrula
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId)
+    const token = authHeader.replace('Bearer ', '')
+
+    // Token ile kullanıcıyı doğrula
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
-    if (userError || !userData) {
+    if (authError || !user) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Unauthorized - Invalid token' },
+        { status: 401 }
       )
     }
 
-    // Plan kontrolü
-    const plan = PLANS[planId as keyof typeof PLANS]
-    if (!plan || planId === 'free') {
+    // Variant ID belirle
+    let selectedVariantId = variantId
+    if (!selectedVariantId) {
+      // Billing period'a göre seç
+      if (billingPeriod === 'yearly' && VARIANT_IDS.PRO_YEARLY) {
+        selectedVariantId = VARIANT_IDS.PRO_YEARLY
+      } else {
+        selectedVariantId = VARIANT_IDS.PRO_MONTHLY
+      }
+    }
+
+    if (!selectedVariantId) {
       return NextResponse.json(
-        { error: 'Invalid plan' },
+        { error: 'No variant ID configured' },
         { status: 400 }
-      )
-    }
-
-    // Variant ID al
-    const planWithVariants = plan as typeof PLANS.pro
-    const variantId = billingPeriod === 'yearly' 
-      ? planWithVariants.variantIds?.yearly 
-      : planWithVariants.variantIds?.monthly
-
-    if (!variantId) {
-      return NextResponse.json(
-        { error: 'Plan variant not configured' },
-        { status: 500 }
       )
     }
 
     // Checkout URL oluştur
     const checkoutUrl = await createCheckout(
-      variantId,
-      userId,
-      userData.user.email || ''
+      selectedVariantId,
+      user.email!,
+      user.id
     )
 
     return NextResponse.json({ checkoutUrl })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Checkout error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout'
     return NextResponse.json(
-      { error: errorMessage },
+      { error: error.message || 'Failed to create checkout' },
       { status: 500 }
     )
   }

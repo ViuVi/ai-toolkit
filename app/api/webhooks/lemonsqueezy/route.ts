@@ -1,15 +1,17 @@
+// Lemon Squeezy Webhook Handler
+// Handles subscription events and updates Supabase
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-import { getCreditsForPlan } from '@/lib/lemonsqueezy'
+import { getPlanFromVariantId, getCreditsForPlan } from '@/lib/lemonsqueezy'
 
-const supabase = createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 // Webhook imzasını doğrula
-function verifyWebhookSignature(payload: string, signature: string): boolean {
+function verifySignature(payload: string, signature: string): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET
   if (!secret) {
     console.error('LEMONSQUEEZY_WEBHOOK_SECRET is not set')
@@ -19,214 +21,232 @@ function verifyWebhookSignature(payload: string, signature: string): boolean {
   const hmac = crypto.createHmac('sha256', secret)
   const digest = hmac.update(payload).digest('hex')
   
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))
+  } catch {
+    return false
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = await request.text()
+    const rawBody = await request.text()
     const signature = request.headers.get('x-signature') || ''
 
-    // İmza doğrulama
-    if (!verifyWebhookSignature(payload, signature)) {
+    // İmzayı doğrula
+    if (!verifySignature(rawBody, signature)) {
       console.error('Invalid webhook signature')
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      )
     }
 
-    const event = JSON.parse(payload)
-    const eventName = event.meta.event_name
-    const data = event.data
+    const payload = JSON.parse(rawBody)
+    const eventName = payload.meta.event_name
+    const customData = payload.meta.custom_data || {}
+    const userId = customData.user_id
 
-    console.log('🔔 Lemon Squeezy Webhook:', eventName)
+    console.log(`📥 Webhook received: ${eventName}`, { userId })
 
+    // Event'e göre işlem yap
     switch (eventName) {
       case 'subscription_created':
-        await handleSubscriptionCreated(data, event.meta.custom_data)
+        await handleSubscriptionCreated(payload, userId)
         break
 
       case 'subscription_updated':
-        await handleSubscriptionUpdated(data)
+        await handleSubscriptionUpdated(payload, userId)
         break
 
       case 'subscription_cancelled':
-        await handleSubscriptionCancelled(data)
+      case 'subscription_expired':
+        await handleSubscriptionEnded(payload, userId)
         break
 
       case 'subscription_resumed':
-        await handleSubscriptionResumed(data)
+      case 'subscription_unpaused':
+        await handleSubscriptionResumed(payload, userId)
         break
 
-      case 'subscription_payment_success':
-        await handlePaymentSuccess(data)
+      case 'subscription_paused':
+        await handleSubscriptionPaused(payload, userId)
         break
 
-      case 'subscription_payment_failed':
-        await handlePaymentFailed(data)
+      case 'order_created':
+        console.log('Order created:', payload.data.id)
         break
 
       default:
-        console.log('Unhandled event:', eventName)
+        console.log(`Unhandled event: ${eventName}`)
     }
 
     return NextResponse.json({ received: true })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Webhook error:', error)
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
   }
 }
 
 // Yeni abonelik oluşturuldu
-async function handleSubscriptionCreated(data: any, customData: any) {
-  const userId = customData?.user_id
-  if (!userId) {
-    console.error('No user_id in custom data')
-    return
-  }
+async function handleSubscriptionCreated(payload: any, userId: string) {
+  const subscription = payload.data.attributes
+  const subscriptionId = payload.data.id
+  const customerId = subscription.customer_id.toString()
+  const variantId = subscription.variant_id.toString()
+  const renewsAt = subscription.renews_at
+  const endsAt = subscription.ends_at
 
-  const subscriptionId = data.id
-  const customerId = data.attributes.customer_id
-  const variantId = data.attributes.variant_id
-  const status = data.attributes.status
-  const currentPeriodEnd = data.attributes.renews_at
+  const plan = getPlanFromVariantId(variantId)
+  const credits = getCreditsForPlan(plan)
 
-  // Plan ID'yi variant'a göre belirle
-  const planId = getPlanFromVariant(String(variantId))
-  const credits = getCreditsForPlan(planId)
-
-  // Abonelik kaydı oluştur
-  await supabase.from('subscriptions').upsert({
-    user_id: userId,
-    lemonsqueezy_subscription_id: String(subscriptionId),
-    lemonsqueezy_customer_id: String(customerId),
-    lemonsqueezy_variant_id: String(variantId),
-    plan_id: planId,
-    status: status,
-    current_period_end: currentPeriodEnd,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+  console.log(`✅ Subscription created for user ${userId}:`, {
+    plan,
+    credits,
+    subscriptionId,
+    customerId
   })
 
-  // Kredileri güncelle
-  await supabase.from('credits').upsert({
-    user_id: userId,
-    balance: credits,
-    total_used: 0,
-    plan: planId,
-    updated_at: new Date().toISOString()
-  })
-
-  console.log('✅ Subscription created for user:', userId, 'Plan:', planId)
-}
-
-// Abonelik güncellendi (plan değişikliği)
-async function handleSubscriptionUpdated(data: any) {
-  const subscriptionId = data.id
-  const variantId = data.attributes.variant_id
-  const status = data.attributes.status
-  const currentPeriodEnd = data.attributes.renews_at
-
-  const planId = getPlanFromVariant(String(variantId))
-
-  // Abonelik kaydını güncelle
-  const { data: subscription } = await supabase
-    .from('subscriptions')
+  // Kullanıcının user_id'si ile eşleşen kaydı güncelle
+  // Önce user_id ile dene, yoksa email ile bul
+  const { error } = await supabaseAdmin
+    .from('user_credits')
     .update({
-      lemonsqueezy_variant_id: String(variantId),
-      plan_id: planId,
-      status: status,
-      current_period_end: currentPeriodEnd,
+      plan,
+      credits,
+      subscription_id: subscriptionId,
+      customer_id: customerId,
+      variant_id: variantId,
+      renews_at: renewsAt,
+      ends_at: endsAt,
       updated_at: new Date().toISOString()
     })
-    .eq('lemonsqueezy_subscription_id', String(subscriptionId))
-    .select('user_id')
-    .single()
+    .eq('user_id', userId)
 
-  if (subscription) {
-    const credits = getCreditsForPlan(planId)
-    await supabase.from('credits').update({
-      plan: planId,
-      balance: credits,
-      updated_at: new Date().toISOString()
-    }).eq('user_id', subscription.user_id)
+  if (error) {
+    console.error('Error updating user credits:', error)
+    throw error
   }
 
-  console.log('✅ Subscription updated:', subscriptionId)
+  console.log(`✅ User ${userId} upgraded to ${plan} with ${credits} credits`)
 }
 
-// Abonelik iptal edildi
-async function handleSubscriptionCancelled(data: any) {
-  const subscriptionId = data.id
+// Abonelik güncellendi (plan değişikliği, yenileme vb.)
+async function handleSubscriptionUpdated(payload: any, userId: string) {
+  const subscription = payload.data.attributes
+  const subscriptionId = payload.data.id
+  const variantId = subscription.variant_id.toString()
+  const renewsAt = subscription.renews_at
+  const endsAt = subscription.ends_at
+  const status = subscription.status
 
-  await supabase
-    .from('subscriptions')
+  // Eğer yenilendiyse kredileri sıfırla
+  const plan = getPlanFromVariantId(variantId)
+  const credits = getCreditsForPlan(plan)
+
+  console.log(`🔄 Subscription updated for user ${userId}:`, {
+    status,
+    plan,
+    renewsAt
+  })
+
+  // Aktif abonelikse kredileri güncelle
+  if (status === 'active') {
+    const { error } = await supabaseAdmin
+      .from('user_credits')
+      .update({
+        plan,
+        credits, // Yenilenince krediler sıfırlanır
+        variant_id: variantId,
+        renews_at: renewsAt,
+        ends_at: endsAt,
+        updated_at: new Date().toISOString()
+      })
+      .eq('subscription_id', subscriptionId)
+
+    if (error) {
+      console.error('Error updating subscription:', error)
+      throw error
+    }
+  }
+}
+
+// Abonelik iptal edildi veya süresi doldu
+async function handleSubscriptionEnded(payload: any, userId: string) {
+  const subscriptionId = payload.data.id
+  const subscription = payload.data.attributes
+  const endsAt = subscription.ends_at
+
+  console.log(`❌ Subscription ended for user ${userId}`)
+
+  // Free plana düşür ama mevcut dönem sonuna kadar bekle
+  const { error } = await supabaseAdmin
+    .from('user_credits')
     .update({
-      status: 'cancelled',
+      plan: 'free',
+      credits: 50, // Free plan kredisi
+      subscription_id: null,
+      variant_id: null,
+      renews_at: null,
+      ends_at: endsAt,
       updated_at: new Date().toISOString()
     })
-    .eq('lemonsqueezy_subscription_id', String(subscriptionId))
+    .eq('subscription_id', subscriptionId)
 
-  console.log('⚠️ Subscription cancelled:', subscriptionId)
+  if (error) {
+    console.error('Error downgrading subscription:', error)
+    throw error
+  }
 }
 
 // Abonelik devam ettirildi
-async function handleSubscriptionResumed(data: any) {
-  const subscriptionId = data.id
-  const status = data.attributes.status
+async function handleSubscriptionResumed(payload: any, userId: string) {
+  const subscription = payload.data.attributes
+  const subscriptionId = payload.data.id
+  const variantId = subscription.variant_id.toString()
 
-  await supabase
-    .from('subscriptions')
+  const plan = getPlanFromVariantId(variantId)
+  const credits = getCreditsForPlan(plan)
+
+  console.log(`▶️ Subscription resumed for user ${userId}`)
+
+  const { error } = await supabaseAdmin
+    .from('user_credits')
     .update({
-      status: status,
+      plan,
+      credits,
+      renews_at: subscription.renews_at,
+      ends_at: subscription.ends_at,
       updated_at: new Date().toISOString()
     })
-    .eq('lemonsqueezy_subscription_id', String(subscriptionId))
+    .eq('subscription_id', subscriptionId)
 
-  console.log('✅ Subscription resumed:', subscriptionId)
+  if (error) {
+    console.error('Error resuming subscription:', error)
+    throw error
+  }
 }
 
-// Ödeme başarılı - kredileri yenile
-async function handlePaymentSuccess(data: any) {
-  const subscriptionId = data.attributes.subscription_id
+// Abonelik duraklatıldı
+async function handleSubscriptionPaused(payload: any, userId: string) {
+  const subscriptionId = payload.data.id
 
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('user_id, plan_id')
-    .eq('lemonsqueezy_subscription_id', String(subscriptionId))
-    .single()
+  console.log(`⏸️ Subscription paused for user ${userId}`)
 
-  if (subscription) {
-    const credits = getCreditsForPlan(subscription.plan_id)
-    
-    await supabase.from('credits').update({
-      balance: credits,
+  // Plan ve krediler değişmez, sadece duraklatıldı işareti
+  const { error } = await supabaseAdmin
+    .from('user_credits')
+    .update({
       updated_at: new Date().toISOString()
-    }).eq('user_id', subscription.user_id)
+    })
+    .eq('subscription_id', subscriptionId)
 
-    console.log('✅ Credits refreshed for user:', subscription.user_id)
+  if (error) {
+    console.error('Error pausing subscription:', error)
+    throw error
   }
-}
-
-// Ödeme başarısız
-async function handlePaymentFailed(data: any) {
-  const subscriptionId = data.attributes.subscription_id
-  
-  console.log('❌ Payment failed for subscription:', subscriptionId)
-  // Kullanıcıya email gönderilebilir
-}
-
-// Variant ID'den plan ID'yi belirle
-function getPlanFromVariant(variantId: string): string {
-  const proMonthly = process.env.LEMONSQUEEZY_PRO_MONTHLY_VARIANT_ID
-  const proYearly = process.env.LEMONSQUEEZY_PRO_YEARLY_VARIANT_ID
-  const businessMonthly = process.env.LEMONSQUEEZY_BUSINESS_MONTHLY_VARIANT_ID
-  const businessYearly = process.env.LEMONSQUEEZY_BUSINESS_YEARLY_VARIANT_ID
-
-  if (variantId === proMonthly || variantId === proYearly) {
-    return 'pro'
-  }
-  if (variantId === businessMonthly || variantId === businessYearly) {
-    return 'business'
-  }
-  return 'free'
 }
