@@ -122,14 +122,15 @@ export async function createCheckout(
           }
         },
         checkout_options: {
-          dark: true,
-          success_url: redirectUrl || `${appUrl}/dashboard?success=true`,
-          cancel_url: `${appUrl}/pricing?cancelled=true`
+          dark: true
         },
         product_options: {
+          enabled_variants: [parseInt(variantId)],
           redirect_url: redirectUrl || `${appUrl}/dashboard?success=true`,
           receipt_thank_you_note: 'Thank you for subscribing to Media Tool Kit Pro!'
-        }
+        },
+        expires_at: null,
+        preview: false
       },
       relationships: {
         store: {
