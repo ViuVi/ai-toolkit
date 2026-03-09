@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-export default function PricingPage() {
+function PricingContent() {
   const [user, setUser] = useState<any>(null)
   const [currentPlan, setCurrentPlan] = useState<string>('free')
   const [loading, setLoading] = useState(false)
@@ -363,5 +363,17 @@ export default function PricingPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
   )
 }
