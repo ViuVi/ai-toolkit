@@ -12,8 +12,8 @@ export const getConfig = () => ({
 
 // Plan Variant IDs - Lemon Squeezy'den aldığın değerler
 export const VARIANT_IDS = {
-  PRO_MONTHLY: process.env.PRO_MONTHLY_VARIANT_ID || '1384108',
-  PRO_YEARLY: process.env.PRO_YEARLY_VARIANT_ID || '', // Yearly oluşturduğunda ekle
+  PRO_MONTHLY: process.env.LEMONSQUEEZY_PRO_MONTHLY_VARIANT_ID || process.env.PRO_MONTHLY_VARIANT_ID || '1384108',
+  PRO_YEARLY: process.env.LEMONSQUEEZY_PRO_YEARLY_VARIANT_ID || process.env.PRO_YEARLY_VARIANT_ID || '',
 }
 
 // Plan tanımları
@@ -109,8 +109,9 @@ export async function createCheckout(
   redirectUrl?: string
 ) {
   const config = getConfig()
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mediatoolkit.site'
   
-  const checkout = await lemonSqueezyApi('/checkouts', 'POST', {
+  const requestBody = {
     data: {
       type: 'checkouts',
       attributes: {
@@ -122,11 +123,11 @@ export async function createCheckout(
         },
         checkout_options: {
           dark: true,
-          success_url: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?cancelled=true`
+          success_url: redirectUrl || `${appUrl}/dashboard?success=true`,
+          cancel_url: `${appUrl}/pricing?cancelled=true`
         },
         product_options: {
-          redirect_url: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+          redirect_url: redirectUrl || `${appUrl}/dashboard?success=true`,
           receipt_thank_you_note: 'Thank you for subscribing to Media Tool Kit Pro!'
         }
       },
@@ -145,8 +146,27 @@ export async function createCheckout(
         }
       }
     }
+  }
+
+  console.log('Creating checkout with:', JSON.stringify(requestBody, null, 2))
+  
+  const response = await fetch(`${LEMONSQUEEZY_API_URL}/checkouts`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json',
+      'Authorization': `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify(requestBody)
   })
 
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('Lemon Squeezy Checkout Error:', errorText)
+    throw new Error(`Checkout failed: ${response.status} - ${errorText}`)
+  }
+
+  const checkout = await response.json()
   return checkout.data.attributes.url
 }
 
