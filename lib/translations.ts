@@ -277,7 +277,7 @@ export const translations: Record<Language, TranslationData> = {
       register: { title: 'Start Free Today', subtitle: 'No credit card required', name: 'Full Name', email: 'Email', password: 'Password', button: 'Create Account', hasAccount: 'Already have an account?', signIn: 'Sign in', terms: 'By signing up, you agree to our Terms of Service and Privacy Policy.' }
     },
     landing: {
-      toolsAvailable: '16 Professional Tools Available',
+      toolsAvailable: '17 Professional Tools Available',
       heroTitle1: 'Create Viral Content',
       heroTitle2: '10x Faster',
       heroDesc: 'AI-powered content creation toolkit for modern social media managers. From hooks to hashtags, all in one place.',
@@ -345,7 +345,7 @@ export const translations: Record<Language, TranslationData> = {
     dashboard: { welcome: 'Hoş geldin', credits: 'Kredi', searchTools: 'Araç ara...', categories: { all: 'Tümü', video: 'Video', content: 'İçerik', analysis: 'Analiz', optimization: 'Optimizasyon', helper: 'Yardımcı' }, free: 'ÜCRETSİZ', new: 'YENİ' },
     auth: { login: { title: 'Tekrar Hoş Geldin', subtitle: 'Devam etmek için giriş yap', email: 'E-posta', password: 'Şifre', button: 'Giriş Yap', noAccount: 'Hesabın yok mu?', signUp: 'Oluştur', forgotPassword: 'Şifreni mi unuttun?' }, register: { title: 'Bugün Ücretsiz Başla', subtitle: 'Kredi kartı gerekmez', name: 'Ad Soyad', email: 'E-posta', password: 'Şifre', button: 'Hesap Oluştur', hasAccount: 'Zaten hesabın var mı?', signIn: 'Giriş yap', terms: 'Kayıt olarak Kullanım Şartlarını kabul edersiniz.' } },
     landing: {
-      toolsAvailable: '16 Profesyonel Araç Mevcut',
+      toolsAvailable: '17 Profesyonel Araç Mevcut',
       heroTitle1: 'Viral İçerikler Üret',
       heroTitle2: '10x Daha Hızlı',
       heroDesc: 'Modern sosyal medya yöneticileri için yapay zeka destekli içerik oluşturma araç seti. Hook\'lardan hashtag\'lere, hepsi tek yerde.',
@@ -413,7 +413,7 @@ export const translations: Record<Language, TranslationData> = {
     dashboard: { welcome: 'С возвращением', credits: 'Кредиты', searchTools: 'Поиск...', categories: { all: 'Все', video: 'Видео', content: 'Контент', analysis: 'Анализ', optimization: 'Оптимизация', helper: 'Помощник' }, free: 'БЕСПЛАТНО', new: 'НОВОЕ' },
     auth: { login: { title: 'С возвращением', subtitle: 'Войдите', email: 'Email', password: 'Пароль', button: 'Войти', noAccount: 'Нет аккаунта?', signUp: 'Создать', forgotPassword: 'Забыли пароль?' }, register: { title: 'Начните бесплатно', subtitle: 'Без карты', name: 'Имя', email: 'Email', password: 'Пароль', button: 'Создать', hasAccount: 'Есть аккаунт?', signIn: 'Войти', terms: 'Регистрируясь, вы соглашаетесь с Условиями.' } },
     landing: {
-      toolsAvailable: '16 профессиональных инструментов',
+      toolsAvailable: '17 профессиональных инструментов',
       heroTitle1: 'Создавайте вирусный контент',
       heroTitle2: 'в 10 раз быстрее',
       heroDesc: 'Набор инструментов для создания контента на базе ИИ для современных SMM-специалистов.',
@@ -481,7 +481,7 @@ export const translations: Record<Language, TranslationData> = {
     dashboard: { welcome: 'Willkommen', credits: 'Credits', searchTools: 'Suchen...', categories: { all: 'Alle', video: 'Video', content: 'Inhalt', analysis: 'Analyse', optimization: 'Optimierung', helper: 'Helfer' }, free: 'KOSTENLOS', new: 'NEU' },
     auth: { login: { title: 'Willkommen zurück', subtitle: 'Anmelden', email: 'E-Mail', password: 'Passwort', button: 'Anmelden', noAccount: 'Kein Konto?', signUp: 'Erstellen', forgotPassword: 'Passwort vergessen?' }, register: { title: 'Kostenlos starten', subtitle: 'Keine Karte nötig', name: 'Name', email: 'E-Mail', password: 'Passwort', button: 'Konto erstellen', hasAccount: 'Bereits ein Konto?', signIn: 'Anmelden', terms: 'Mit der Registrierung stimmen Sie den Nutzungsbedingungen zu.' } },
     landing: {
-      toolsAvailable: '16 professionelle Werkzeuge verfügbar',
+      toolsAvailable: '17 professionelle Werkzeuge verfügbar',
       heroTitle1: 'Viralen Content erstellen',
       heroTitle2: '10x schneller',
       heroDesc: 'KI-gestütztes Content-Erstellungs-Toolkit für moderne Social-Media-Manager.',
@@ -549,7 +549,7 @@ export const translations: Record<Language, TranslationData> = {
     dashboard: { welcome: 'Bon retour', credits: 'Crédits', searchTools: 'Rechercher...', categories: { all: 'Tous', video: 'Vidéo', content: 'Contenu', analysis: 'Analyse', optimization: 'Optimisation', helper: 'Assistant' }, free: 'GRATUIT', new: 'NOUVEAU' },
     auth: { login: { title: 'Bon retour', subtitle: 'Connectez-vous', email: 'Email', password: 'Mot de passe', button: 'Se connecter', noAccount: 'Pas de compte?', signUp: 'Créer', forgotPassword: 'Mot de passe oublié?' }, register: { title: 'Commencez gratuitement', subtitle: 'Aucune carte requise', name: 'Nom', email: 'Email', password: 'Mot de passe', button: 'Créer un compte', hasAccount: 'Déjà un compte?', signIn: 'Se connecter', terms: 'En vous inscrivant, vous acceptez nos Conditions.' } },
     landing: {
-      toolsAvailable: '16 outils professionnels disponibles',
+      toolsAvailable: '17 outils professionnels disponibles',
       heroTitle1: 'Créez du contenu viral',
       heroTitle2: '10x plus vite',
       heroDesc: 'Boîte à outils de création de contenu alimentée par l\'IA pour les gestionnaires de médias sociaux modernes.',
@@ -558,14 +558,14 @@ export const translations: Record<Language, TranslationData> = {
       stats: { tools: 'Outils', users: 'Utilisateurs', contents: 'Contenus créés', rating: 'Note' },
       featuresTitle1: 'Tout ce dont vous avez besoin pour',
       featuresTitle2: ' devenir viral',
-      featuresDesc: '16 outils alimentés par l\'IA pour les créateurs de contenu modernes.',
+      featuresDesc: '17 outils alimentés par l\'IA pour les créateurs de contenu modernes.',
       videoTools: 'Outils vidéo', videoToolsDesc: 'Sous-titres, scripts et plus',
       contentCreation: 'Création de contenu', contentCreationDesc: 'Hooks, légendes et adaptateurs',
       analytics: 'Analytique', analyticsDesc: 'Analyse concurrents, tendances',
       optimization: 'Optimisation', optimizationDesc: 'Hashtags, bio, QR codes',
       aiPowered: 'Propulsé par l\'IA', aiPoweredDesc: 'Prédicteur de viralité',
       planning: 'Planification', planningDesc: 'Calendrier de contenu',
-      toolsTitle1: '16 outils puissants', toolsTitle2: 'Une plateforme',
+      toolsTitle1: '17 outils puissants', toolsTitle2: 'Une plateforme',
       toolsDesc: 'Tout pour créer du contenu viral et grandir sur les réseaux.',
       freeTools: 'Outils gratuits', noCreditCard: 'Pas de carte requise',
       premiumTools: 'Outils Premium', creditsMonth: 'crédits/mois',

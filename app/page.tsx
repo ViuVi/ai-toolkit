@@ -45,7 +45,7 @@ export default function LandingPage() {
   ]
 
   const stats = [
-    { number: '16+', label: 'Tools', key: 'tools' },
+    { number: '17+', label: 'Tools', key: 'tools' },
     { number: '10K+', label: 'Users', key: 'users' },
     { number: '50K+', label: 'Contents Created', key: 'contents' },
     { number: '4.9', label: 'Rating', key: 'rating' },
@@ -78,10 +78,10 @@ export default function LandingPage() {
                 {t?.nav?.features || 'Features'}
               </a>
               <a href="#tools" onClick={(e) => scrollToSection(e, 'tools')} className="text-gray-300 hover:text-white transition">
-                {t?.nav?.pricing || 'Tools'}
+                {language === 'tr' ? 'Araçlar' : language === 'ru' ? 'Инструменты' : language === 'de' ? 'Werkzeuge' : language === 'fr' ? 'Outils' : 'Tools'}
               </a>
               <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-gray-300 hover:text-white transition">
-                {t?.pricing?.title?.split(',')[0] || 'Pricing'}
+                {language === 'tr' ? 'Fiyatlar' : language === 'ru' ? 'Цены' : language === 'de' ? 'Preise' : language === 'fr' ? 'Tarifs' : 'Pricing'}
               </a>
             </nav>
 
@@ -701,7 +701,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-400">
-            <p>{t?.footer?.copyright || '© 2025 Media Tool Kit. All rights reserved.'}</p>
+            <p>© 2026 Media Tool Kit. {language === 'tr' ? 'Tüm hakları saklıdır.' : language === 'ru' ? 'Все права защищены.' : language === 'de' ? 'Alle Rechte vorbehalten.' : language === 'fr' ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
             <div className="flex items-center gap-6 text-sm">
               <Link href="/terms" className="hover:text-purple-400 transition">{t?.footer?.links?.terms || 'Terms'}</Link>
               <Link href="/privacy" className="hover:text-purple-400 transition">{t?.footer?.links?.privacy || 'Privacy'}</Link>
