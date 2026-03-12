@@ -2,7 +2,7 @@
 // Llama 3.1 70B - Hızlı ve Kaliteli
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = 'llama-3.1-70b-versatile'
+const GROQ_MODEL = 'llama-3.3-70b-versatile' // Güncel model adı
 
 interface GroqMessage {
   role: 'system' | 'user' | 'assistant'
@@ -45,9 +45,20 @@ export async function generateWithGroq(
   })
 
   if (!response.ok) {
-    const error = await response.text()
-    console.error('Groq API Error:', error)
-    throw new Error(`Groq API error: ${response.status}`)
+    const errorText = await response.text()
+    console.error('Groq API Error Response:', errorText)
+    console.error('Groq API Status:', response.status)
+    console.error('Request body was:', JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt.substring(0, 100) + '...' },
+        { role: 'user', content: userPrompt.substring(0, 100) + '...' }
+      ],
+      temperature,
+      max_tokens: maxTokens,
+      top_p: topP
+    }))
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`)
   }
 
   const data = await response.json()
