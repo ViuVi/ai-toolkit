@@ -1,111 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { generateJSONWithGroq } from '@/lib/groq'
 
-const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
-
-const platformLimits: Record<string, number> = {
-  instagram: 150, tiktok: 80, twitter: 160, linkedin: 220, youtube: 200
-}
-
-const toneGuide: Record<string, Record<string, string>> = {
-  casual: { tr: 'rahat, samimi, emoji kullanarak eğlenceli', en: 'casual, friendly, fun with emojis' },
-  professional: { tr: 'profesyonel, ciddi, iş odaklı', en: 'professional, serious, business-focused' },
-  creative: { tr: 'yaratıcı, eğlenceli, benzersiz ve dikkat çekici', en: 'creative, playful, unique and eye-catching' }
-}
+// Bu ücretsiz bir araç - kredi almıyor
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, profession, interests, platform, tone, language = 'en' } = await request.json()
+    const { profession, personality, platform, language = 'en' } = await request.json()
 
-    if (!name || !profession) {
-      return NextResponse.json({ error: language === 'tr' ? 'İsim ve meslek gerekli' : 'Name and profession required' }, { status: 400 })
+    if (!profession) {
+      return NextResponse.json(
+        { error: language === 'tr' ? 'Meslek/alan gerekli' : 'Profession required' },
+        { status: 400 }
+      )
     }
 
-    const charLimit = platformLimits[platform] || 150
-    const toneDesc = toneGuide[tone]?.[language === 'tr' ? 'tr' : 'en'] || toneGuide.casual.en
-    const seed = Date.now()
+    const platformInfo = platform || 'Instagram'
+    const personalityInfo = personality || (language === 'tr' ? 'profesyonel' : 'professional')
 
-    const prompt = language === 'tr'
-      ? `[SEED:${seed}] ${platform} için profil biyografisi yaz.
+    const systemPrompt = language === 'tr'
+      ? `Sen sosyal medya bio yazarısın.
+         Kısa, öz ve etkileyici biolar yazıyorsun.
+         Her bio platforma uygun karakter limitinde olmalı.`
+      : `You are a social media bio writer.
+         You write short, concise, and impactful bios.
+         Each bio should be within platform character limits.`
 
-İSİM: ${name}
-MESLEK: ${profession}
-${interests ? `İLGİ ALANLARI: ${interests}` : ''}
-TON: ${toneDesc}
-KARAKTER LİMİTİ: ${charLimit}
+    const userPrompt = language === 'tr'
+      ? `"${profession}" alanında, ${personalityInfo} kişilikte biri için ${platformInfo} platformuna uygun 5 farklı bio yaz.
 
-5 FARKLI bio yaz. Her biri:
-- Farklı bir yaklaşım kullansın
-- ${charLimit} karakteri geçmesin
-- Özgün ve akılda kalıcı olsun
-- Platform için uygun olsun
+Her bio:
+- Platforma uygun uzunlukta
+- Dikkat çekici
+- Profesyonel ama kişilikli
+- Uygun emojiler içermeli
 
 JSON formatında yanıt ver:
 {
-  "bios": ["bio 1", "bio 2", "bio 3", "bio 4", "bio 5"]
+  "bios": [
+    {
+      "text": "bio metni",
+      "style": "stil açıklaması",
+      "character_count": sayı,
+      "emojis_used": ["emoji1", "emoji2"]
+    }
+  ]
 }`
-      : `[SEED:${seed}] Write profile bio for ${platform}.
+      : `Write 5 different bios for someone in "${profession}" field with ${personalityInfo} personality for ${platformInfo} platform.
 
-NAME: ${name}
-PROFESSION: ${profession}
-${interests ? `INTERESTS: ${interests}` : ''}
-TONE: ${toneDesc}
-CHARACTER LIMIT: ${charLimit}
-
-Write 5 DIFFERENT bios. Each should:
-- Use a different approach
-- Not exceed ${charLimit} characters
-- Be original and memorable
-- Be appropriate for the platform
+Each bio:
+- Platform-appropriate length
+- Attention-grabbing
+- Professional but with personality
+- Include appropriate emojis
 
 Respond in JSON format:
 {
-  "bios": ["bio 1", "bio 2", "bio 3", "bio 4", "bio 5"]
+  "bios": [
+    {
+      "text": "bio text",
+      "style": "style description",
+      "character_count": number,
+      "emojis_used": ["emoji1", "emoji2"]
+    }
+  ]
 }`
 
-    const response = await fetch(HF_API, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 800, temperature: 0.9, top_p: 0.95, return_full_text: false } })
+    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+      temperature: 0.85,
+      maxTokens: 1500
     })
 
-    let bios: string[] = []
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      const match = text.match(/\{[\s\S]*\}/)
-      if (match) {
-        try {
-          const parsed = JSON.parse(match[0])
-          bios = parsed.bios || []
-        } catch (e) { console.error('Parse error:', e) }
-      }
-    }
+    return NextResponse.json({ bios: result.bios || [] })
 
-    if (bios.length < 3) {
-      const emoji = tone === 'professional' ? '' : '✨'
-      const emoji2 = tone === 'professional' ? '' : '🚀'
-      
-      bios = language === 'tr' ? [
-        `${emoji} ${profession} | ${name} | ${interests || 'İçerik üreticisi'} ${emoji2}`,
-        `${name} • ${profession} • ${interests || 'Hayallerin peşinde'} ${emoji}`,
-        `${profession} olarak ${interests || 'tutkumu'} paylaşıyorum | ${name}`,
-        `${emoji2} ${name} | ${profession} | DM açık`,
-        `Merhaba! Ben ${name}, ${profession.toLowerCase()} ${emoji}`
-      ] : [
-        `${emoji} ${profession} | ${name} | ${interests || 'Content Creator'} ${emoji2}`,
-        `${name} • ${profession} • ${interests || 'Chasing dreams'} ${emoji}`,
-        `Sharing my passion for ${interests || 'life'} as a ${profession} | ${name}`,
-        `${emoji2} ${name} | ${profession} | DMs open`,
-        `Hey! I'm ${name}, a ${profession.toLowerCase()} ${emoji}`
-      ]
-    }
-
-    // Karakter limitine göre kırp
-    bios = bios.map(bio => bio.length > charLimit ? bio.substring(0, charLimit - 3) + '...' : bio)
-
-    return NextResponse.json({ bios })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Bio Generator Error:', error)
-    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'An error occurred' },
+      { status: 500 }
+    )
   }
 }

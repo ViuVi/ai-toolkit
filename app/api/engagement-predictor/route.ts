@@ -1,66 +1,129 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const CREDIT_COST = 5
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, platform, postTime, userId, language = 'en' } = await request.json()
-    if (!content) return NextResponse.json({ error: language === 'tr' ? 'İçerik gerekli' : 'Content required' }, { status: 400 })
+    const { content, platform, niche, userId, language = 'en' } = await request.json()
 
-    if (userId) {
-      const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
-      if (!credits || credits.balance < 5) return NextResponse.json({ error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits' }, { status: 403 })
+    if (!content) {
+      return NextResponse.json(
+        { error: language === 'tr' ? 'İçerik gerekli' : 'Content required' },
+        { status: 400 }
+      )
     }
 
-    const prediction = predictEngagement(content, platform, postTime, language)
-
     if (userId) {
-      const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
-      if (c) await supabase.from('credits').update({ balance: c.balance - 5, total_used: c.total_used + 5, updated_at: new Date().toISOString() }).eq('user_id', userId)
+      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
+      if (!creditCheck.success) {
+        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+      }
     }
 
-    return NextResponse.json({ prediction })
-  } catch (error) {
-    console.error('Engagement Predictor Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    const platformInfo = platform || 'Instagram'
+    const nicheInfo = niche || 'general'
+
+    const systemPrompt = language === 'tr'
+      ? `Sen sosyal medya analisti ve etkileşim uzmanısın.
+         İçeriklerin potansiyel performansını analiz ediyorsun.
+         Detaylı ve uygulanabilir öneriler sunuyorsun.`
+      : `You are a social media analyst and engagement expert.
+         You analyze potential performance of content.
+         You provide detailed and actionable recommendations.`
+
+    const userPrompt = language === 'tr'
+      ? `Şu içeriğin ${platformInfo} platformunda ${nicheInfo} nişinde etkileşim potansiyelini analiz et:
+
+İçerik:
+"""
+${content}
+"""
+
+Şunları değerlendir:
+1. Hook kalitesi (ilk izlenim)
+2. Değer önerisi
+3. CTA etkinliği
+4. Görsel/format uyumu
+5. Viral potansiyel
+
+JSON formatında yanıt ver:
+{
+  "analysis": {
+    "overall_score": 1-100 arası puan,
+    "viral_potential": "düşük/orta/yüksek",
+    "predicted_engagement_rate": "tahmini oran",
+    "scores": {
+      "hook_quality": {"score": 1-10, "feedback": "geri bildirim"},
+      "value_proposition": {"score": 1-10, "feedback": "geri bildirim"},
+      "cta_effectiveness": {"score": 1-10, "feedback": "geri bildirim"},
+      "visual_format": {"score": 1-10, "feedback": "geri bildirim"},
+      "viral_elements": {"score": 1-10, "feedback": "geri bildirim"}
+    },
+    "strengths": ["güçlü yön 1", "güçlü yön 2"],
+    "weaknesses": ["zayıf yön 1", "zayıf yön 2"],
+    "improvements": [
+      {"area": "alan", "suggestion": "öneri", "impact": "etki"}
+    ],
+    "best_posting_time": "en iyi paylaşım zamanı",
+    "hashtag_suggestions": ["hashtag1", "hashtag2"]
   }
-}
+}`
+      : `Analyze the engagement potential of this content on ${platformInfo} in ${nicheInfo} niche:
 
-function predictEngagement(content: string, platform: string, postTime: string, language: string) {
-  const hasEmoji = /[\u{1F600}-\u{1F64F}]/u.test(content)
-  const hasQuestion = content.includes('?')
-  const hasHashtag = content.includes('#')
-  const wordCount = content.split(' ').length
-  const isOptimalLength = wordCount > 10 && wordCount < 100
+Content:
+"""
+${content}
+"""
 
-  let baseScore = 50
-  if (hasEmoji) baseScore += 15
-  if (hasQuestion) baseScore += 10
-  if (hasHashtag) baseScore += 5
-  if (isOptimalLength) baseScore += 10
+Evaluate:
+1. Hook quality (first impression)
+2. Value proposition
+3. CTA effectiveness
+4. Visual/format fit
+5. Viral potential
 
-  const likeRange = { min: Math.floor(baseScore * 10), max: Math.floor(baseScore * 30) }
-  const commentRange = { min: Math.floor(baseScore * 0.5), max: Math.floor(baseScore * 2) }
-  const shareRange = { min: Math.floor(baseScore * 0.2), max: Math.floor(baseScore * 0.8) }
-
-  return {
-    overallScore: Math.min(100, baseScore + Math.floor(Math.random() * 10)),
-    predictions: {
-      likes: `${likeRange.min}-${likeRange.max}`,
-      comments: `${commentRange.min}-${commentRange.max}`,
-      shares: `${shareRange.min}-${shareRange.max}`
+Respond in JSON format:
+{
+  "analysis": {
+    "overall_score": score from 1-100,
+    "viral_potential": "low/medium/high",
+    "predicted_engagement_rate": "estimated rate",
+    "scores": {
+      "hook_quality": {"score": 1-10, "feedback": "feedback"},
+      "value_proposition": {"score": 1-10, "feedback": "feedback"},
+      "cta_effectiveness": {"score": 1-10, "feedback": "feedback"},
+      "visual_format": {"score": 1-10, "feedback": "feedback"},
+      "viral_elements": {"score": 1-10, "feedback": "feedback"}
     },
-    factors: {
-      emojiImpact: hasEmoji ? '+15%' : '0%',
-      questionImpact: hasQuestion ? '+10%' : '0%',
-      hashtagImpact: hasHashtag ? '+5%' : '0%',
-      lengthImpact: isOptimalLength ? '+10%' : '-5%'
-    },
-    bestTimeToPost: ['09:00', '12:00', '18:00', '21:00'][Math.floor(Math.random() * 4)],
-    platform,
-    tips: language === 'tr'
-      ? ['Hook ile başlayın', 'CTA ekleyin', 'Trend hashtag kullanın']
-      : ['Start with a hook', 'Add CTA', 'Use trending hashtags']
+    "strengths": ["strength 1", "strength 2"],
+    "weaknesses": ["weakness 1", "weakness 2"],
+    "improvements": [
+      {"area": "area", "suggestion": "suggestion", "impact": "impact"}
+    ],
+    "best_posting_time": "best posting time",
+    "hashtag_suggestions": ["hashtag1", "hashtag2"]
+  }
+}`
+
+    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+      temperature: 0.6,
+      maxTokens: 2500
+    })
+
+    return NextResponse.json(result)
+
+  } catch (error: any) {
+    console.error('Engagement Predictor Error:', error)
+    return NextResponse.json(
+      { error: error.message || 'An error occurred' },
+      { status: 500 }
+    )
   }
 }

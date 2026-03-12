@@ -1,142 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
-
-const styleGuide: Record<string, Record<string, string>> = {
-  educational: { tr: 'eğitici, bilgi dolu, adım adım öğretici', en: 'educational, informative, step-by-step teaching' },
-  storytelling: { tr: 'hikaye anlatımı, kişisel deneyim, duygusal bağ', en: 'storytelling, personal experience, emotional connection' },
-  listicle: { tr: 'liste formatı, maddeler halinde, kolay okunur', en: 'list format, bullet points, easy to read' },
-  controversial: { tr: 'tartışmalı, düşündürücü, farklı bakış açısı', en: 'controversial, thought-provoking, different perspective' }
-}
+const CREDIT_COST = 4
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, threadLength, style, platform, userId, language = 'en' } = await request.json()
+    const { topic, tweetCount, style, userId, language = 'en' } = await request.json()
 
     if (!topic) {
-      return NextResponse.json({ error: language === 'tr' ? 'Konu gerekli' : 'Topic required' }, { status: 400 })
+      return NextResponse.json(
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { status: 400 }
+      )
     }
 
+    // Kredi kontrolü
     if (userId) {
-      const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
-      if (!credits || credits.balance < 4) {
-        return NextResponse.json({ error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits' }, { status: 403 })
+      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
+      if (!creditCheck.success) {
+        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
       }
     }
 
-    const length = threadLength || 7
-    const styleDesc = styleGuide[style]?.[language === 'tr' ? 'tr' : 'en'] || styleGuide.educational.en
-    const charLimit = platform === 'twitter' ? 280 : 500
-    const seed = Date.now()
+    const count = tweetCount || 8
+    const styleInfo = style || (language === 'tr' ? 'bilgilendirici' : 'informative')
 
-    const prompt = language === 'tr'
-      ? `[SEED:${seed}] "${topic}" konusu için ${length} tweet'lik viral bir thread yaz.
+    const systemPrompt = language === 'tr'
+      ? `Sen X/Twitter için viral thread yazarısın. 
+         Her tweet maksimum 280 karakter olmalı.
+         Thread akıcı ve bağlantılı olmalı.
+         İlk tweet hook olmalı, son tweet CTA içermeli.`
+      : `You are a viral thread writer for X/Twitter.
+         Each tweet must be maximum 280 characters.
+         Thread should flow smoothly and be connected.
+         First tweet should be a hook, last tweet should contain CTA.`
 
-STİL: ${styleDesc}
-KARAKTER LİMİTİ: Her tweet ${charLimit} karakter
+    const userPrompt = language === 'tr'
+      ? `"${topic}" konusu için ${count} tweetlik, ${styleInfo} tarzında viral bir thread yaz.
 
-KURALLAR:
-1. İlk tweet (HOOK): Çok güçlü, merak uyandırıcı, thread'i okumaya teşvik eden
-2. Orta tweetler: Her biri değer katan, birbirini takip eden
-3. Son tweet (CTA): Retweet, kaydet, takip et çağrısı
-4. Her tweet bağımsız okunabilmeli ama seri olarak daha anlamlı
-5. Numaralı ol: "1/", "2/", şeklinde
-6. Emoji kullan ama abartma
-7. Klişelerden kaçın, özgün ol
+Kurallar:
+- Her tweet maksimum 280 karakter
+- İlk tweet dikkat çekici hook
+- Her tweet bir öncekiyle bağlantılı
+- Son tweet CTA ve özet
+- Uygun emojiler kullan
 
 JSON formatında yanıt ver:
 {
-  "thread": [
-    {"number": "1/${length}", "content": "hook tweet", "type": "hook"},
-    {"number": "2/${length}", "content": "içerik tweet 2", "type": "content"},
-    {"number": "3/${length}", "content": "içerik tweet 3", "type": "content"},
-    ...
-    {"number": "${length}/${length}", "content": "CTA tweet", "type": "cta"}
-  ],
-  "title": "thread başlığı",
-  "estimatedEngagement": "tahmini etkileşim seviyesi"
+  "thread": {
+    "title": "thread başlığı",
+    "tweets": [
+      {"number": 1, "content": "tweet içeriği", "type": "hook"},
+      {"number": 2, "content": "tweet içeriği", "type": "content"},
+      ...
+      {"number": ${count}, "content": "tweet içeriği", "type": "cta"}
+    ],
+    "hashtags": ["hashtag1", "hashtag2"],
+    "best_time": "paylaşım için en iyi zaman",
+    "engagement_tips": ["ipucu 1", "ipucu 2"]
+  }
 }`
-      : `[SEED:${seed}] Write a viral ${length}-tweet thread about "${topic}".
+      : `Write a viral thread of ${count} tweets about "${topic}" in ${styleInfo} style.
 
-STYLE: ${styleDesc}
-CHARACTER LIMIT: Each tweet ${charLimit} characters
-
-RULES:
-1. First tweet (HOOK): Very strong, curiosity-inducing, encourages reading the thread
-2. Middle tweets: Each adds value, follows logically
-3. Last tweet (CTA): Retweet, save, follow call to action
-4. Each tweet should be readable alone but more meaningful as a series
-5. Numbered: "1/", "2/", format
-6. Use emojis but don't overdo
-7. Avoid clichés, be original
+Rules:
+- Each tweet maximum 280 characters
+- First tweet is attention-grabbing hook
+- Each tweet connected to the previous
+- Last tweet is CTA and summary
+- Use appropriate emojis
 
 Respond in JSON format:
 {
-  "thread": [
-    {"number": "1/${length}", "content": "hook tweet", "type": "hook"},
-    {"number": "2/${length}", "content": "content tweet 2", "type": "content"},
-    {"number": "3/${length}", "content": "content tweet 3", "type": "content"},
-    ...
-    {"number": "${length}/${length}", "content": "CTA tweet", "type": "cta"}
-  ],
-  "title": "thread title",
-  "estimatedEngagement": "estimated engagement level"
+  "thread": {
+    "title": "thread title",
+    "tweets": [
+      {"number": 1, "content": "tweet content", "type": "hook"},
+      {"number": 2, "content": "tweet content", "type": "content"},
+      ...
+      {"number": ${count}, "content": "tweet content", "type": "cta"}
+    ],
+    "hashtags": ["hashtag1", "hashtag2"],
+    "best_time": "best time to post",
+    "engagement_tips": ["tip 1", "tip 2"]
+  }
 }`
 
-    const response = await fetch(HF_API, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 2500, temperature: 0.9, top_p: 0.95, return_full_text: false } })
+    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+      temperature: 0.85,
+      maxTokens: 3000
     })
 
-    let threadData: any = null
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      const match = text.match(/\{[\s\S]*\}/)
-      if (match) {
-        try { threadData = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
-      }
-    }
+    return NextResponse.json({ thread: result.thread || result })
 
-    if (!threadData || !threadData.thread || threadData.thread.length < 3) {
-      threadData = {
-        thread: language === 'tr' ? [
-          { number: `1/${length}`, content: `🧵 ${topic} hakkında bilmeniz gereken her şey.\n\nBu thread'i kaydedin, ileride teşekkür edeceksiniz. ↓`, type: 'hook' },
-          { number: `2/${length}`, content: `Öncelikle, ${topic} neden bu kadar önemli?\n\nÇünkü çoğu kişi bunu görmezden geliyor ve büyük fırsatları kaçırıyor.`, type: 'content' },
-          { number: `3/${length}`, content: `İşte ${topic} hakkında bilmeniz gereken ilk şey:\n\nTemel prensipleri anlamadan ilerlemeye çalışmak, temelsiz bina inşa etmek gibi.`, type: 'content' },
-          { number: `4/${length}`, content: `İkinci önemli nokta:\n\nTutarlılık her şeyden önemli. Bir gün yapıp bırakmak yerine, küçük adımlarla ilerlemeye devam edin.`, type: 'content' },
-          { number: `5/${length}`, content: `Üçüncü nokta:\n\nBaşkalarından öğrenin. Her başarılı kişi, onlarca başarısız denemeden sonra bugünlere geldi.`, type: 'content' },
-          { number: `6/${length}`, content: `Son olarak:\n\n${topic} bir yolculuk, varış noktası değil. Sürecin tadını çıkarın.`, type: 'content' },
-          { number: `7/${length}`, content: `📌 Bu thread'i kaydedin ve ihtiyacınız olduğunda tekrar okuyun.\n\n🔄 RT ile başkalarına da fayda sağlayın.\n\n➡️ Daha fazla içerik için takip edin!`, type: 'cta' }
-        ] : [
-          { number: `1/${length}`, content: `🧵 Everything you need to know about ${topic}.\n\nSave this thread, you'll thank me later. ↓`, type: 'hook' },
-          { number: `2/${length}`, content: `First, why is ${topic} so important?\n\nBecause most people ignore it and miss huge opportunities.`, type: 'content' },
-          { number: `3/${length}`, content: `Here's the first thing to know about ${topic}:\n\nTrying to progress without understanding the basics is like building a house without foundation.`, type: 'content' },
-          { number: `4/${length}`, content: `Second important point:\n\nConsistency beats everything. Instead of one day effort, keep making small progress.`, type: 'content' },
-          { number: `5/${length}`, content: `Third point:\n\nLearn from others. Every successful person reached here after dozens of failed attempts.`, type: 'content' },
-          { number: `6/${length}`, content: `Finally:\n\n${topic} is a journey, not a destination. Enjoy the process.`, type: 'content' },
-          { number: `7/${length}`, content: `📌 Save this thread and re-read when you need it.\n\n🔄 RT to help others.\n\n➡️ Follow for more content!`, type: 'cta' }
-        ],
-        title: language === 'tr' ? `${topic} Rehberi` : `${topic} Guide`,
-        estimatedEngagement: 'High'
-      }
-    }
-
-    if (userId) {
-      const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
-      if (c) await supabase.from('credits').update({ balance: c.balance - 4, total_used: c.total_used + 4 }).eq('user_id', userId)
-    }
-
-    return NextResponse.json({ ...threadData, topic, style, platform })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Thread Writer Error:', error)
-    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'An error occurred' },
+      { status: 500 }
+    )
   }
 }

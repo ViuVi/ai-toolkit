@@ -1,45 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { generateJSONWithGroq } from '@/lib/groq'
+
+// Bu ücretsiz bir araç
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platforms, postsPerWeek, month, language = 'en' } = await request.json()
-    
-    const calendar = await generateCalendar(niche, platforms, postsPerWeek || 7, month, language)
-    return NextResponse.json({ calendar })
-  } catch (error) {
+    const { niche, duration, platforms, goals, language = 'en' } = await request.json()
+
+    const nicheInfo = niche || 'general'
+    const durationInfo = duration || '1 week'
+    const platformList = platforms || ['Instagram', 'Twitter']
+    const goalInfo = goals || (language === 'tr' ? 'etkileşim artırma' : 'increase engagement')
+
+    const systemPrompt = language === 'tr'
+      ? `Sen içerik planlama stratejistisin.
+         Kapsamlı ve uygulanabilir içerik takvimleri oluşturuyorsun.
+         Her gün için spesifik içerik önerileri sunuyorsun.`
+      : `You are a content planning strategist.
+         You create comprehensive and actionable content calendars.
+         You provide specific content suggestions for each day.`
+
+    const userPrompt = language === 'tr'
+      ? `"${nicheInfo}" nişi için ${durationInfo} süreli, ${platformList.join(' ve ')} platformlarında "${goalInfo}" hedefli içerik takvimi oluştur.
+
+Her gün için:
+- İçerik tipi
+- Konu önerisi
+- Platform
+- Paylaşım zamanı
+- Hashtag önerileri
+
+JSON formatında yanıt ver:
+{
+  "calendar": {
+    "overview": "genel strateji özeti",
+    "days": [
+      {
+        "day": "Pazartesi",
+        "date": "Gün 1",
+        "posts": [
+          {
+            "time": "09:00",
+            "platform": "Instagram",
+            "content_type": "carousel/reel/post",
+            "topic": "içerik konusu",
+            "caption_idea": "caption fikri",
+            "hashtags": ["hashtag1", "hashtag2"],
+            "notes": "ek notlar"
+          }
+        ]
+      }
+    ],
+    "themes": ["haftalık tema 1", "haftalık tema 2"],
+    "content_pillars": ["içerik direği 1", "içerik direği 2"],
+    "tips": ["uygulama ipucu 1", "uygulama ipucu 2"]
+  }
+}`
+      : `Create a content calendar for "${nicheInfo}" niche for ${durationInfo}, on ${platformList.join(' and ')} platforms with "${goalInfo}" goal.
+
+For each day:
+- Content type
+- Topic suggestion
+- Platform
+- Posting time
+- Hashtag suggestions
+
+Respond in JSON format:
+{
+  "calendar": {
+    "overview": "general strategy summary",
+    "days": [
+      {
+        "day": "Monday",
+        "date": "Day 1",
+        "posts": [
+          {
+            "time": "09:00",
+            "platform": "Instagram",
+            "content_type": "carousel/reel/post",
+            "topic": "content topic",
+            "caption_idea": "caption idea",
+            "hashtags": ["hashtag1", "hashtag2"],
+            "notes": "additional notes"
+          }
+        ]
+      }
+    ],
+    "themes": ["weekly theme 1", "weekly theme 2"],
+    "content_pillars": ["content pillar 1", "content pillar 2"],
+    "tips": ["implementation tip 1", "implementation tip 2"]
+  }
+}`
+
+    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+      temperature: 0.8,
+      maxTokens: 4000
+    })
+
+    return NextResponse.json(result)
+
+  } catch (error: any) {
     console.error('Content Calendar Error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
-  }
-}
-
-async function generateCalendar(niche: string, platforms: string[], postsPerWeek: number, month: string, language: string) {
-  const contentTypes = language === 'tr'
-    ? ['Eğitici İçerik', 'İlham Verici', 'Eğlenceli', 'Soru-Cevap', 'Trend Takibi', 'Behind the Scenes', 'Kullanıcı Yorumu']
-    : ['Educational', 'Inspirational', 'Fun/Entertainment', 'Q&A', 'Trend Following', 'Behind the Scenes', 'User Feedback']
-
-  const weeks = []
-  for (let w = 1; w <= 4; w++) {
-    const posts = []
-    for (let d = 0; d < Math.min(postsPerWeek, 7); d++) {
-      posts.push({
-        day: d + 1,
-        contentType: contentTypes[d % contentTypes.length],
-        platform: platforms[d % platforms.length] || 'instagram',
-        topic: `${niche} - ${contentTypes[d % contentTypes.length]}`,
-        suggestedTime: ['09:00', '12:00', '15:00', '18:00', '21:00'][d % 5]
-      })
-    }
-    weeks.push({ week: w, posts })
-  }
-
-  return {
-    niche,
-    month: month || new Date().toLocaleString('default', { month: 'long' }),
-    platforms,
-    postsPerWeek,
-    weeks,
-    tips: language === 'tr'
-      ? ['İçerik türlerini karıştırın', 'Tutarlı olun', 'Etkileşimleri takip edin']
-      : ['Mix content types', 'Stay consistent', 'Track engagement']
+    return NextResponse.json(
+      { error: error.message || 'An error occurred' },
+      { status: 500 }
+    )
   }
 }

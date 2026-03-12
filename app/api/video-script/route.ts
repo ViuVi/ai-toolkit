@@ -1,140 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
-
-const styleGuide: Record<string, Record<string, string>> = {
-  question: { tr: 'Soru sorarak merak uyandır, izleyiciyi düşündür', en: 'Create curiosity with questions, make viewer think' },
-  shocking: { tr: 'Şok edici ve dikkat çekici açılış', en: 'Shocking and attention-grabbing opening' },
-  storytelling: { tr: 'Hikaye anlatımı ile duygusal bağ kur', en: 'Connect emotionally through storytelling' }
-}
-
-const platformGuide: Record<string, Record<string, string>> = {
-  tiktok: { tr: 'Kısa, enerjik, trend odaklı, hızlı geçişler', en: 'Short, energetic, trend-focused, quick transitions' },
-  youtube: { tr: 'Detaylı, bilgilendirici, değer odaklı', en: 'Detailed, informative, value-focused' },
-  instagram: { tr: 'Görsel odaklı, estetik, kısa ve öz', en: 'Visual-focused, aesthetic, short and concise' }
-}
+const CREDIT_COST = 4
 
 export async function POST(request: NextRequest) {
   try {
     const { topic, platform, duration, style, userId, language = 'en' } = await request.json()
 
-    if (!topic || !platform) {
-      return NextResponse.json({ error: language === 'tr' ? 'Konu ve platform gerekli' : 'Topic and platform required' }, { status: 400 })
+    if (!topic) {
+      return NextResponse.json(
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { status: 400 }
+      )
     }
 
+    // Kredi kontrolü
     if (userId) {
-      const { data: credits } = await supabase.from('credits').select('balance').eq('user_id', userId).single()
-      if (!credits || credits.balance < 4) {
-        return NextResponse.json({ error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits' }, { status: 403 })
+      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
+      if (!creditCheck.success) {
+        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
       }
     }
 
-    const styleDesc = styleGuide[style]?.[language === 'tr' ? 'tr' : 'en'] || styleGuide.question.en
-    const platformDesc = platformGuide[platform]?.[language === 'tr' ? 'tr' : 'en'] || platformGuide.tiktok.en
-    const seed = Date.now()
+    const platformInfo = platform || 'YouTube'
+    const durationInfo = duration || '60 seconds'
+    const styleInfo = style || (language === 'tr' ? 'eğitici' : 'educational')
 
-    const prompt = language === 'tr'
-      ? `[SEED:${seed}] Sen profesyonel bir video script yazarısın. "${topic}" konusu için ${platform} platformunda ${duration} saniyelik bir video scripti yaz.
+    const systemPrompt = language === 'tr'
+      ? `Sen profesyonel bir video script yazarısın. ${platformInfo} için viral olabilecek scriptler yazıyorsun.
+         Hook, gövde ve CTA bölümlerini net ayır.
+         İzleyiciyi ilk 3 saniyede yakala, sonuna kadar tut.`
+      : `You are a professional video script writer. You write scripts that can go viral on ${platformInfo}.
+         Clearly separate hook, body, and CTA sections.
+         Capture the viewer in the first 3 seconds, keep them until the end.`
 
-PLATFORM TARZI: ${platformDesc}
-HOOK STİLİ: ${styleDesc}
+    const userPrompt = language === 'tr'
+      ? `"${topic}" konusu için ${platformInfo} platformunda ${durationInfo} süreli, ${styleInfo} tarzında bir video scripti yaz.
 
-ZORUNLU FORMAT:
-1. HOOK (0:00-0:03): İlk 3 saniyede izleyiciyi yakala. Güçlü, merak uyandırıcı bir açılış.
-2. ANA İÇERİK (0:03-${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}): Ana mesajı akıcı bir şekilde anlat. Madde madde değil, doğal konuşma gibi.
-3. CTA (son 8 saniye): Güçlü bir eylem çağrısı ile bitir.
-
-KURALLAR:
-- Samimi ve doğal konuşma dili kullan
-- Klişelerden kaçın, özgün ol
-- Her cümle değer katsın
-- Platform için uygun uzunlukta tut
+Script şunları içermeli:
+1. Hook (ilk 3 saniye) - izleyiciyi yakala
+2. Giriş - konuyu tanıt
+3. Ana içerik - 3-5 madde
+4. Sonuç ve CTA
 
 JSON formatında yanıt ver:
 {
-  "sections": [
-    {"timestamp": "0:00", "title": "Hook", "content": "hook metni"},
-    {"timestamp": "0:03", "title": "Ana İçerik", "content": "ana içerik metni"},
-    {"timestamp": "${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}", "title": "CTA", "content": "kapanış metni"}
-  ]
+  "script": {
+    "title": "video başlığı önerisi",
+    "hook": "dikkat çekici açılış (ilk 3 saniye)",
+    "intro": "giriş bölümü",
+    "main_points": [
+      {"point": "madde 1", "script": "bu bölüm için script"},
+      {"point": "madde 2", "script": "bu bölüm için script"},
+      {"point": "madde 3", "script": "bu bölüm için script"}
+    ],
+    "conclusion": "sonuç bölümü",
+    "cta": "call-to-action",
+    "thumbnail_idea": "thumbnail önerisi",
+    "tags": ["tag1", "tag2", "tag3"]
+  }
 }`
-      : `[SEED:${seed}] You are a professional video script writer. Write a ${duration}-second video script for ${platform} about "${topic}".
+      : `Write a video script for "${topic}" on ${platformInfo} platform, ${durationInfo} long, in ${styleInfo} style.
 
-PLATFORM STYLE: ${platformDesc}
-HOOK STYLE: ${styleDesc}
-
-REQUIRED FORMAT:
-1. HOOK (0:00-0:03): Capture viewer in first 3 seconds. Strong, curiosity-inducing opening.
-2. MAIN CONTENT (0:03-${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}): Deliver main message in flowing narrative. Not bullet points, natural speech.
-3. CTA (last 8 seconds): End with strong call to action.
-
-RULES:
-- Use friendly, natural conversational tone
-- Avoid clichés, be original
-- Every sentence should add value
-- Keep appropriate length for platform
+Script should include:
+1. Hook (first 3 seconds) - capture the viewer
+2. Intro - introduce the topic
+3. Main content - 3-5 points
+4. Conclusion and CTA
 
 Respond in JSON format:
 {
-  "sections": [
-    {"timestamp": "0:00", "title": "Hook", "content": "hook text"},
-    {"timestamp": "0:03", "title": "Main Content", "content": "main content text"},
-    {"timestamp": "${duration === '30' ? '0:22' : duration === '60' ? '0:50' : '2:40'}", "title": "CTA", "content": "closing text"}
-  ]
+  "script": {
+    "title": "suggested video title",
+    "hook": "attention-grabbing opening (first 3 seconds)",
+    "intro": "introduction section",
+    "main_points": [
+      {"point": "point 1", "script": "script for this section"},
+      {"point": "point 2", "script": "script for this section"},
+      {"point": "point 3", "script": "script for this section"}
+    ],
+    "conclusion": "conclusion section",
+    "cta": "call-to-action",
+    "thumbnail_idea": "thumbnail suggestion",
+    "tags": ["tag1", "tag2", "tag3"]
+  }
 }`
 
-    const response = await fetch(HF_API, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1500, temperature: 0.85, top_p: 0.9, return_full_text: false } })
+    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+      temperature: 0.8,
+      maxTokens: 3000
     })
 
-    let script: any = null
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      const match = text.match(/\{[\s\S]*\}/)
-      if (match) {
-        try { script = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
-      }
-    }
+    return NextResponse.json({ script: result.script || result })
 
-    if (!script || !script.sections || script.sections.length < 2) {
-      script = {
-        sections: language === 'tr' ? [
-          { timestamp: "0:00", title: "Hook", content: `${topic} hakkında bilmediğiniz bir şey söyleyeceğim...` },
-          { timestamp: "0:03", title: "Ana İçerik", content: `${topic} konusunda çoğu kişi bunu atlıyor. Ama aslında en önemli nokta şu: Temel prensipleri anlamadan ilerlemeye çalışmak, temelsiz bir bina inşa etmek gibi. Size tam olarak nasıl yapmanız gerektiğini göstereceğim.` },
-          { timestamp: duration === '30' ? "0:22" : "0:50", title: "CTA", content: "Videoyu kaydedin ve daha fazlası için takipte kalın!" }
-        ] : [
-          { timestamp: "0:00", title: "Hook", content: `I'm going to tell you something about ${topic} you didn't know...` },
-          { timestamp: "0:03", title: "Main Content", content: `Most people skip this when it comes to ${topic}. But the most important thing is: trying to progress without understanding the basics is like building a house without a foundation. Let me show you exactly how to do it right.` },
-          { timestamp: duration === '30' ? "0:22" : "0:50", title: "CTA", content: "Save this video and follow for more!" }
-        ]
-      }
-    }
-
-    const totalWords = script.sections.reduce((acc: number, s: any) => acc + (s.content?.split(' ').length || 0), 0)
-    script.topic = topic
-    script.platform = platform
-    script.duration = `${duration}s`
-    script.style = style
-    script.totalWords = totalWords
-    script.estimatedReadingTime = `${Math.ceil(totalWords / 150)} min`
-
-    if (userId) {
-      const { data: c } = await supabase.from('credits').select('balance, total_used').eq('user_id', userId).single()
-      if (c) await supabase.from('credits').update({ balance: c.balance - 4, total_used: c.total_used + 4 }).eq('user_id', userId)
-    }
-
-    return NextResponse.json({ script })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Video Script Error:', error)
-    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'An error occurred' },
+      { status: 500 }
+    )
   }
 }
