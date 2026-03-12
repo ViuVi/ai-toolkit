@@ -348,8 +348,8 @@ export default function RegisterPage() {
         {/* Footer */}
         <p className="mt-8 text-center text-gray-500 text-sm">
           {language === 'tr' 
-            ? '© 2025 Media Tool Kit. Tüm hakları saklıdır.' 
-            : '© 2025 Media Tool Kit. All rights reserved.'}
+            ? '© 2026 Media Tool Kit. Tüm hakları saklıdır.' 
+            : '© 2026 Media Tool Kit. All rights reserved.'}
         </p>
       </div>
 
