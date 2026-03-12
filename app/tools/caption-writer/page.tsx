@@ -54,9 +54,24 @@ export default function CaptionWriterPage() {
     try {
       const res = await fetch('/api/caption-writer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, tone, includeEmojis, includeHashtags, userId, language }) })
       const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setResult(data.captions); showToast(t.success, 'success') }
-    } catch { showToast(t.error, 'error') }
+      if (data.error) { showToast(data.error, 'error'); setLoading(false); return }
+      
+      // API'den gelen veriyi normalize et
+      let captions = data.captions || []
+      if (!Array.isArray(captions)) captions = []
+      
+      // Her caption'ın doğru formatta olduğundan emin ol
+      const normalizedCaptions = captions.map((c: any, i: number) => ({
+        id: c.id || i + 1,
+        caption: c.caption || c.text || c.content || String(c),
+        characterCount: c.characterCount || c.character_count || (c.caption || c.text || '').length,
+        hookType: c.hookType || c.hook_type || '',
+        cta: c.cta || ''
+      }))
+      
+      setResult(normalizedCaptions)
+      if (normalizedCaptions.length > 0) showToast(t.success, 'success')
+    } catch (err) { console.error('Caption error:', err); showToast(t.error, 'error') }
     setLoading(false)
   }
 

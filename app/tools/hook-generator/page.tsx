@@ -35,9 +35,21 @@ export default function HookGeneratorPage() {
     try {
       const res = await fetch('/api/hook-generator', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, hookType, count, userId, language }) })
       const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setResult(data.hooks); showToast(t.success, 'success') }
-    } catch { showToast(t.error, 'error') }
+      if (data.error) { showToast(data.error, 'error'); setLoading(false); return }
+      
+      // API'den gelen veriyi normalize et
+      let hooks = data.hooks || []
+      if (!Array.isArray(hooks)) hooks = []
+      
+      // Her hook'un doğru formatta olduğundan emin ol
+      const normalizedHooks = hooks.map((h: any, i: number) => ({
+        id: h.id || i + 1,
+        hook: h.hook || h.text || h.content || String(h)
+      }))
+      
+      setResult(normalizedHooks)
+      if (normalizedHooks.length > 0) showToast(t.success, 'success')
+    } catch (err) { console.error('Hook error:', err); showToast(t.error, 'error') }
     setLoading(false)
   }
 

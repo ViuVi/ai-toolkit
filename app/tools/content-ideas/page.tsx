@@ -52,9 +52,24 @@ export default function ContentIdeasPage() {
     try {
       const res = await fetch('/api/content-ideas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ niche, platform, contentType, targetAudience, userId, language }) })
       const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setResult(data.ideas); showToast(t.success, 'success') }
-    } catch { showToast(t.error, 'error') }
+      if (data.error) { showToast(data.error, 'error'); setLoading(false); return }
+      
+      let ideas = data.ideas || []
+      if (!Array.isArray(ideas)) ideas = []
+      
+      const normalizedIdeas = ideas.map((idea: any, i: number) => ({
+        id: idea.id || i + 1,
+        title: idea.title || idea.name || '',
+        description: idea.description || idea.desc || '',
+        format: idea.format || idea.type || '',
+        category: idea.category || '',
+        hook: idea.hook || '',
+        difficulty: idea.difficulty || ''
+      }))
+      
+      setResult(normalizedIdeas)
+      if (normalizedIdeas.length > 0) showToast(t.success, 'success')
+    } catch (err) { console.error('Ideas error:', err); showToast(t.error, 'error') }
     setLoading(false)
   }
 

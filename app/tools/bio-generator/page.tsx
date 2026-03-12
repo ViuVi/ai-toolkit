@@ -31,9 +31,18 @@ export default function BioGeneratorPage() {
     try {
       const res = await fetch('/api/bio-generator', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, profession, platform, style, language }) })
       const data = await res.json()
-      if (data.error) showToast(data.error, 'error')
-      else { setResult(data.bio); showToast(t.success, 'success') }
-    } catch { showToast(t.error, 'error') }
+      if (data.error) { showToast(data.error, 'error'); setLoading(false); return }
+      
+      // Normalize response
+      const bio = data.bio || data
+      const normalizedBio = {
+        bio: bio.bio || bio.text || bio.content || (typeof bio === 'string' ? bio : ''),
+        characterCount: bio.characterCount || bio.character_count || (bio.bio || bio.text || '').length
+      }
+      
+      setResult(normalizedBio)
+      showToast(t.success, 'success')
+    } catch (err) { console.error('Bio error:', err); showToast(t.error, 'error') }
     setLoading(false)
   }
 
