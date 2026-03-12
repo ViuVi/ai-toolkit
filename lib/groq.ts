@@ -105,32 +105,33 @@ export async function checkAndDeductCredits(
     return { success: true } // Giriş yapmamış kullanıcı (demo?)
   }
 
-  const { data: credits, error } = await supabase
-    .from('user_credits')
-    .select('credits')
+  const { data: creditsData, error } = await supabase
+    .from('credits')
+    .select('balance, total_used')
     .eq('user_id', userId)
     .single()
 
-  if (error || !credits) {
+  if (error || !creditsData) {
     return { 
       success: false, 
       error: language === 'tr' ? 'Kredi bilgisi bulunamadı' : 'Credits not found' 
     }
   }
 
-  if (credits.credits < requiredCredits) {
+  if (creditsData.balance < requiredCredits) {
     return { 
       success: false, 
       error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits',
-      currentBalance: credits.credits
+      currentBalance: creditsData.balance
     }
   }
 
   // Krediyi düş
   const { error: updateError } = await supabase
-    .from('user_credits')
+    .from('credits')
     .update({ 
-      credits: credits.credits - requiredCredits,
+      balance: creditsData.balance - requiredCredits,
+      total_used: (creditsData.total_used || 0) + requiredCredits,
       updated_at: new Date().toISOString()
     })
     .eq('user_id', userId)
@@ -145,6 +146,6 @@ export async function checkAndDeductCredits(
 
   return { 
     success: true, 
-    currentBalance: credits.credits - requiredCredits 
+    currentBalance: creditsData.balance - requiredCredits 
   }
 }
