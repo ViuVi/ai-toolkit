@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,93 +11,61 @@ const CREDIT_COST = 3
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platform, contentType, userId, language = 'en' } = await request.json()
+    const { niche, platform, count, userId, language = 'en' } = await request.json()
 
     if (!niche) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Niş/konu gerekli' : 'Niche required' },
+        { error: language === 'tr' ? 'Niş gerekli' : 'Niche is required' },
         { status: 400 }
       )
     }
 
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const platformInfo = platform || 'all platforms'
-    const typeInfo = contentType || 'mixed'
+    const ideaCount = count || 10
 
     const systemPrompt = language === 'tr'
-      ? `Sen içerik stratejisti ve trend analistsin.
-         Viral olma potansiyeli yüksek, özgün içerik fikirleri üretiyorsun.
-         Her fikir uygulanabilir ve detaylı olmalı.`
-      : `You are a content strategist and trend analyst.
-         You generate original content ideas with high viral potential.
-         Each idea should be actionable and detailed.`
+      ? `Sen içerik stratejistisin. Viral potansiyeli yüksek içerik fikirleri üretiyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a content strategist. You generate content ideas with high viral potential. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `"${niche}" nişi için ${platformInfo} platformlarında paylaşılacak 10 özgün içerik fikri üret.
-
-Her fikir için:
-- Başlık/konsept
-- Neden viral olabilir
-- Hangi formatta olmalı (video, carousel, story vb.)
-- Tahmini etkileşim potansiyeli
+      ? `"${niche}" nişi için ${platform || 'sosyal medya'} platformunda ${ideaCount} içerik fikri üret.
 
 JSON formatında yanıt ver:
 {
   "ideas": [
-    {
-      "title": "içerik başlığı",
-      "concept": "detaylı açıklama",
-      "format": "video/carousel/image/story/reel",
-      "platform": "en uygun platform",
-      "viral_reason": "neden viral olabilir",
-      "engagement_potential": "yüksek/orta/düşük",
-      "difficulty": "kolay/orta/zor",
-      "trending_hook": "trend ile bağlantı"
-    }
+    {"id": 1, "title": "fikir başlığı", "description": "açıklama", "format": "video/carousel/reel", "difficulty": "kolay/orta/zor"},
+    {"id": 2, "title": "fikir başlığı", "description": "açıklama", "format": "video", "difficulty": "kolay"}
   ]
-}`
-      : `Generate 10 original content ideas for "${niche}" niche to post on ${platformInfo}.
+}
 
-For each idea:
-- Title/concept
-- Why it could go viral
-- What format it should be (video, carousel, story, etc.)
-- Estimated engagement potential
+Sadece JSON döndür.`
+      : `Generate ${ideaCount} content ideas for "${niche}" niche on ${platform || 'social media'} platform.
 
 Respond in JSON format:
 {
   "ideas": [
-    {
-      "title": "content title",
-      "concept": "detailed description",
-      "format": "video/carousel/image/story/reel",
-      "platform": "best platform",
-      "viral_reason": "why it could go viral",
-      "engagement_potential": "high/medium/low",
-      "difficulty": "easy/medium/hard",
-      "trending_hook": "connection to trends"
-    }
+    {"id": 1, "title": "idea title", "description": "description", "format": "video/carousel/reel", "difficulty": "easy/medium/hard"},
+    {"id": 2, "title": "idea title", "description": "description", "format": "video", "difficulty": "easy"}
   ]
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.9,
-      maxTokens: 3000
+      maxTokens: 2500
     })
 
-    return NextResponse.json({ ideas: result.ideas || [] })
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json({ ideas: parsed.ideas || parsed })
 
   } catch (error: any) {
     console.error('Content Ideas Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

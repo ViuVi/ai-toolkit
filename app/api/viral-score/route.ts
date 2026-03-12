@@ -1,137 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
-const HF_API = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-const platformNames: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram: 'Instagram Reels',
-  youtube: 'YouTube Shorts'
-}
+const CREDIT_COST = 5
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const videoFile = formData.get('video') as File | null
-    const platform = (formData.get('platform') as string) || 'tiktok'
-    const language = (formData.get('language') as string) || 'en'
-    const description = (formData.get('description') as string) || ''
+    const { content, platform, niche, userId, language = 'en' } = await request.json()
 
-    if (!videoFile) {
+    if (!content) {
       return NextResponse.json({ 
-        error: language === 'tr' ? 'Video dosyası gerekli' : 'Video file required' 
+        error: language === 'tr' ? 'İçerik gerekli' : 'Content required' 
       }, { status: 400 })
     }
 
-    if (videoFile.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ 
-        error: language === 'tr' ? 'Video 50MB\'dan küçük olmalı' : 'Video must be under 50MB' 
-      }, { status: 400 })
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const estimatedDuration = Math.min(60, Math.floor(videoFile.size / (500 * 1024)))
-    const platformName = platformNames[platform] || 'TikTok'
+    const systemPrompt = language === 'tr'
+      ? `Sen viral içerik analisti ve etkileşim uzmanısın. İçeriklerin viral potansiyelini değerlendiriyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a viral content analyst and engagement expert. You evaluate viral potential of content. Respond only in JSON format.`
 
-    const prompt = language === 'tr'
-      ? `Sen viral video analiz uzmanısın. Aşağıdaki ${platformName} videosunu analiz et:
+    const userPrompt = language === 'tr'
+      ? `Şu içeriğin ${platform || 'Instagram'} platformunda viral potansiyelini değerlendir:
 
-Video Bilgileri:
-- Platform: ${platformName}
-- Tahmini Süre: ~${estimatedDuration} saniye
-- Dosya Boyutu: ${(videoFile.size / (1024 * 1024)).toFixed(1)}MB
-- Kullanıcı Açıklaması: ${description || 'Belirtilmedi'}
+"${content}"
 
-Bu bilgilere dayanarak videonun viral potansiyelini değerlendir.
+${niche ? 'Niş: ' + niche : ''}
 
 JSON formatında yanıt ver:
 {
-  "viralScore": 0-100 arası skor,
-  "breakdown": {
-    "hookStrength": 0-100,
-    "contentQuality": 0-100,
-    "emotionalImpact": 0-100,
-    "shareability": 0-100,
-    "trendAlignment": 0-100
-  },
-  "strengths": ["güçlü yön 1", "güçlü yön 2"],
-  "improvements": ["iyileştirme 1", "iyileştirme 2", "iyileştirme 3"],
-  "predictedViews": "tahmini görüntülenme aralığı",
-  "bestPostingTime": "en iyi paylaşım zamanı",
-  "viralProbability": "viral olma olasılığı %",
-  "expertTip": "1-2 cümle uzman tavsiyesi"
-}`
-      : `You are a viral video analysis expert. Analyze this ${platformName} video:
+  "viralScore": {
+    "score": 75,
+    "potential": "yüksek/orta/düşük",
+    "factors": {
+      "hook": {"score": 8, "comment": "yorum"},
+      "emotion": {"score": 7, "comment": "yorum"},
+      "shareability": {"score": 8, "comment": "yorum"},
+      "timing": {"score": 6, "comment": "yorum"}
+    },
+    "strengths": ["güçlü yön 1", "güçlü yön 2"],
+    "improvements": ["iyileştirme 1", "iyileştirme 2"],
+    "prediction": "tahmini performans açıklaması"
+  }
+}
 
-Video Info:
-- Platform: ${platformName}
-- Estimated Duration: ~${estimatedDuration} seconds
-- File Size: ${(videoFile.size / (1024 * 1024)).toFixed(1)}MB
-- User Description: ${description || 'Not provided'}
+Sadece JSON döndür.`
+      : `Evaluate the viral potential of this content on ${platform || 'Instagram'}:
 
-Based on this info, evaluate viral potential.
+"${content}"
 
-Respond in JSON:
+${niche ? 'Niche: ' + niche : ''}
+
+Respond in JSON format:
 {
-  "viralScore": score 0-100,
-  "breakdown": {
-    "hookStrength": 0-100,
-    "contentQuality": 0-100,
-    "emotionalImpact": 0-100,
-    "shareability": 0-100,
-    "trendAlignment": 0-100
-  },
-  "strengths": ["strength 1", "strength 2"],
-  "improvements": ["improvement 1", "improvement 2", "improvement 3"],
-  "predictedViews": "estimated view range",
-  "bestPostingTime": "best posting time",
-  "viralProbability": "viral probability %",
-  "expertTip": "1-2 sentence expert tip"
-}`
+  "viralScore": {
+    "score": 75,
+    "potential": "high/medium/low",
+    "factors": {
+      "hook": {"score": 8, "comment": "comment"},
+      "emotion": {"score": 7, "comment": "comment"},
+      "shareability": {"score": 8, "comment": "comment"},
+      "timing": {"score": 6, "comment": "comment"}
+    },
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": ["improvement 1", "improvement 2"],
+    "prediction": "predicted performance description"
+  }
+}
 
-    const response = await fetch(HF_API, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 1000, temperature: 0.7, return_full_text: false } })
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
+      temperature: 0.6,
+      maxTokens: 1500
     })
 
-    let analysis: Record<string, unknown> | null = null
-    if (response.ok) {
-      const result = await response.json()
-      const text = result[0]?.generated_text || ''
-      const match = text.match(/\{[\s\S]*\}/)
-      if (match) {
-        try { analysis = JSON.parse(match[0]) } catch (e) { console.error('Parse error:', e) }
-      }
-    }
+    const parsed = parseJSONResponse(aiResponse)
 
-    if (!analysis) {
-      const baseScore = 50 + Math.floor(Math.random() * 30)
-      analysis = {
-        viralScore: baseScore,
-        breakdown: {
-          hookStrength: baseScore + Math.floor(Math.random() * 10) - 5,
-          contentQuality: baseScore + Math.floor(Math.random() * 10) - 5,
-          emotionalImpact: baseScore + Math.floor(Math.random() * 10) - 5,
-          shareability: baseScore + Math.floor(Math.random() * 10) - 5,
-          trendAlignment: baseScore + Math.floor(Math.random() * 10) - 5
-        },
-        strengths: language === 'tr' 
-          ? ["Uygun video uzunluğu", "Platform formatına uygun"]
-          : ["Appropriate video length", "Platform-appropriate format"],
-        improvements: language === 'tr'
-          ? ["İlk 3 saniyede güçlü hook ekleyin", "Trend ses kullanmayı deneyin", "Net bir CTA ile bitirin"]
-          : ["Add strong hook in first 3 seconds", "Try using trending sounds", "End with clear CTA"],
-        predictedViews: baseScore > 70 ? "10K-100K" : baseScore > 50 ? "1K-10K" : "500-1K",
-        bestPostingTime: language === 'tr' ? "19:00-21:00 arası" : "7-9 PM",
-        viralProbability: `${baseScore}%`,
-        expertTip: language === 'tr'
-          ? "İlk 3 saniye kritik - izleyiciyi hemen yakalamalısınız."
-          : "First 3 seconds are critical - capture viewers immediately."
-      }
-    }
+    return NextResponse.json(parsed)
 
-    return NextResponse.json({ analysis, videoInfo: { name: videoFile.name, size: videoFile.size, duration: estimatedDuration } })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Viral Score Error:', error)
-    return NextResponse.json({ error: 'Error occurred' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,89 +15,59 @@ export async function POST(request: NextRequest) {
 
     if (!purpose) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Amaç gerekli' : 'Purpose required' },
+        { error: language === 'tr' ? 'Amaç gerekli' : 'Purpose is required' },
         { status: 400 }
       )
     }
 
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const typeInfo = type || 'dm'
-    const recipientInfo = recipient || (language === 'tr' ? 'potansiyel müşteri' : 'potential client')
+    const messageType = type || 'dm'
 
     const systemPrompt = language === 'tr'
-      ? `Sen profesyonel iletişim uzmanısın.
-         İkna edici, samimi ve profesyonel mesajlar yazıyorsun.
-         Her mesaj amacına uygun ve alıcıya özel olmalı.`
-      : `You are a professional communication expert.
-         You write persuasive, friendly, and professional messages.
-         Each message should be purpose-appropriate and personalized.`
+      ? `Sen profesyonel iletişim uzmanısın. İkna edici mesajlar yazıyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a professional communication expert. You write persuasive messages. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `${recipientInfo} için "${purpose}" amacıyla ${typeInfo === 'email' ? 'e-posta' : 'DM'} yaz.
-
-${context ? `Ek bağlam: ${context}` : ''}
-
-3 farklı versiyon yaz:
-1. Kısa ve öz
-2. Orta uzunlukta, detaylı
-3. Resmi ve profesyonel
+      ? `${recipient || 'alıcı'} için "${purpose}" amacıyla ${messageType === 'email' ? 'e-posta' : 'DM'} yaz.
+${context ? 'Bağlam: ' + context : ''}
 
 JSON formatında yanıt ver:
 {
   "messages": [
-    {
-      "version": "kısa",
-      "subject": "${typeInfo === 'email' ? 'e-posta konusu' : ''}",
-      "text": "mesaj metni",
-      "tone": "ton açıklaması",
-      "cta": "call-to-action"
-    }
-  ],
-  "tips": ["ipucu 1", "ipucu 2"],
-  "best_time_to_send": "gönderim için en iyi zaman"
-}`
-      : `Write a ${typeInfo === 'email' ? 'email' : 'DM'} for ${recipientInfo} with purpose: "${purpose}".
+    {"id": 1, "version": "kısa", "subject": "${messageType === 'email' ? 'konu' : ''}", "text": "mesaj", "tone": "profesyonel"},
+    {"id": 2, "version": "detaylı", "subject": "${messageType === 'email' ? 'konu' : ''}", "text": "mesaj", "tone": "samimi"}
+  ]
+}
 
-${context ? `Additional context: ${context}` : ''}
-
-Write 3 different versions:
-1. Short and concise
-2. Medium length, detailed
-3. Formal and professional
+Sadece JSON döndür.`
+      : `Write a ${messageType === 'email' ? 'email' : 'DM'} for ${recipient || 'recipient'} with purpose: "${purpose}".
+${context ? 'Context: ' + context : ''}
 
 Respond in JSON format:
 {
   "messages": [
-    {
-      "version": "short",
-      "subject": "${typeInfo === 'email' ? 'email subject' : ''}",
-      "text": "message text",
-      "tone": "tone description",
-      "cta": "call-to-action"
-    }
-  ],
-  "tips": ["tip 1", "tip 2"],
-  "best_time_to_send": "best time to send"
-}`
+    {"id": 1, "version": "short", "subject": "${messageType === 'email' ? 'subject' : ''}", "text": "message", "tone": "professional"},
+    {"id": 2, "version": "detailed", "subject": "${messageType === 'email' ? 'subject' : ''}", "text": "message", "tone": "friendly"}
+  ]
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.75,
-      maxTokens: 2000
+      maxTokens: 1500
     })
 
-    return NextResponse.json(result)
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json({ messages: parsed.messages || parsed })
 
   } catch (error: any) {
-    console.error('DM/Email Writer Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    console.error('DM Email Writer Error:', error)
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

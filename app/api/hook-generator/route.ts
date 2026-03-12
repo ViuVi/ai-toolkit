@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,89 +11,77 @@ const CREDIT_COST = 2
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, userId, language = 'en' } = await request.json()
+    const body = await request.json()
+    const { topic, platform, hookType, count, userId, language = 'en' } = body
 
-    if (!topic) {
+    // Validasyon
+    if (!topic || !topic.trim()) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic is required' },
         { status: 400 }
       )
     }
 
     // Kredi kontrolü
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
+    // AI'ya gönderilecek prompt
     const systemPrompt = language === 'tr'
-      ? `Sen viral içerik uzmanısın. Dikkat çekici, ilgi uyandıran hook'lar (açılış cümleleri) yazıyorsun.
-         Her hook farklı bir psikolojik tetikleyici kullanmalı ve tamamen özgün olmalı.
-         Klişelerden kaçın, yaratıcı ol.`
-      : `You are a viral content expert. You write attention-grabbing, engaging hooks (opening lines).
-         Each hook should use a different psychological trigger and be completely original.
-         Avoid clichés, be creative.`
+      ? `Sen viral içerik uzmanısın. Dikkat çekici hook'lar (açılış cümleleri) yazıyorsun. Yanıtını sadece JSON formatında ver.`
+      : `You are a viral content expert. You write attention-grabbing hooks. Respond only in JSON format.`
 
+    const hookCount = count || 5
+    
     const userPrompt = language === 'tr'
-      ? `"${topic}" konusu için 8 farklı ve özgün hook yaz.
-
-Her hook farklı bir strateji kullansın:
-1. Merak uyandırıcı (bilgi boşluğu)
-2. Şok edici (sürpriz unsur)
-3. Soru soran (kendini test)
-4. Hikaye başlatan (dönüşüm)
-5. FOMO yaratan (kaçırma korkusu)
-6. Tartışmalı (unpopular opinion)
-7. İstatistik kullanan (sayılar)
-8. Kişisel deneyim (bağ kurma)
+      ? `"${topic}" konusu için ${platform || 'sosyal medya'} platformunda ${hookCount} adet ${hookType || 'çeşitli'} tarzında hook yaz.
 
 JSON formatında yanıt ver:
 {
   "hooks": [
-    {"type": "curiosity", "emoji": "🤔", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "shocking", "emoji": "😱", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "question", "emoji": "❓", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "story", "emoji": "📖", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "fomo", "emoji": "⚡", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "controversy", "emoji": "🔥", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "statistic", "emoji": "📊", "text": "hook metni", "reason": "neden etkili"},
-    {"type": "personal", "emoji": "💭", "text": "hook metni", "reason": "neden etkili"}
+    {"id": 1, "hook": "hook metni buraya"},
+    {"id": 2, "hook": "hook metni buraya"}
   ]
-}`
-      : `Write 8 different and unique hooks for "${topic}".
+}
 
-Each hook should use a different strategy:
-1. Curiosity-inducing (information gap)
-2. Shocking (surprise element)
-3. Question-asking (self-test)
-4. Story-starting (transformation)
-5. FOMO-creating (fear of missing out)
-6. Controversial (unpopular opinion)
-7. Statistic-using (numbers)
-8. Personal experience (connection)
+Sadece JSON döndür, başka bir şey yazma.`
+      : `Write ${hookCount} ${hookType || 'various'} style hooks for "${topic}" on ${platform || 'social media'} platform.
 
 Respond in JSON format:
 {
   "hooks": [
-    {"type": "curiosity", "emoji": "🤔", "text": "hook text", "reason": "why it works"},
-    {"type": "shocking", "emoji": "😱", "text": "hook text", "reason": "why it works"},
-    {"type": "question", "emoji": "❓", "text": "hook text", "reason": "why it works"},
-    {"type": "story", "emoji": "📖", "text": "hook text", "reason": "why it works"},
-    {"type": "fomo", "emoji": "⚡", "text": "hook text", "reason": "why it works"},
-    {"type": "controversy", "emoji": "🔥", "text": "hook text", "reason": "why it works"},
-    {"type": "statistic", "emoji": "📊", "text": "hook text", "reason": "why it works"},
-    {"type": "personal", "emoji": "💭", "text": "hook text", "reason": "why it works"}
+    {"id": 1, "hook": "hook text here"},
+    {"id": 2, "hook": "hook text here"}
   ]
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON, nothing else.`
+
+    // AI çağrısı
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.9,
-      maxTokens: 2000
+      maxTokens: 1500
     })
 
-    return NextResponse.json({ hooks: result.hooks || [] })
+    console.log('Hook Generator - AI responded')
+
+    // JSON parse
+    const parsed = parseJSONResponse(aiResponse)
+    
+    // hooks array'ini döndür
+    let hooks = parsed.hooks || parsed
+    
+    // Eğer hooks array değilse, array yap
+    if (!Array.isArray(hooks)) {
+      console.log('Hooks is not array, wrapping:', typeof hooks)
+      hooks = [hooks]
+    }
+
+    console.log('Returning hooks count:', hooks.length)
+    
+    return NextResponse.json({ hooks })
 
   } catch (error: any) {
     console.error('Hook Generator Error:', error)

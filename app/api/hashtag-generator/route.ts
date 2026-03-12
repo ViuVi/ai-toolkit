@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateJSONWithGroq } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse } from '@/lib/groq'
 
-// Bu ücretsiz bir araç - kredi almıyor
+// Ücretsiz araç
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,70 +9,56 @@ export async function POST(request: NextRequest) {
 
     if (!topic) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic is required' },
         { status: 400 }
       )
     }
 
-    const platformInfo = platform || 'Instagram'
     const hashtagCount = count || 20
 
     const systemPrompt = language === 'tr'
-      ? `Sen sosyal medya hashtag uzmanısın.
-         Erişimi ve etkileşimi artıracak hashtag'ler öneriyorsun.
-         Popüler, orta ve niş hashtag'leri dengeli kullan.`
-      : `You are a social media hashtag expert.
-         You suggest hashtags that increase reach and engagement.
-         Balance popular, medium, and niche hashtags.`
+      ? `Sen hashtag uzmanısın. Etkileşim artıran hashtagler öneriyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a hashtag expert. You suggest engagement-boosting hashtags. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `"${topic}" konusu için ${platformInfo} platformunda kullanılacak ${hashtagCount} hashtag öner.
-
-Kategorilere ayır:
-- Yüksek hacimli (popüler)
-- Orta hacimli (dengeli)
-- Niş (hedefli)
+      ? `"${topic}" konusu için ${platform || 'Instagram'} platformunda ${hashtagCount} hashtag öner.
 
 JSON formatında yanıt ver:
 {
   "hashtags": {
-    "high_volume": ["hashtag1", "hashtag2", ...],
-    "medium_volume": ["hashtag1", "hashtag2", ...],
-    "niche": ["hashtag1", "hashtag2", ...]
+    "popular": ["hashtag1", "hashtag2", "hashtag3"],
+    "medium": ["hashtag4", "hashtag5", "hashtag6"],
+    "niche": ["hashtag7", "hashtag8", "hashtag9"]
   },
-  "recommended_set": ["en iyi 10 hashtag kombinasyonu"],
-  "tips": ["kullanım ipucu 1", "kullanım ipucu 2"]
-}`
-      : `Suggest ${hashtagCount} hashtags for "${topic}" to use on ${platformInfo} platform.
+  "recommended": ["en iyi 10 hashtag listesi"]
+}
 
-Categorize them:
-- High volume (popular)
-- Medium volume (balanced)
-- Niche (targeted)
+Sadece JSON döndür.`
+      : `Suggest ${hashtagCount} hashtags for "${topic}" on ${platform || 'Instagram'} platform.
 
 Respond in JSON format:
 {
   "hashtags": {
-    "high_volume": ["hashtag1", "hashtag2", ...],
-    "medium_volume": ["hashtag1", "hashtag2", ...],
-    "niche": ["hashtag1", "hashtag2", ...]
+    "popular": ["hashtag1", "hashtag2", "hashtag3"],
+    "medium": ["hashtag4", "hashtag5", "hashtag6"],
+    "niche": ["hashtag7", "hashtag8", "hashtag9"]
   },
-  "recommended_set": ["best 10 hashtag combination"],
-  "tips": ["usage tip 1", "usage tip 2"]
-}`
+  "recommended": ["best 10 hashtag list"]
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.7,
-      maxTokens: 1500
+      maxTokens: 1000
     })
 
-    return NextResponse.json(result)
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json(parsed)
 
   } catch (error: any) {
     console.error('Hashtag Generator Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

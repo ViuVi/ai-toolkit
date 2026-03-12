@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,103 +15,59 @@ export async function POST(request: NextRequest) {
 
     if (!niche) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Niş gerekli' : 'Niche required' },
+        { error: language === 'tr' ? 'Niş gerekli' : 'Niche is required' },
         { status: 400 }
       )
     }
 
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const platformInfo = platform || 'all'
-    const regionInfo = region || (language === 'tr' ? 'Türkiye' : 'Global')
-
     const systemPrompt = language === 'tr'
-      ? `Sen sosyal medya trend analistsin.
-         Güncel trendleri, viral içerikleri ve yükselen konuları analiz ediyorsun.
-         İçerik üreticilere uygulanabilir trend önerileri sunuyorsun.`
-      : `You are a social media trend analyst.
-         You analyze current trends, viral content, and rising topics.
-         You provide actionable trend recommendations to content creators.`
+      ? `Sen sosyal medya trend analistsin. Güncel trendleri analiz ediyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a social media trend analyst. You analyze current trends. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `"${niche}" nişi için ${platformInfo} platformlarında ${regionInfo} bölgesindeki güncel trendleri analiz et.
-
-Şunları belirle:
-1. Yükselen trendler (şu an büyüyen)
-2. Viral formatlar (popüler içerik tipleri)
-3. Trending ses/müzikler
-4. Hashtag trendleri
-5. İçerik fırsatları
+      ? `"${niche}" nişi için ${platform || 'tüm platformlarda'} ${region || 'global'} trendleri analiz et.
 
 JSON formatında yanıt ver:
 {
-  "trends": {
-    "rising_topics": [
-      {"topic": "trend konusu", "growth": "yükseliş oranı", "opportunity": "fırsat açıklaması"}
-    ],
-    "viral_formats": [
-      {"format": "format adı", "description": "açıklama", "example_idea": "örnek fikir"}
-    ],
-    "trending_sounds": ["ses/müzik önerisi"],
-    "hashtags": {
-      "trending": ["hashtag1", "hashtag2"],
-      "rising": ["hashtag1", "hashtag2"]
-    },
-    "content_opportunities": [
-      {"opportunity": "fırsat", "timing": "zamanlama", "potential": "potansiyel"}
-    ]
-  },
-  "recommendations": ["öneri 1", "öneri 2", "öneri 3"],
-  "avoid": ["kaçınılması gereken 1", "kaçınılması gereken 2"]
-}`
-      : `Analyze current trends for "${niche}" niche on ${platformInfo} platforms in ${regionInfo} region.
+  "trends": [
+    {"id": 1, "trend": "trend adı", "platform": "TikTok", "growth": "yükselen", "opportunity": "fırsat açıklaması"},
+    {"id": 2, "trend": "trend adı", "platform": "Instagram", "growth": "stabil", "opportunity": "fırsat açıklaması"}
+  ],
+  "hashtags": ["trend hashtag 1", "trend hashtag 2"],
+  "contentIdeas": ["içerik fikri 1", "içerik fikri 2"]
+}
 
-Identify:
-1. Rising trends (currently growing)
-2. Viral formats (popular content types)
-3. Trending sounds/music
-4. Hashtag trends
-5. Content opportunities
+Sadece JSON döndür.`
+      : `Analyze trends for "${niche}" niche on ${platform || 'all platforms'} in ${region || 'global'} region.
 
 Respond in JSON format:
 {
-  "trends": {
-    "rising_topics": [
-      {"topic": "trend topic", "growth": "growth rate", "opportunity": "opportunity description"}
-    ],
-    "viral_formats": [
-      {"format": "format name", "description": "description", "example_idea": "example idea"}
-    ],
-    "trending_sounds": ["sound/music suggestion"],
-    "hashtags": {
-      "trending": ["hashtag1", "hashtag2"],
-      "rising": ["hashtag1", "hashtag2"]
-    },
-    "content_opportunities": [
-      {"opportunity": "opportunity", "timing": "timing", "potential": "potential"}
-    ]
-  },
-  "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"],
-  "avoid": ["thing to avoid 1", "thing to avoid 2"]
-}`
+  "trends": [
+    {"id": 1, "trend": "trend name", "platform": "TikTok", "growth": "rising", "opportunity": "opportunity description"},
+    {"id": 2, "trend": "trend name", "platform": "Instagram", "growth": "stable", "opportunity": "opportunity description"}
+  ],
+  "hashtags": ["trending hashtag 1", "trending hashtag 2"],
+  "contentIdeas": ["content idea 1", "content idea 2"]
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.8,
-      maxTokens: 3000
+      maxTokens: 2000
     })
 
-    return NextResponse.json(result)
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json(parsed)
 
   } catch (error: any) {
     console.error('Trend Detector Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

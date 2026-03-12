@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,95 +15,71 @@ export async function POST(request: NextRequest) {
 
     if (!topic) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic is required' },
         { status: 400 }
       )
     }
 
-    // Kredi kontrolü
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const platformInfo = platform || 'YouTube'
-    const durationInfo = duration || '60 seconds'
-    const styleInfo = style || (language === 'tr' ? 'eğitici' : 'educational')
-
     const systemPrompt = language === 'tr'
-      ? `Sen profesyonel bir video script yazarısın. ${platformInfo} için viral olabilecek scriptler yazıyorsun.
-         Hook, gövde ve CTA bölümlerini net ayır.
-         İzleyiciyi ilk 3 saniyede yakala, sonuna kadar tut.`
-      : `You are a professional video script writer. You write scripts that can go viral on ${platformInfo}.
-         Clearly separate hook, body, and CTA sections.
-         Capture the viewer in the first 3 seconds, keep them until the end.`
+      ? `Sen video script yazarısın. Viral video scriptleri yazıyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a video script writer. You write viral video scripts. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `"${topic}" konusu için ${platformInfo} platformunda ${durationInfo} süreli, ${styleInfo} tarzında bir video scripti yaz.
-
-Script şunları içermeli:
-1. Hook (ilk 3 saniye) - izleyiciyi yakala
-2. Giriş - konuyu tanıt
-3. Ana içerik - 3-5 madde
-4. Sonuç ve CTA
+      ? `"${topic}" konusu için ${platform || 'YouTube'} platformunda ${duration || '60 saniye'} süreli ${style || 'eğitici'} bir video scripti yaz.
 
 JSON formatında yanıt ver:
 {
   "script": {
-    "title": "video başlığı önerisi",
-    "hook": "dikkat çekici açılış (ilk 3 saniye)",
+    "title": "video başlığı",
+    "hook": "ilk 3 saniye - dikkat çekici açılış",
     "intro": "giriş bölümü",
-    "main_points": [
-      {"point": "madde 1", "script": "bu bölüm için script"},
-      {"point": "madde 2", "script": "bu bölüm için script"},
-      {"point": "madde 3", "script": "bu bölüm için script"}
+    "mainPoints": [
+      {"point": "ana nokta 1", "content": "içerik"},
+      {"point": "ana nokta 2", "content": "içerik"}
     ],
-    "conclusion": "sonuç bölümü",
-    "cta": "call-to-action",
-    "thumbnail_idea": "thumbnail önerisi",
-    "tags": ["tag1", "tag2", "tag3"]
+    "conclusion": "sonuç",
+    "cta": "call to action",
+    "duration": "${duration || '60 saniye'}"
   }
-}`
-      : `Write a video script for "${topic}" on ${platformInfo} platform, ${durationInfo} long, in ${styleInfo} style.
+}
 
-Script should include:
-1. Hook (first 3 seconds) - capture the viewer
-2. Intro - introduce the topic
-3. Main content - 3-5 points
-4. Conclusion and CTA
+Sadece JSON döndür.`
+      : `Write a ${style || 'educational'} video script for "${topic}" on ${platform || 'YouTube'} platform, ${duration || '60 seconds'} long.
 
 Respond in JSON format:
 {
   "script": {
-    "title": "suggested video title",
-    "hook": "attention-grabbing opening (first 3 seconds)",
+    "title": "video title",
+    "hook": "first 3 seconds - attention grabbing opening",
     "intro": "introduction section",
-    "main_points": [
-      {"point": "point 1", "script": "script for this section"},
-      {"point": "point 2", "script": "script for this section"},
-      {"point": "point 3", "script": "script for this section"}
+    "mainPoints": [
+      {"point": "main point 1", "content": "content"},
+      {"point": "main point 2", "content": "content"}
     ],
-    "conclusion": "conclusion section",
-    "cta": "call-to-action",
-    "thumbnail_idea": "thumbnail suggestion",
-    "tags": ["tag1", "tag2", "tag3"]
+    "conclusion": "conclusion",
+    "cta": "call to action",
+    "duration": "${duration || '60 seconds'}"
   }
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.8,
-      maxTokens: 3000
+      maxTokens: 2500
     })
 
-    return NextResponse.json({ script: result.script || result })
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json({ script: parsed.script || parsed })
 
   } catch (error: any) {
     console.error('Video Script Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

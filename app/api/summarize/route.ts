@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,79 +15,63 @@ export async function POST(request: NextRequest) {
 
     if (!text) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Metin gerekli' : 'Text required' },
+        { error: language === 'tr' ? 'Metin gerekli' : 'Text is required' },
         { status: 400 }
       )
     }
 
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const styleInfo = style || (language === 'tr' ? 'profesyonel' : 'professional')
-    const lengthInfo = length || (language === 'tr' ? 'orta' : 'medium')
-
     const systemPrompt = language === 'tr'
-      ? `Sen metin özetleme uzmanısın.
-         Ana fikirleri koruyarak özlü özetler yazıyorsun.
-         Özet, orijinal metnin en önemli noktalarını içermeli.`
-      : `You are a text summarization expert.
-         You write concise summaries while preserving main ideas.
-         Summary should contain the most important points of the original text.`
+      ? `Sen metin özetleme uzmanısın. Ana fikirleri koruyarak özet yazıyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a text summarization expert. You write summaries preserving main ideas. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `Aşağıdaki metni ${styleInfo} tarzda, ${lengthInfo} uzunlukta özetle.
+      ? `Şu metni ${style || 'profesyonel'} tarzda, ${length || 'orta'} uzunlukta özetle:
 
-Metin:
-"""
-${text}
-"""
+"${text}"
 
 JSON formatında yanıt ver:
 {
   "summary": {
     "short": "1-2 cümlelik özet",
     "medium": "paragraf özet",
-    "bullet_points": ["madde 1", "madde 2", "madde 3"],
-    "key_takeaways": ["ana çıkarım 1", "ana çıkarım 2"],
-    "word_count_original": orijinal kelime sayısı,
-    "word_count_summary": özet kelime sayısı
+    "bullets": ["madde 1", "madde 2", "madde 3"],
+    "wordCount": 50
   }
-}`
-      : `Summarize the following text in ${styleInfo} style, ${lengthInfo} length.
+}
 
-Text:
-"""
-${text}
-"""
+Sadece JSON döndür.`
+      : `Summarize this text in ${style || 'professional'} style, ${length || 'medium'} length:
+
+"${text}"
 
 Respond in JSON format:
 {
   "summary": {
     "short": "1-2 sentence summary",
     "medium": "paragraph summary",
-    "bullet_points": ["point 1", "point 2", "point 3"],
-    "key_takeaways": ["key takeaway 1", "key takeaway 2"],
-    "word_count_original": original word count,
-    "word_count_summary": summary word count
+    "bullets": ["point 1", "point 2", "point 3"],
+    "wordCount": 50
   }
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.5,
-      maxTokens: 2000
+      maxTokens: 1500
     })
 
-    return NextResponse.json({ summary: result.summary || result })
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json({ summary: parsed.summary || parsed })
 
   } catch (error: any) {
     console.error('Summarize Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

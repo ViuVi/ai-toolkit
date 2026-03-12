@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,115 +15,75 @@ export async function POST(request: NextRequest) {
 
     if (!content) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'İçerik gerekli' : 'Content required' },
+        { error: language === 'tr' ? 'İçerik gerekli' : 'Content is required' },
         { status: 400 }
       )
     }
 
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const platformInfo = platform || 'Instagram'
-    const nicheInfo = niche || 'general'
-
     const systemPrompt = language === 'tr'
-      ? `Sen sosyal medya analisti ve etkileşim uzmanısın.
-         İçeriklerin potansiyel performansını analiz ediyorsun.
-         Detaylı ve uygulanabilir öneriler sunuyorsun.`
-      : `You are a social media analyst and engagement expert.
-         You analyze potential performance of content.
-         You provide detailed and actionable recommendations.`
+      ? `Sen içerik analisti ve etkileşim uzmanısın. İçeriklerin performansını analiz ediyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a content analyst and engagement expert. You analyze content performance. Respond only in JSON format.`
 
     const userPrompt = language === 'tr'
-      ? `Şu içeriğin ${platformInfo} platformunda ${nicheInfo} nişinde etkileşim potansiyelini analiz et:
+      ? `Şu içeriğin ${platform || 'Instagram'} platformunda ${niche || 'genel'} nişinde performansını analiz et:
 
-İçerik:
-"""
-${content}
-"""
-
-Şunları değerlendir:
-1. Hook kalitesi (ilk izlenim)
-2. Değer önerisi
-3. CTA etkinliği
-4. Görsel/format uyumu
-5. Viral potansiyel
+"${content}"
 
 JSON formatında yanıt ver:
 {
   "analysis": {
-    "overall_score": 1-100 arası puan,
-    "viral_potential": "düşük/orta/yüksek",
-    "predicted_engagement_rate": "tahmini oran",
+    "overallScore": 75,
+    "viralPotential": "orta",
     "scores": {
-      "hook_quality": {"score": 1-10, "feedback": "geri bildirim"},
-      "value_proposition": {"score": 1-10, "feedback": "geri bildirim"},
-      "cta_effectiveness": {"score": 1-10, "feedback": "geri bildirim"},
-      "visual_format": {"score": 1-10, "feedback": "geri bildirim"},
-      "viral_elements": {"score": 1-10, "feedback": "geri bildirim"}
+      "hook": {"score": 8, "feedback": "geri bildirim"},
+      "value": {"score": 7, "feedback": "geri bildirim"},
+      "cta": {"score": 6, "feedback": "geri bildirim"}
     },
     "strengths": ["güçlü yön 1", "güçlü yön 2"],
-    "weaknesses": ["zayıf yön 1", "zayıf yön 2"],
-    "improvements": [
-      {"area": "alan", "suggestion": "öneri", "impact": "etki"}
-    ],
-    "best_posting_time": "en iyi paylaşım zamanı",
-    "hashtag_suggestions": ["hashtag1", "hashtag2"]
+    "improvements": ["iyileştirme 1", "iyileştirme 2"],
+    "bestPostingTime": "09:00-11:00"
   }
-}`
-      : `Analyze the engagement potential of this content on ${platformInfo} in ${nicheInfo} niche:
+}
 
-Content:
-"""
-${content}
-"""
+Sadece JSON döndür.`
+      : `Analyze the performance of this content on ${platform || 'Instagram'} in ${niche || 'general'} niche:
 
-Evaluate:
-1. Hook quality (first impression)
-2. Value proposition
-3. CTA effectiveness
-4. Visual/format fit
-5. Viral potential
+"${content}"
 
 Respond in JSON format:
 {
   "analysis": {
-    "overall_score": score from 1-100,
-    "viral_potential": "low/medium/high",
-    "predicted_engagement_rate": "estimated rate",
+    "overallScore": 75,
+    "viralPotential": "medium",
     "scores": {
-      "hook_quality": {"score": 1-10, "feedback": "feedback"},
-      "value_proposition": {"score": 1-10, "feedback": "feedback"},
-      "cta_effectiveness": {"score": 1-10, "feedback": "feedback"},
-      "visual_format": {"score": 1-10, "feedback": "feedback"},
-      "viral_elements": {"score": 1-10, "feedback": "feedback"}
+      "hook": {"score": 8, "feedback": "feedback"},
+      "value": {"score": 7, "feedback": "feedback"},
+      "cta": {"score": 6, "feedback": "feedback"}
     },
     "strengths": ["strength 1", "strength 2"],
-    "weaknesses": ["weakness 1", "weakness 2"],
-    "improvements": [
-      {"area": "area", "suggestion": "suggestion", "impact": "impact"}
-    ],
-    "best_posting_time": "best posting time",
-    "hashtag_suggestions": ["hashtag1", "hashtag2"]
+    "improvements": ["improvement 1", "improvement 2"],
+    "bestPostingTime": "09:00-11:00"
   }
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.6,
-      maxTokens: 2500
+      maxTokens: 1500
     })
 
-    return NextResponse.json(result)
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json(parsed)
 
   } catch (error: any) {
     console.error('Engagement Predictor Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }

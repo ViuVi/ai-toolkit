@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { generateJSONWithGroq, checkAndDeductCredits } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse, checkCredits } from '@/lib/groq'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,80 +11,68 @@ const CREDIT_COST = 2
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, tone, userId, language = 'en' } = await request.json()
+    const body = await request.json()
+    const { topic, platform, tone, includeEmojis, includeHashtags, userId, language = 'en' } = body
 
-    if (!topic) {
+    if (!topic || !topic.trim()) {
       return NextResponse.json(
-        { error: language === 'tr' ? 'Konu gerekli' : 'Topic required' },
+        { error: language === 'tr' ? 'Konu gerekli' : 'Topic is required' },
         { status: 400 }
       )
     }
 
-    // Kredi kontrolü
-    if (userId) {
-      const creditCheck = await checkAndDeductCredits(supabase, userId, CREDIT_COST, language)
-      if (!creditCheck.success) {
-        return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-      }
+    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST, language)
+    if (!creditCheck.ok) {
+      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
     }
 
-    const platformInfo = platform || 'Instagram'
-    const toneInfo = tone || (language === 'tr' ? 'profesyonel' : 'professional')
-
     const systemPrompt = language === 'tr'
-      ? `Sen sosyal medya içerik uzmanısın. ${platformInfo} için mükemmel caption'lar yazıyorsun.
-         Her caption özgün, ilgi çekici ve platforma uygun olmalı.
-         Emoji kullanımına dikkat et, doğal ve akıcı ol.`
-      : `You are a social media content expert. You write perfect captions for ${platformInfo}.
-         Each caption should be original, engaging, and platform-appropriate.
-         Pay attention to emoji usage, be natural and fluent.`
+      ? `Sen sosyal medya içerik uzmanısın. Profesyonel caption'lar yazıyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a social media content expert. You write professional captions. Respond only in JSON format.`
+
+    const emojiNote = includeEmojis 
+      ? (language === 'tr' ? 'Emoji kullan.' : 'Include emojis.') 
+      : (language === 'tr' ? 'Emoji kullanma.' : 'No emojis.')
+    
+    const hashtagNote = includeHashtags 
+      ? (language === 'tr' ? 'Hashtag ekle.' : 'Include hashtags.') 
+      : (language === 'tr' ? 'Hashtag ekleme.' : 'No hashtags.')
 
     const userPrompt = language === 'tr'
-      ? `"${topic}" konusu için ${platformInfo} platformuna uygun, ${toneInfo} tonunda 5 farklı caption yaz.
-
-Her caption:
-- Dikkat çekici bir açılış
-- Ana mesaj
-- Call-to-action (CTA)
-- Uygun emojiler
+      ? `"${topic}" konusu için ${platform} platformunda ${tone} tonunda 4 caption yaz.
+${emojiNote} ${hashtagNote}
 
 JSON formatında yanıt ver:
 {
   "captions": [
-    {
-      "text": "caption metni",
-      "length": "kısa/orta/uzun",
-      "engagement_tip": "etkileşim ipucu",
-      "best_time": "paylaşım için en iyi zaman"
-    }
+    {"id": 1, "caption": "caption metni", "characterCount": 150, "hookType": "soru/şok/hikaye", "cta": "takip et/yorum yap"},
+    {"id": 2, "caption": "caption metni", "characterCount": 120, "hookType": "merak", "cta": "kaydet"}
   ]
-}`
-      : `Write 5 different captions for "${topic}" suitable for ${platformInfo} platform with ${toneInfo} tone.
+}
 
-Each caption should have:
-- Attention-grabbing opening
-- Main message
-- Call-to-action (CTA)
-- Appropriate emojis
+Sadece JSON döndür.`
+      : `Write 4 captions for "${topic}" on ${platform} platform in ${tone} tone.
+${emojiNote} ${hashtagNote}
 
 Respond in JSON format:
 {
   "captions": [
-    {
-      "text": "caption text",
-      "length": "short/medium/long",
-      "engagement_tip": "engagement tip",
-      "best_time": "best time to post"
-    }
+    {"id": 1, "caption": "caption text", "characterCount": 150, "hookType": "question/shock/story", "cta": "follow/comment"},
+    {"id": 2, "caption": "caption text", "characterCount": 120, "hookType": "curiosity", "cta": "save"}
   ]
-}`
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.85,
       maxTokens: 2000
     })
 
-    return NextResponse.json({ captions: result.captions || [] })
+    const parsed = parseJSONResponse(aiResponse)
+    const captions = parsed.captions || parsed
+
+    return NextResponse.json({ captions })
 
   } catch (error: any) {
     console.error('Caption Writer Error:', error)

@@ -1,86 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateJSONWithGroq } from '@/lib/groq'
+import { callGroqAI, parseJSONResponse } from '@/lib/groq'
 
-// Bu ücretsiz bir araç
+// Ücretsiz araç
 
 export async function POST(request: NextRequest) {
   try {
     const { niche, platforms, timezone, language = 'en' } = await request.json()
 
-    const nicheInfo = niche || 'general'
-    const platformList = platforms || ['Instagram', 'Twitter', 'TikTok', 'YouTube']
-    const tz = timezone || 'UTC+3'
-
     const systemPrompt = language === 'tr'
-      ? `Sen sosyal medya zamanlama uzmanısın.
-         Farklı platformlar için en iyi paylaşım zamanlarını biliyorsun.
-         Niş ve hedef kitleye göre özelleştirilmiş öneriler sunuyorsun.`
-      : `You are a social media scheduling expert.
-         You know the best posting times for different platforms.
-         You provide customized recommendations based on niche and target audience.`
+      ? `Sen sosyal medya zamanlama uzmanısın. En iyi paylaşım zamanlarını öneriyorsun. Sadece JSON formatında yanıt ver.`
+      : `You are a social media scheduling expert. You suggest best posting times. Respond only in JSON format.`
+
+    const platformList = platforms || ['Instagram', 'Twitter', 'TikTok']
 
     const userPrompt = language === 'tr'
-      ? `"${nicheInfo}" nişi için ${platformList.join(', ')} platformlarında en iyi paylaşım zamanlarını öner. Zaman dilimi: ${tz}
+      ? `"${niche || 'genel'}" nişi için ${platformList.join(', ')} platformlarında en iyi paylaşım zamanlarını öner. Zaman dilimi: ${timezone || 'UTC+3'}
 
 JSON formatında yanıt ver:
 {
-  "schedule": {
-    "platforms": [
-      {
-        "platform": "platform adı",
-        "best_times": {
-          "weekdays": ["09:00", "12:00", "18:00"],
-          "weekends": ["10:00", "14:00", "20:00"]
-        },
-        "peak_days": ["Salı", "Perşembe"],
-        "avoid_times": ["02:00-06:00"],
-        "reasoning": "neden bu zamanlar"
-      }
-    ],
-    "general_tips": ["ipucu 1", "ipucu 2"],
-    "frequency_recommendation": {
-      "daily_posts": "önerilen günlük paylaşım sayısı",
-      "weekly_posts": "haftalık toplam"
-    }
-  }
-}`
-      : `Suggest the best posting times for "${nicheInfo}" niche on ${platformList.join(', ')} platforms. Timezone: ${tz}
+  "schedule": [
+    {"platform": "Instagram", "bestTimes": ["09:00", "12:00", "19:00"], "bestDays": ["Salı", "Perşembe"], "frequency": "günde 1-2"},
+    {"platform": "Twitter", "bestTimes": ["08:00", "13:00", "18:00"], "bestDays": ["Pazartesi", "Çarşamba"], "frequency": "günde 3-5"}
+  ],
+  "tips": ["ipucu 1", "ipucu 2"]
+}
+
+Sadece JSON döndür.`
+      : `Suggest best posting times for "${niche || 'general'}" niche on ${platformList.join(', ')} platforms. Timezone: ${timezone || 'UTC+3'}
 
 Respond in JSON format:
 {
-  "schedule": {
-    "platforms": [
-      {
-        "platform": "platform name",
-        "best_times": {
-          "weekdays": ["09:00", "12:00", "18:00"],
-          "weekends": ["10:00", "14:00", "20:00"]
-        },
-        "peak_days": ["Tuesday", "Thursday"],
-        "avoid_times": ["02:00-06:00"],
-        "reasoning": "why these times"
-      }
-    ],
-    "general_tips": ["tip 1", "tip 2"],
-    "frequency_recommendation": {
-      "daily_posts": "recommended daily posts",
-      "weekly_posts": "weekly total"
-    }
-  }
-}`
+  "schedule": [
+    {"platform": "Instagram", "bestTimes": ["09:00", "12:00", "19:00"], "bestDays": ["Tuesday", "Thursday"], "frequency": "1-2 per day"},
+    {"platform": "Twitter", "bestTimes": ["08:00", "13:00", "18:00"], "bestDays": ["Monday", "Wednesday"], "frequency": "3-5 per day"}
+  ],
+  "tips": ["tip 1", "tip 2"]
+}
 
-    const result = await generateJSONWithGroq(systemPrompt, userPrompt, {
+Return only JSON.`
+
+    const aiResponse = await callGroqAI(systemPrompt, userPrompt, {
       temperature: 0.6,
-      maxTokens: 2000
+      maxTokens: 1500
     })
 
-    return NextResponse.json(result)
+    const parsed = parseJSONResponse(aiResponse)
+
+    return NextResponse.json(parsed)
 
   } catch (error: any) {
     console.error('Post Scheduler Error:', error)
-    return NextResponse.json(
-      { error: error.message || 'An error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 })
   }
 }
