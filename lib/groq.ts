@@ -1,5 +1,5 @@
 // Media Tool Kit - Groq AI Helper
-// Profesyonel, hatasız, güvenilir
+// Hem eski hem yeni API'lerle uyumlu
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
@@ -10,7 +10,7 @@ interface AIResponse {
   error?: string
 }
 
-// Ana AI çağrı fonksiyonu
+// Ana AI çağrı fonksiyonu (YENİ İSİM)
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
@@ -56,12 +56,10 @@ export async function callAI(
       return { success: false, error: 'AI boş yanıt döndü' }
     }
 
-    // JSON parse
     try {
       const parsed = JSON.parse(content)
       return { success: true, data: parsed }
     } catch (e) {
-      // JSON değilse text olarak dön
       return { success: true, data: { text: content } }
     }
 
@@ -71,15 +69,52 @@ export async function callAI(
   }
 }
 
+// ESKİ İSİM - Geriye uyumluluk için
+export async function callGroqAI(
+  systemPrompt: string,
+  userPrompt: string,
+  options: { temperature?: number; maxTokens?: number } = {}
+): Promise<string> {
+  const result = await callAI(systemPrompt, userPrompt, options)
+  if (result.success && result.data) {
+    return JSON.stringify(result.data)
+  }
+  throw new Error(result.error || 'AI hatası')
+}
+
+// JSON Parse helper (ESKİ - geriye uyumluluk)
+export function parseJSONResponse(text: string): any {
+  try {
+    // Markdown code block temizle
+    let cleaned = text.trim()
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.slice(7)
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.slice(3)
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.slice(0, -3)
+    }
+    return JSON.parse(cleaned.trim())
+  } catch (e) {
+    console.error('JSON parse error:', e)
+    return null
+  }
+}
+
 // Kredi kontrolü
 export async function checkCredits(
   supabase: any,
   userId: string | null,
-  requiredCredits: number
+  requiredCredits: number,
+  language: string = 'tr'
 ): Promise<{ ok: boolean; balance?: number; error?: string }> {
   
   if (!userId) {
-    return { ok: false, error: 'Giriş yapmanız gerekiyor' }
+    return { 
+      ok: false, 
+      error: language === 'tr' ? 'Giriş yapmanız gerekiyor' : 'Please log in' 
+    }
   }
 
   try {
@@ -91,13 +126,18 @@ export async function checkCredits(
 
     if (error || !data) {
       console.error('Credit check error:', error)
-      return { ok: false, error: 'Kredi bilgisi alınamadı' }
+      return { 
+        ok: false, 
+        error: language === 'tr' ? 'Kredi bilgisi alınamadı' : 'Could not get credit info' 
+      }
     }
 
     if (data.balance < requiredCredits) {
       return { 
         ok: false, 
-        error: `Yetersiz kredi. Gereken: ${requiredCredits}, Mevcut: ${data.balance}`,
+        error: language === 'tr' 
+          ? `Yetersiz kredi. Gereken: ${requiredCredits}, Mevcut: ${data.balance}`
+          : `Insufficient credits. Required: ${requiredCredits}, Available: ${data.balance}`,
         balance: data.balance 
       }
     }
@@ -105,7 +145,10 @@ export async function checkCredits(
     return { ok: true, balance: data.balance }
   } catch (err: any) {
     console.error('Credit error:', err)
-    return { ok: false, error: 'Kredi kontrolü başarısız' }
+    return { 
+      ok: false, 
+      error: language === 'tr' ? 'Kredi kontrolü başarısız' : 'Credit check failed' 
+    }
   }
 }
 
