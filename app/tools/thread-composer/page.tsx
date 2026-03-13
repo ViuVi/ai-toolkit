@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function ThreadComposerPage() {
@@ -16,7 +16,6 @@ export default function ThreadComposerPage() {
   const [tweetCount, setTweetCount] = useState(7)
   
   const router = useRouter()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const getUser = async () => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function TrendRadarPage() {
@@ -16,7 +16,6 @@ export default function TrendRadarPage() {
   const [region, setRegion] = useState('TR')
   
   const router = useRouter()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const getUser = async () => {
