@@ -20,12 +20,12 @@ export default function PostingOptimizerPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
         router.push('/auth')
         return
       }
-      setUser(session.user)
+      setUser(user)
     }
     getUser()
   }, [])

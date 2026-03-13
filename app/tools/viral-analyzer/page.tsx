@@ -18,16 +18,17 @@ export default function ViralAnalyzerPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/auth')
-        return
-      }
-      setUser(session.user)
-    }
-    getUser()
+    checkUser()
   }, [])
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    setUser(user)
+  }
 
   const handleAnalyze = async () => {
     if (!content.trim()) {
@@ -74,7 +75,6 @@ export default function ViralAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      {/* Header */}
       <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/dashboard" className="text-gray-400 hover:text-white transition">
@@ -89,7 +89,6 @@ export default function ViralAnalyzerPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Input Panel */}
           <div className="space-y-6">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <h2 className="text-lg font-semibold text-white mb-4">İçeriğini Analiz Et</h2>
@@ -158,20 +157,17 @@ export default function ViralAnalyzerPage() {
             </div>
           </div>
 
-          {/* Results Panel */}
           <div>
             {result ? (
               <div className="space-y-4">
-                {/* Score Card */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                  <div className={`text-6xl font-bold ${getScoreColor(result.score)}`}>
-                    {result.score}
+                  <div className={`text-6xl font-bold ${getScoreColor(result.score || 0)}`}>
+                    {result.score || 0}
                   </div>
                   <div className="text-gray-400 mt-2">Viral Skoru</div>
-                  <div className="text-white font-medium mt-1">{result.verdict}</div>
+                  <div className="text-white font-medium mt-1">{result.verdict || ''}</div>
                 </div>
 
-                {/* Breakdown */}
                 {result.breakdown && (
                   <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">Detaylı Analiz</h3>
@@ -179,13 +175,13 @@ export default function ViralAnalyzerPage() {
                       {Object.entries(result.breakdown).map(([key, value]: [string, any]) => (
                         <div key={key}>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-400">{key.replace(/_/g, ' ')}</span>
-                            <span className={getScoreColor(value.score)}>{value.score}/100</span>
+                            <span className="text-gray-400 capitalize">{key.replace(/_/g, ' ')}</span>
+                            <span className={getScoreColor(value?.score || 0)}>{value?.score || 0}/100</span>
                           </div>
                           <div className="w-full bg-white/10 rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                              style={{ width: `${value.score}%` }}
+                              style={{ width: `${value?.score || 0}%` }}
                             />
                           </div>
                         </div>
@@ -194,32 +190,29 @@ export default function ViralAnalyzerPage() {
                   </div>
                 )}
 
-                {/* Strengths & Weaknesses */}
-                <div className="grid grid-cols-2 gap-4">
-                  {result.strengths && (
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                      <h4 className="text-green-400 font-medium mb-2">💪 Güçlü Yönler</h4>
-                      <ul className="text-sm text-gray-300 space-y-1">
-                        {result.strengths.map((s: string, i: number) => (
-                          <li key={i}>• {s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {result.weaknesses && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                      <h4 className="text-red-400 font-medium mb-2">⚠️ Zayıf Yönler</h4>
-                      <ul className="text-sm text-gray-300 space-y-1">
-                        {result.weaknesses.map((w: string, i: number) => (
-                          <li key={i}>• {w}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                {result.strengths && result.strengths.length > 0 && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                    <h4 className="text-green-400 font-medium mb-2">💪 Güçlü Yönler</h4>
+                    <ul className="text-sm text-gray-300 space-y-1">
+                      {result.strengths.map((s: string, i: number) => (
+                        <li key={i}>• {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-                {/* Improvements */}
-                {result.improvements && (
+                {result.weaknesses && result.weaknesses.length > 0 && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                    <h4 className="text-red-400 font-medium mb-2">⚠️ Zayıf Yönler</h4>
+                    <ul className="text-sm text-gray-300 space-y-1">
+                      {result.weaknesses.map((w: string, i: number) => (
+                        <li key={i}>• {w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {result.improvements && result.improvements.length > 0 && (
                   <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">🚀 İyileştirme Önerileri</h3>
                     <div className="space-y-3">
@@ -247,7 +240,7 @@ export default function ViralAnalyzerPage() {
                 <div className="text-6xl mb-4">🔥</div>
                 <h3 className="text-xl font-semibold text-white mb-2">Viral Potansiyelini Keşfet</h3>
                 <p className="text-gray-400">
-                  İçeriğini yapıştır ve viral olma şansını öğren. Detaylı analiz ve iyileştirme önerileri al.
+                  İçeriğini yapıştır ve viral olma şansını öğren.
                 </p>
               </div>
             )}

@@ -20,9 +20,9 @@ export default function ABTesterPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/auth'); return }
-      setUser(session.user)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth'); return }
+      setUser(user)
     }
     getUser()
   }, [])

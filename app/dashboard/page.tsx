@@ -126,18 +126,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
         router.push('/auth')
         return
       }
-      setUser(session.user)
+      setUser(user)
 
       // Get credits
       const { data: creditData } = await supabase
         .from('credits')
         .select('balance')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .single()
 
       if (creditData) {
