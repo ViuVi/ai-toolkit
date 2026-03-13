@@ -1,182 +1,141 @@
-// Groq AI Helper - Merkezi AI Fonksiyonu
-// Media Tool Kit - Optimized Version
+// Media Tool Kit - Groq AI Helper
+// Profesyonel, hatasız, güvenilir
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
-interface GroqOptions {
-  temperature?: number
-  maxTokens?: number
+interface AIResponse {
+  success: boolean
+  data?: any
+  error?: string
 }
 
 // Ana AI çağrı fonksiyonu
-export async function callGroqAI(
+export async function callAI(
   systemPrompt: string,
   userPrompt: string,
-  options: GroqOptions = {}
-): Promise<string> {
-  const { temperature = 0.8, maxTokens = 2000 } = options
+  options: { temperature?: number; maxTokens?: number } = {}
+): Promise<AIResponse> {
+  const { temperature = 0.7, maxTokens = 4000 } = options
 
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) {
-    throw new Error('GROQ_API_KEY is not configured')
-  }
-
-  const response = await fetch(GROQ_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      temperature,
-      max_tokens: maxTokens
-    })
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('Groq API Error:', response.status, errorText)
-    throw new Error(`AI service error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices?.[0]?.message?.content
-
-  if (!content) {
-    throw new Error('Empty response from AI')
-  }
-
-  return content
-}
-
-// JSON parse helper
-export function parseJSONResponse(text: string): any {
-  console.log('Raw AI Response:', text.substring(0, 500))
-  
-  // Markdown code block temizle
-  let cleaned = text.trim()
-  
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.slice(7)
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.slice(3)
-  }
-  
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.slice(0, -3)
-  }
-  
-  cleaned = cleaned.trim()
-
-  // Direkt parse dene
   try {
-    const result = JSON.parse(cleaned)
-    console.log('Parsed JSON:', JSON.stringify(result).substring(0, 200))
-    return result
-  } catch (e) {
-    console.log('Direct parse failed, trying to extract JSON...')
-    
-    // JSON object bul
-    const match = cleaned.match(/\{[\s\S]*\}/)
-    if (match) {
-      try {
-        const result = JSON.parse(match[0])
-        console.log('Extracted JSON object:', JSON.stringify(result).substring(0, 200))
-        return result
-      } catch (e2) {
-        console.error('JSON object parse failed:', e2)
-      }
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      console.error('GROQ_API_KEY not found')
+      return { success: false, error: 'API yapılandırma hatası' }
     }
-    
-    // Array bul
-    const arrayMatch = cleaned.match(/\[[\s\S]*\]/)
-    if (arrayMatch) {
-      try {
-        const result = JSON.parse(arrayMatch[0])
-        console.log('Extracted JSON array:', JSON.stringify(result).substring(0, 200))
-        return result
-      } catch (e2) {
-        console.error('JSON array parse failed:', e2)
-      }
+
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature,
+        max_tokens: maxTokens,
+        response_format: { type: 'json_object' }
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Groq API Error:', response.status, errorText)
+      return { success: false, error: `AI servisi hatası: ${response.status}` }
     }
-    
-    console.error('Could not parse response:', cleaned.substring(0, 300))
-    throw new Error('Could not parse AI response as JSON')
+
+    const result = await response.json()
+    const content = result.choices?.[0]?.message?.content
+
+    if (!content) {
+      return { success: false, error: 'AI boş yanıt döndü' }
+    }
+
+    // JSON parse
+    try {
+      const parsed = JSON.parse(content)
+      return { success: true, data: parsed }
+    } catch (e) {
+      // JSON değilse text olarak dön
+      return { success: true, data: { text: content } }
+    }
+
+  } catch (error: any) {
+    console.error('AI Call Error:', error)
+    return { success: false, error: error.message || 'Bir hata oluştu' }
   }
 }
 
-// Kredi kontrolü ve düşürme
+// Kredi kontrolü
 export async function checkCredits(
   supabase: any,
   userId: string | null,
-  cost: number,
-  language: string = 'en'
-): Promise<{ ok: boolean; error?: string; balance?: number }> {
+  requiredCredits: number
+): Promise<{ ok: boolean; balance?: number; error?: string }> {
   
-  // userId yoksa geç (demo mod)
   if (!userId) {
-    return { ok: true }
+    return { ok: false, error: 'Giriş yapmanız gerekiyor' }
   }
 
   try {
-    // Kredi sorgula
     const { data, error } = await supabase
+      .from('credits')
+      .select('balance')
+      .eq('user_id', userId)
+      .single()
+
+    if (error || !data) {
+      console.error('Credit check error:', error)
+      return { ok: false, error: 'Kredi bilgisi alınamadı' }
+    }
+
+    if (data.balance < requiredCredits) {
+      return { 
+        ok: false, 
+        error: `Yetersiz kredi. Gereken: ${requiredCredits}, Mevcut: ${data.balance}`,
+        balance: data.balance 
+      }
+    }
+
+    return { ok: true, balance: data.balance }
+  } catch (err: any) {
+    console.error('Credit error:', err)
+    return { ok: false, error: 'Kredi kontrolü başarısız' }
+  }
+}
+
+// Kredi düş
+export async function deductCredits(
+  supabase: any,
+  userId: string,
+  amount: number
+): Promise<boolean> {
+  try {
+    const { data } = await supabase
       .from('credits')
       .select('balance, total_used')
       .eq('user_id', userId)
       .single()
 
-    if (error || !data) {
-      console.error('Credit query error:', error)
-      return {
-        ok: false,
-        error: language === 'tr' ? 'Kredi bilgisi bulunamadı' : 'Credits not found'
-      }
-    }
+    if (!data) return false
 
-    // Yeterli kredi var mı?
-    if (data.balance < cost) {
-      return {
-        ok: false,
-        error: language === 'tr' ? 'Yetersiz kredi' : 'Insufficient credits',
-        balance: data.balance
-      }
-    }
-
-    // Krediyi düş
-    const { error: updateError } = await supabase
+    await supabase
       .from('credits')
       .update({
-        balance: data.balance - cost,
-        total_used: (data.total_used || 0) + cost,
+        balance: data.balance - amount,
+        total_used: (data.total_used || 0) + amount,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId)
 
-    if (updateError) {
-      console.error('Credit update error:', updateError)
-      return {
-        ok: false,
-        error: language === 'tr' ? 'Kredi güncellenemedi' : 'Failed to update credits'
-      }
-    }
-
-    return {
-      ok: true,
-      balance: data.balance - cost
-    }
-
+    return true
   } catch (err) {
-    console.error('Credit check error:', err)
-    return {
-      ok: false,
-      error: language === 'tr' ? 'Bir hata oluştu' : 'An error occurred'
-    }
+    console.error('Deduct credits error:', err)
+    return false
   }
 }
