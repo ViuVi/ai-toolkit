@@ -1,85 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = 'llama-3.3-70b-versatile'
-
 export async function POST(request: NextRequest) {
   try {
     const { niche, goals, platform, language = 'tr' } = await request.json()
-
-    if (!niche?.trim()) {
-      return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
-    }
+    if (!niche?.trim()) return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
 
     const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
-    }
+    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
 
     const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
 
-    const systemPrompt = `Sen 15 yıllık deneyime sahip bir içerik stratejisti ve sosyal medya planlama uzmanısın. Fortune 500 şirketleri ve viral influencer'lar için içerik takvimleri oluşturdun.
+    const systemPrompt = `Sen içerik stratejistisin. ${niche} nişi için 30 günlük detaylı içerik planı oluştur. Yanıt dili: ${lang}
 
-Görevin: ${niche} nişi için 30 günlük kapsamlı ve stratejik içerik planı oluşturmak.
-
-PLANLAMA PRENSİPLERİN:
-1. İçerik Çeşitliliği: Eğitici (%40), Eğlenceli (%30), İlham Verici (%20), Satış/CTA (%10)
-2. Format Çeşitliliği: Carousel, Reel/Video, Tek Görsel, Story serisi, Canlı yayın
-3. Haftalık Tema: Her haftanın tutarlı bir alt teması olmalı
-4. Engagement Stratejisi: Soru günleri, anket günleri, takipçi içeriği günleri
-5. Trend Entegrasyonu: Güncel trendlere açık alanlar bırak
-6. Tutarlı Paylaşım: Optimal saat ve gün dağılımı
-
-HEDEFLER: ${goals || 'Organik büyüme ve engagement artışı'}
-PLATFORM: ${platform || 'Instagram'}
-
-YANIT DİLİ: ${lang}
-
-JSON formatında 30 günlük plan ver:
+JSON formatında yanıt ver:
 {
-  "strategy_overview": "Genel strateji özeti ve hedefler",
+  "strategy_overview": "Genel strateji özeti",
   "weekly_themes": [
-    { "week": 1, "theme": "Hafta teması", "focus": "Odak noktası" }
+    { "week": 1, "theme": "Hafta teması", "focus": "Odak" },
+    { "week": 2, "theme": "Tema", "focus": "Odak" },
+    { "week": 3, "theme": "Tema", "focus": "Odak" },
+    { "week": 4, "theme": "Tema", "focus": "Odak" },
+    { "week": 5, "theme": "Tema", "focus": "Odak" }
   ],
   "days": [
     {
       "day": 1,
       "weekday": "Pazartesi",
-      "theme": "Günün teması",
-      "content_type": "Carousel / Reel / Post / Story / Live",
-      "topic": "Spesifik içerik konusu",
-      "hook": "Dikkat çekici açılış cümlesi",
-      "description": "İçerik açıklaması ve ne anlatılacağı",
-      "cta": "Call-to-action önerisi",
-      "hashtags": ["5 hashtag"],
-      "best_time": "Paylaşım saati",
-      "engagement_tip": "Etkileşim artırma ipucu",
-      "content_pillar": "Eğitici / Eğlenceli / İlham Verici / Satış"
+      "content_type": "Carousel/Reel/Post/Story/Live",
+      "topic": "Spesifik konu",
+      "hook": "Dikkat çekici açılış",
+      "description": "İçerik açıklaması",
+      "cta": "Call-to-action",
+      "hashtags": ["#hashtag1", "#hashtag2"],
+      "best_time": "09:00",
+      "engagement_tip": "Etkileşim ipucu"
     }
   ],
-  "bonus_ideas": ["5 adet bonus içerik fikri"],
-  "content_tips": ["Genel içerik üretim ipuçları"],
-  "engagement_strategy": "30 günlük engagement stratejisi",
-  "success_metrics": ["Takip edilmesi gereken metrikler"]
+  "bonus_ideas": ["Bonus fikir 1", "Bonus fikir 2", "Bonus fikir 3"],
+  "content_tips": ["İpucu 1", "İpucu 2"]
 }`
 
-    const userPrompt = `Niş: ${niche}
-Platform: ${platform || 'Instagram'}  
-Hedefler: ${goals || 'Organik büyüme, takipçi artışı, engagement yükseltme'}
-
-30 günlük profesyonel ve uygulanabilir içerik planı oluştur. Her gün için spesifik, yaratıcı ve özgün fikirler sun.`
-
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: `Niş: ${niche}\nPlatform: ${platform || 'Instagram'}\nHedefler: ${goals || 'Organik büyüme'}\n\n30 günlük plan oluştur, her gün için detaylı içerik fikirleri sun.` }
         ],
         temperature: 0.8,
         max_tokens: 8000,
@@ -87,20 +55,9 @@ Hedefler: ${goals || 'Organik büyüme, takipçi artışı, engagement yükseltm
       })
     })
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
-    }
-
+    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const aiContent = data.choices?.[0]?.message?.content
-
-    let result
-    try {
-      result = JSON.parse(aiContent)
-    } catch {
-      result = { days: [], error: true }
-    }
-
+    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return NextResponse.json({ success: true, result })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

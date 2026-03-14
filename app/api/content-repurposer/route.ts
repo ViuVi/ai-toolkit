@@ -1,143 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = 'llama-3.3-70b-versatile'
-
 export async function POST(request: NextRequest) {
   try {
     const { content, platforms, niche, language = 'tr' } = await request.json()
-
-    if (!content?.trim()) {
-      return NextResponse.json({ error: 'İçerik gerekli' }, { status: 400 })
-    }
+    if (!content?.trim()) return NextResponse.json({ error: 'İçerik gerekli' }, { status: 400 })
 
     const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
-    }
+    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
 
     const targetPlatforms = platforms?.length > 0 ? platforms : ['Instagram', 'TikTok', 'Twitter', 'LinkedIn', 'YouTube', 'Facebook']
     const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
 
-    const systemPrompt = `Sen içerik dönüştürme ve çok platformlu strateji konusunda uzman bir dijital pazarlama gurusun. Her platformun kendine özgü dilini, formatını ve kültürünü mükemmel biliyorsun.
+    const systemPrompt = `Sen içerik dönüştürme uzmanısın. Her platformun kendine özgü dilini ve formatını biliyorsun. Yanıt dili: ${lang}
 
-PLATFORM ÖZELLİKLERİ:
-
-INSTAGRAM:
-- Görsel odaklı, estetik önemli
-- Hashtag stratejisi kritik (20-30 hashtag)
-- Carousel ve Reel çok etkili
-- CTA: "Link in bio", kaydet, paylaş
-
-TIKTOK:
-- Hook ilk 1 saniyede
-- Trend sesleri ve efektler
-- Ham, otantik içerik
-- Hashtag: 3-5 trend hashtag
-- CTA: Duet, stitch, follow
-
-TWITTER/X:
-- 280 karakter limiti
-- Thread formatı güçlü
-- Tartışma başlatıcı
-- Hashtag: 1-2 maksimum
-- CTA: RT, reply, quote
-
-LINKEDIN:
-- Profesyonel ton
-- Storytelling etkili
-- 3000 karakter ideal
-- Emoji minimal
-- CTA: Connect, comment, share insight
-
-YOUTUBE (Shorts/Community):
-- Hook ilk 3 saniye
-- Değer önerisi net
-- Shorts: 60 saniye max
-- CTA: Subscribe, bell, comment
-
-FACEBOOK:
-- Topluluk odaklı
-- Paylaşım teşviki
-- Video öncelikli
-- CTA: Share, tag friends
-
-YANIT DİLİ: ${lang}
-
-JSON formatında her platform için özelleştirilmiş içerik ver:
+JSON formatında yanıt ver:
 {
   "original_analysis": "Orijinal içeriğin kısa analizi",
   "platforms": {
     "Instagram": {
-      "caption": "Instagram için uyarlanmış caption (emoji dahil)",
-      "hashtags": ["30 adet etkili hashtag"],
-      "format_suggestion": "Önerilen format (Carousel/Reel/Post)",
+      "caption": "Instagram caption (emoji dahil)",
+      "hashtags": ["#hashtag1", "#hashtag2"],
+      "format_suggestion": "Carousel/Reel/Post",
       "visual_tip": "Görsel önerisi",
       "cta": "Call-to-action",
       "posting_tip": "Paylaşım ipucu"
     },
     "TikTok": {
-      "script": "TikTok video scripti (hook dahil)",
-      "hashtags": ["5 trend hashtag"],
+      "script": "TikTok video scripti",
+      "hashtags": ["#hashtag1"],
       "sound_suggestion": "Önerilen ses tipi",
       "hook": "Dikkat çekici açılış",
-      "cta": "Call-to-action",
-      "trend_tip": "Trend entegrasyon önerisi"
+      "cta": "CTA",
+      "trend_tip": "Trend önerisi"
     },
     "Twitter": {
-      "tweet": "Ana tweet (280 karakter)",
-      "thread": ["Thread halinde 5 tweet"],
-      "hashtags": ["1-2 hashtag"],
-      "engagement_hook": "Tartışma başlatıcı soru",
-      "cta": "Call-to-action"
+      "tweet": "Ana tweet (280 karakter max)",
+      "thread": ["Tweet 1", "Tweet 2", "Tweet 3"],
+      "hashtags": ["#hashtag"],
+      "engagement_hook": "Tartışma başlatıcı",
+      "cta": "CTA"
     },
     "LinkedIn": {
-      "post": "LinkedIn post (profesyonel ton)",
-      "hook": "Dikkat çekici açılış",
-      "hashtags": ["5 profesyonel hashtag"],
-      "cta": "Call-to-action",
+      "post": "LinkedIn postu (profesyonel ton)",
+      "hook": "Açılış",
+      "hashtags": ["#hashtag"],
+      "cta": "CTA",
       "engagement_question": "Yorum çekici soru"
     },
     "YouTube": {
-      "shorts_script": "YouTube Shorts scripti",
-      "community_post": "Community tab postu",
-      "title_suggestion": "Video başlık önerisi",
+      "shorts_script": "Shorts scripti",
+      "community_post": "Community postu",
+      "title_suggestion": "Başlık önerisi",
       "thumbnail_tip": "Thumbnail önerisi",
-      "cta": "Call-to-action"
+      "cta": "CTA"
     },
     "Facebook": {
       "post": "Facebook postu",
-      "hashtags": ["5 hashtag"],
-      "group_version": "Facebook grupları için versiyon",
+      "hashtags": ["#hashtag"],
+      "group_version": "Grup versiyonu",
       "share_hook": "Paylaşım teşviki",
-      "cta": "Call-to-action"
+      "cta": "CTA"
     }
   },
-  "cross_platform_strategy": "Platformlar arası strateji önerisi",
-  "repurposing_calendar": "İçeriği ne zaman hangi platformda paylaşmalı"
+  "cross_platform_strategy": "Platformlar arası strateji",
+  "repurposing_calendar": "Paylaşım takvimi önerisi"
 }`
 
-    const userPrompt = `ORİJİNAL İÇERİK:
-"""
-${content}
-"""
-
-Niş: ${niche || 'Genel'}
-Hedef Platformlar: ${targetPlatforms.join(', ')}
-
-Bu içeriği her platform için optimize et. Her platformun kendine özgü dilini, formatını ve kullanıcı beklentilerini göz önünde bulundur.`
-
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: `ORİJİNAL İÇERİK:\n${content}\n\nNiş: ${niche || 'Genel'}\nHedef Platformlar: ${targetPlatforms.join(', ')}` }
         ],
         temperature: 0.75,
         max_tokens: 6000,
@@ -145,20 +81,9 @@ Bu içeriği her platform için optimize et. Her platformun kendine özgü dilin
       })
     })
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
-    }
-
+    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const aiContent = data.choices?.[0]?.message?.content
-
-    let result
-    try {
-      result = JSON.parse(aiContent)
-    } catch {
-      result = { platforms: {}, error: true }
-    }
-
+    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return NextResponse.json({ success: true, result })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

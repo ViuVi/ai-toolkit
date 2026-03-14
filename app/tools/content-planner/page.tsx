@@ -11,23 +11,21 @@ const texts: any = {
     icon: '📅', 
     credits: '10 Kredi', 
     back: '← Geri', 
-    testMode: '🧪 Test Modu - Krediler düşmüyor', 
-    purpose: '30 günlük kapsamlı içerik planı oluşturur. Her gün için konu, format, hook, hashtag ve paylaşım zamanı önerir.',
+    testMode: '🧪 Test Modu', 
+    purpose: '30 günlük kapsamlı içerik planı oluşturur.',
     nicheLabel: 'Niş / Sektör',
     nichePlaceholder: 'örn: fitness, kişisel finans, yemek...',
     goalsLabel: 'Hedefler',
-    goalsPlaceholder: 'örn: takipçi artışı, satış, marka bilinirliği...',
+    goalsPlaceholder: 'örn: takipçi artışı, satış...',
     platformLabel: 'Platform',
     btn: '30 Günlük Plan Oluştur',
-    loading: 'Plan oluşturuluyor... (30 gün)',
-    strategy: '📊 Strateji Özeti',
+    loading: 'Plan oluşturuluyor...',
+    strategy: '📊 Strateji',
     weeklyThemes: '🎯 Haftalık Temalar',
-    calendar: '📅 30 Günlük Takvim',
     bonusIdeas: '💡 Bonus Fikirler',
-    day: 'Gün',
     week: 'Hafta',
-    downloadPDF: '📥 PDF İndir',
-    downloadCSV: '📥 CSV İndir',
+    downloadMD: '📄 Markdown İndir',
+    downloadTXT: '📝 TXT İndir',
     newPlan: '← Yeni Plan'
   },
   en: { 
@@ -35,28 +33,26 @@ const texts: any = {
     icon: '📅', 
     credits: '10 Credits', 
     back: '← Back', 
-    testMode: '🧪 Test Mode - No credits deducted', 
-    purpose: 'Creates a comprehensive 30-day content plan. Suggests topic, format, hook, hashtags and posting time for each day.',
-    nicheLabel: 'Niche / Industry',
-    nichePlaceholder: 'e.g., fitness, personal finance, food...',
+    testMode: '🧪 Test Mode', 
+    purpose: 'Creates a comprehensive 30-day content plan.',
+    nicheLabel: 'Niche',
+    nichePlaceholder: 'e.g., fitness, finance...',
     goalsLabel: 'Goals',
-    goalsPlaceholder: 'e.g., follower growth, sales, brand awareness...',
+    goalsPlaceholder: 'e.g., growth, sales...',
     platformLabel: 'Platform',
     btn: 'Create 30-Day Plan',
-    loading: 'Creating plan... (30 days)',
-    strategy: '📊 Strategy Overview',
+    loading: 'Creating...',
+    strategy: '📊 Strategy',
     weeklyThemes: '🎯 Weekly Themes',
-    calendar: '📅 30-Day Calendar',
     bonusIdeas: '💡 Bonus Ideas',
-    day: 'Day',
     week: 'Week',
-    downloadPDF: '📥 Download PDF',
-    downloadCSV: '📥 Download CSV',
+    downloadMD: '📄 Download Markdown',
+    downloadTXT: '📝 Download TXT',
     newPlan: '← New Plan'
   },
-  ru: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Назад', testMode: '🧪 Тест', purpose: '30-дневный контент-план.', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', goalsLabel: 'Цели', goalsPlaceholder: 'напр: рост...', platformLabel: 'Платформа', btn: 'Создать план', loading: 'Создание...', strategy: '📊 Стратегия', weeklyThemes: '🎯 Темы', calendar: '📅 Календарь', bonusIdeas: '💡 Идеи', day: 'День', week: 'Неделя', downloadPDF: '📥 PDF', downloadCSV: '📥 CSV', newPlan: '← Новый' },
-  de: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Zurück', testMode: '🧪 Test', purpose: '30-Tage Content-Plan.', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', goalsLabel: 'Ziele', goalsPlaceholder: 'z.B. Wachstum...', platformLabel: 'Plattform', btn: 'Plan erstellen', loading: 'Erstelle...', strategy: '📊 Strategie', weeklyThemes: '🎯 Themen', calendar: '📅 Kalender', bonusIdeas: '💡 Ideen', day: 'Tag', week: 'Woche', downloadPDF: '📥 PDF', downloadCSV: '📥 CSV', newPlan: '← Neu' },
-  fr: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Retour', testMode: '🧪 Test', purpose: 'Plan de contenu 30 jours.', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', goalsLabel: 'Objectifs', goalsPlaceholder: 'ex: croissance...', platformLabel: 'Plateforme', btn: 'Créer le plan', loading: 'Création...', strategy: '📊 Stratégie', weeklyThemes: '🎯 Thèmes', calendar: '📅 Calendrier', bonusIdeas: '💡 Idées', day: 'Jour', week: 'Semaine', downloadPDF: '📥 PDF', downloadCSV: '📥 CSV', newPlan: '← Nouveau' }
+  ru: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Назад', testMode: '🧪 Тест', purpose: '30-дневный план.', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', goalsLabel: 'Цели', goalsPlaceholder: 'напр: рост...', platformLabel: 'Платформа', btn: 'Создать', loading: 'Создание...', strategy: '📊 Стратегия', weeklyThemes: '🎯 Темы', bonusIdeas: '💡 Идеи', week: 'Неделя', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Новый' },
+  de: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Zurück', testMode: '🧪 Test', purpose: '30-Tage Plan.', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', goalsLabel: 'Ziele', goalsPlaceholder: 'z.B. Wachstum...', platformLabel: 'Plattform', btn: 'Erstellen', loading: 'Erstelle...', strategy: '📊 Strategie', weeklyThemes: '🎯 Themen', bonusIdeas: '💡 Ideen', week: 'Woche', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Neu' },
+  fr: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Retour', testMode: '🧪 Test', purpose: 'Plan 30 jours.', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', goalsLabel: 'Objectifs', goalsPlaceholder: 'ex: croissance...', platformLabel: 'Plateforme', btn: 'Créer', loading: 'Création...', strategy: '📊 Stratégie', weeklyThemes: '🎯 Thèmes', bonusIdeas: '💡 Idées', week: 'Semaine', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Nouveau' }
 }
 
 const contentTypeColors: any = {
@@ -93,7 +89,7 @@ export default function Page() {
     setResult(null)
     try {
       const res = await fetch('/api/content-planner', {
-        method: 'POST', 
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ niche, goals, platform, language })
       })
@@ -109,76 +105,185 @@ export default function Page() {
     return result.days.slice(start, start + 7)
   }
 
-  // CSV İndirme
-  const downloadCSV = () => {
+  // Markdown İndirme
+  const downloadMarkdown = () => {
     if (!result?.days) return
+    const date = new Date().toLocaleDateString('tr-TR')
     
-    const headers = ['Gün', 'Hafta Günü', 'Format', 'Konu', 'Hook', 'Açıklama', 'CTA', 'Hashtags', 'Saat']
-    const rows = result.days.map((day: any) => [
-      day.day,
-      day.weekday || '',
-      day.content_type || '',
-      day.topic || '',
-      day.hook || '',
-      day.description || '',
-      day.cta || '',
-      (day.hashtags || []).join(' '),
-      day.best_time || ''
-    ])
-    
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row: any[]) => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    ].join('\n')
-    
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    let md = `# 📅 30 Günlük İçerik Planı
+
+**Niş:** ${niche}
+**Platform:** ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+**Hedefler:** ${goals || 'Belirtilmedi'}
+**Oluşturulma Tarihi:** ${date}
+
+---
+
+`
+
+    if (result.strategy_overview) {
+      md += `## 📊 Strateji Özeti
+
+${result.strategy_overview}
+
+---
+
+`
+    }
+
+    if (result.weekly_themes && result.weekly_themes.length > 0) {
+      md += `## 🎯 Haftalık Temalar
+
+| Hafta | Tema | Odak |
+|-------|------|------|
+`
+      result.weekly_themes.forEach((wt: any) => {
+        md += `| ${wt.week} | ${wt.theme || '-'} | ${wt.focus || '-'} |\n`
+      })
+      md += `\n---\n\n`
+    }
+
+    md += `## 📋 Günlük Plan
+
+`
+
+    result.days.forEach((day: any) => {
+      md += `### 📌 Gün ${day.day} - ${day.weekday || ''}
+
+- **Format:** ${day.content_type || '-'}
+- **Paylaşım Saati:** ${day.best_time || '-'}
+- **Konu:** ${day.topic || '-'}
+`
+      if (day.hook) md += `- **Hook:** "${day.hook}"\n`
+      if (day.description) md += `- **Açıklama:** ${day.description}\n`
+      if (day.cta) md += `- **CTA:** ${day.cta}\n`
+      if (day.engagement_tip) md += `- **İpucu:** ${day.engagement_tip}\n`
+      if (day.hashtags && day.hashtags.length > 0) {
+        md += `- **Hashtags:** ${day.hashtags.join(' ')}\n`
+      }
+      md += `\n`
+    })
+
+    if (result.bonus_ideas && result.bonus_ideas.length > 0) {
+      md += `---
+
+## 💡 Bonus Fikirler
+
+`
+      result.bonus_ideas.forEach((idea: string, i: number) => {
+        md += `${i + 1}. ${idea}\n`
+      })
+    }
+
+    if (result.content_tips && result.content_tips.length > 0) {
+      md += `\n---
+
+## 🚀 İçerik İpuçları
+
+`
+      result.content_tips.forEach((tip: string) => {
+        md += `- ${tip}\n`
+      })
+    }
+
+    md += `\n---
+*Bu plan MediaToolkit.site tarafından oluşturulmuştur.*
+`
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `content-plan-${niche}-${new Date().toISOString().split('T')[0]}.csv`
+    link.download = `icerik-plani-${niche.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.md`
     link.click()
     URL.revokeObjectURL(url)
   }
 
-  // Basit Text/Markdown İndirme
-  const downloadText = () => {
+  // TXT İndirme
+  const downloadTXT = () => {
     if (!result?.days) return
-    
-    let content = `# 30 Günlük İçerik Planı\n`
-    content += `**Niş:** ${niche}\n`
-    content += `**Platform:** ${platform}\n`
-    content += `**Oluşturulma:** ${new Date().toLocaleDateString('tr-TR')}\n\n`
-    
+    const date = new Date().toLocaleDateString('tr-TR')
+    const line = '═'.repeat(50)
+    const thinLine = '─'.repeat(50)
+
+    let txt = `${line}
+       30 GÜNLÜK İÇERİK PLANI
+${line}
+
+Niş: ${niche}
+Platform: ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+Hedefler: ${goals || 'Belirtilmedi'}
+Tarih: ${date}
+
+${line}
+`
+
     if (result.strategy_overview) {
-      content += `## Strateji\n${result.strategy_overview}\n\n`
+      txt += `
+STRATEJİ ÖZETİ
+${thinLine}
+${result.strategy_overview}
+
+`
     }
-    
-    content += `## Günlük Plan\n\n`
-    
+
+    if (result.weekly_themes && result.weekly_themes.length > 0) {
+      txt += `HAFTALIK TEMALAR
+${thinLine}
+`
+      result.weekly_themes.forEach((wt: any) => {
+        txt += `Hafta ${wt.week}: ${wt.theme || '-'}\n`
+        if (wt.focus) txt += `         Odak: ${wt.focus}\n`
+      })
+      txt += `\n`
+    }
+
+    txt += `${line}
+              GÜNLÜK PLAN
+${line}
+
+`
+
     result.days.forEach((day: any) => {
-      content += `### Gün ${day.day} - ${day.weekday || ''}\n`
-      content += `- **Format:** ${day.content_type || '-'}\n`
-      content += `- **Konu:** ${day.topic || '-'}\n`
-      if (day.hook) content += `- **Hook:** "${day.hook}"\n`
-      if (day.description) content += `- **Açıklama:** ${day.description}\n`
-      if (day.cta) content += `- **CTA:** ${day.cta}\n`
-      if (day.best_time) content += `- **Saat:** ${day.best_time}\n`
-      if (day.hashtags && day.hashtags.length > 0) content += `- **Hashtags:** ${day.hashtags.join(' ')}\n`
-      content += `\n`
+      txt += `${thinLine}
+GÜN ${day.day} - ${day.weekday || ''}
+${thinLine}
+Format: ${day.content_type || '-'}
+Saat: ${day.best_time || '-'}
+Konu: ${day.topic || '-'}
+`
+      if (day.hook) txt += `Hook: "${day.hook}"\n`
+      if (day.description) txt += `Açıklama: ${day.description}\n`
+      if (day.cta) txt += `CTA: ${day.cta}\n`
+      if (day.engagement_tip) txt += `İpucu: ${day.engagement_tip}\n`
+      if (day.hashtags && day.hashtags.length > 0) {
+        txt += `Hashtags: ${day.hashtags.join(' ')}\n`
+      }
+      txt += `\n`
     })
-    
+
     if (result.bonus_ideas && result.bonus_ideas.length > 0) {
-      content += `## Bonus Fikirler\n`
-      result.bonus_ideas.forEach((idea: string) => {
-        content += `- ${idea}\n`
+      txt += `${line}
+              BONUS FİKİRLER
+${line}
+
+`
+      result.bonus_ideas.forEach((idea: string, i: number) => {
+        txt += `${i + 1}. ${idea}\n`
       })
     }
-    
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' })
+
+    txt += `
+${line}
+Bu plan MediaToolkit.site tarafından oluşturulmuştur.
+${line}
+`
+
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `content-plan-${niche}-${new Date().toISOString().split('T')[0]}.md`
+    link.download = `icerik-plani-${niche.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -205,12 +310,10 @@ export default function Page() {
       
       <main className="pt-32 pb-12 px-4 max-w-7xl mx-auto">
         {!result ? (
-          // Form
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6">
               <p className="text-gray-400 text-sm">{t.purpose}</p>
             </div>
-            
             <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-5">
               <div>
                 <label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label>
@@ -230,26 +333,25 @@ export default function Page() {
                   <option value="linkedin">LinkedIn</option>
                 </select>
               </div>
-              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity">{loading ? t.loading : t.btn}</button>
+              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
             </div>
           </div>
         ) : (
-          // Sonuçlar
           <div className="space-y-6">
             {/* İndirme Butonları */}
-            <div className="flex flex-wrap gap-3 justify-end">
-              <button onClick={downloadCSV} className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition flex items-center gap-2">
-                <span>📊</span> {t.downloadCSV}
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button onClick={downloadMarkdown} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition flex items-center gap-2 font-medium">
+                📄 Markdown İndir
               </button>
-              <button onClick={downloadText} className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition flex items-center gap-2">
-                <span>📄</span> Markdown İndir
+              <button onClick={downloadTXT} className="px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-500 transition flex items-center gap-2 font-medium">
+                📝 TXT İndir
               </button>
             </div>
             
-            {/* Strateji Özeti */}
+            {/* Strateji */}
             {result.strategy_overview && (
               <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-6">
-                <h3 className="text-xl font-semibold text-white mb-3">{t.strategy}</h3>
+                <h3 className="text-lg font-semibold text-white mb-2">{t.strategy}</h3>
                 <p className="text-gray-300">{result.strategy_overview}</p>
               </div>
             )}
@@ -258,11 +360,11 @@ export default function Page() {
             {result.weekly_themes && result.weekly_themes.length > 0 && (
               <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">{t.weeklyThemes}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {result.weekly_themes.map((wt: any, i: number) => (
                     <button key={i} onClick={() => setSelectedWeek(selectedWeek === wt.week ? null : wt.week)} className={`p-3 rounded-xl border transition-all text-left ${selectedWeek === wt.week ? 'bg-purple-500/20 border-purple-500' : 'bg-gray-900/50 border-gray-700 hover:border-gray-600'}`}>
                       <div className="text-purple-400 font-semibold text-sm">{t.week} {wt.week}</div>
-                      <div className="text-white text-sm mt-1 line-clamp-1">{wt.theme}</div>
+                      <div className="text-white text-sm mt-1 line-clamp-2">{wt.theme}</div>
                     </button>
                   ))}
                 </div>
@@ -271,7 +373,7 @@ export default function Page() {
             
             {/* Hafta Filtreleme */}
             <div className="flex gap-2 overflow-x-auto pb-2">
-              <button onClick={() => setSelectedWeek(null)} className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${!selectedWeek ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'}`}>Tümü (30 gün)</button>
+              <button onClick={() => setSelectedWeek(null)} className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${!selectedWeek ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'}`}>Tümü</button>
               {[1,2,3,4,5].map(w => (
                 <button key={w} onClick={() => setSelectedWeek(w)} className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${selectedWeek === w ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'}`}>{t.week} {w}</button>
               ))}
@@ -298,7 +400,6 @@ export default function Page() {
                       {day.hashtags && day.hashtags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {day.hashtags.slice(0, 5).map((tag: string, j: number) => <span key={j} className="text-xs text-blue-400">{tag}</span>)}
-                          {day.hashtags.length > 5 && <span className="text-xs text-gray-500">+{day.hashtags.length - 5}</span>}
                         </div>
                       )}
                     </div>
@@ -307,7 +408,7 @@ export default function Page() {
               ))}
             </div>
             
-            {/* Bonus Fikirler */}
+            {/* Bonus */}
             {result.bonus_ideas && result.bonus_ideas.length > 0 && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-yellow-400 mb-3">{t.bonusIdeas}</h3>
@@ -319,8 +420,7 @@ export default function Page() {
             
             {/* Alt Butonlar */}
             <div className="flex flex-wrap gap-3 justify-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-colors">{t.newPlan}</button>
-              <button onClick={downloadCSV} className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-500 transition-colors">{t.downloadCSV}</button>
+              <button onClick={() => setResult(null)} className="px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600">{t.newPlan}</button>
             </div>
           </div>
         )}
