@@ -1,109 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { callAI, checkCredits, deductCredits } from '@/lib/groq'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const CREDIT_COST = 8
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { competitorHandle, platform, niche, userId, language = 'tr' } = await request.json()
+    const { competitor, platform, language = 'tr' } = await request.json()
 
-    if (!competitorHandle?.trim()) {
-      return NextResponse.json({ error: 'Rakip hesap adı gerekli' }, { status: 400 })
+    if (!competitor?.trim()) {
+      return NextResponse.json({ error: 'Rakip gerekli' }, { status: 400 })
     }
 
-    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    // TEST MODE: if (!creditCheck.ok) {
-      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    // TEST MODE: }
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    }
 
-    const systemPrompt = `Sen sosyal medya analisti ve rekabet uzmanısın. Verilen rakip hesabı analiz et ve stratejik öneriler sun.
+    const systemPrompt = `Sen rakip analizi uzmanısın. Rakip hesabı analiz et.
 
-NOT: Gerçek verilere erişimin yok, ancak bu nişte ve platformda başarılı hesapların genel stratejilerini analiz ederek gerçekçi bir analiz oluştur.
-
-JSON formatında yanıt ver:
+SADECE bu JSON formatında yanıt ver:
 {
-  "competitor_profile": {
-    "handle": "@rakip",
-    "estimated_followers": "100K-500K aralığı tahmini",
-    "niche": "Niş alanı",
-    "account_type": "Creator/Business/Personal",
-    "content_style": "İçerik stili açıklaması"
-  },
-  "content_strategy": {
-    "posting_frequency": "Günde/haftada kaç post",
-    "best_performing_types": ["Carousel", "Reels", "Stories"],
-    "content_pillars": ["Pillar 1", "Pillar 2", "Pillar 3"],
-    "tone_of_voice": "Ses tonu analizi",
-    "visual_style": "Görsel stil analizi"
-  },
-  "engagement_analysis": {
-    "estimated_engagement_rate": "3-5%",
-    "comment_sentiment": "Pozitif/Karışık/Negatif",
-    "community_strength": "Güçlü/Orta/Zayıf",
-    "response_strategy": "Yorum yanıtlama stratejisi"
-  },
-  "top_performing_content": [
-    {
-      "type": "İçerik tipi",
-      "topic": "Konu",
-      "why_it_works": "Neden işe yarıyor",
-      "estimated_engagement": "Tahmini etkileşim"
-    }
-  ],
-  "growth_tactics": [
-    { "tactic": "Büyüme taktiği 1", "effectiveness": "Yüksek/Orta" },
-    { "tactic": "Büyüme taktiği 2", "effectiveness": "Yüksek/Orta" }
-  ],
-  "weaknesses": [
-    { "weakness": "Zayıf nokta 1", "your_opportunity": "Senin fırsatın" },
-    { "weakness": "Zayıf nokta 2", "your_opportunity": "Senin fırsatın" }
-  ],
-  "what_to_copy": [
-    { "element": "Kopyalanabilecek şey", "how_to_adapt": "Nasıl uyarlamalısın" }
-  ],
-  "what_to_avoid": [
-    { "element": "Kaçınılması gereken", "reason": "Neden" }
-  ],
-  "differentiation_opportunities": [
-    "Farklılaşma fırsatı 1",
-    "Farklılaşma fırsatı 2",
-    "Farklılaşma fırsatı 3"
-  ],
-  "action_plan": {
-    "immediate": ["Hemen yapılacak 1", "Hemen yapılacak 2"],
-    "short_term": ["1-2 hafta içinde yapılacak 1", "1-2 hafta içinde yapılacak 2"],
-    "long_term": ["1-3 ay içinde yapılacak 1", "1-3 ay içinde yapılacak 2"]
-  }
+  "strengths": ["Güçlü yön 1", "Güçlü yön 2"],
+  "weaknesses": ["Zayıf yön 1", "Zayıf yön 2"],
+  "opportunities": ["Fırsat 1", "Fırsat 2"],
+  "strategy": "Genel strateji önerisi..."
 }`
 
-    const userPrompt = `Rakip Hesap: @${competitorHandle.replace('@', '')}
-Platform: ${platform || 'Instagram'}
-Niş: ${niche || 'Belirtilmedi'}
+    const userPrompt = `Platform: ${platform || 'Instagram'}
+Rakip: ${competitor}
+Dil: ${language}
 
-Bu rakibi analiz et. Bu nişteki başarılı hesapların genel stratejilerini baz alarak detaylı bir rekabet analizi oluştur. Kullanıcıya rakibini geçmesi için uygulanabilir stratejiler sun.`
+Bu rakibi analiz et ve strateji öner.`
 
-    const result = await callAI(systemPrompt, userPrompt, { temperature: 0.7 })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
-    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
-
-    return NextResponse.json({ 
-      success: true, 
-      result: result.data,
-      creditsUsed: CREDIT_COST 
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+        response_format: { type: 'json_object' }
+      })
     })
 
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const aiContent = data.choices?.[0]?.message?.content
+
+    let result
+    try {
+      result = JSON.parse(aiContent)
+    } catch {
+      result = { strengths: [], weaknesses: [], opportunities: [], strategy: '' }
+    }
+
+    return NextResponse.json({ success: true, result })
   } catch (error: any) {
-    console.error('Competitor Spy Error:', error)
-    return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

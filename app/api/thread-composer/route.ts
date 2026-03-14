@@ -1,126 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { callAI, checkCredits, deductCredits } from '@/lib/groq'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const CREDIT_COST = 5
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, threadType, tweetCount, goal, userId, language = 'tr' } = await request.json()
+    const { topic, tweetCount, language = 'tr' } = await request.json()
 
     if (!topic?.trim()) {
       return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
     }
 
-    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    // TEST MODE: if (!creditCheck.ok) {
-      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    // TEST MODE: }
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    }
 
-    const count = tweetCount || 10
+    const count = parseInt(tweetCount) || 7
 
-    const systemPrompt = `Sen viral Twitter/X thread yazarısın. Yüksek etkileşim alan thread'ler yazıyorsun.
+    const systemPrompt = `Sen Twitter/X thread yazarısın. Viral thread oluştur.
 
-KURALLAR:
-- Her tweet MAX 280 karakter
-- İlk tweet hook olmalı
-- Her tweet bir öncekiyle bağlantılı
-- Son tweet güçlü CTA içermeli
-
-JSON formatında yanıt ver:
+SADECE bu JSON formatında yanıt ver:
 {
-  "thread_concept": {
-    "title": "Thread başlığı",
-    "angle": "Bakış açısı",
-    "target_audience": "Hedef kitle",
-    "viral_elements": ["Viral element 1", "Viral element 2"]
-  },
-  "hook_options": [
-    {
-      "style": "Soru",
-      "tweet": "Hook tweet (max 280 karakter)",
-      "engagement_prediction": "Yüksek/Orta"
-    },
-    {
-      "style": "Şok İstatistik",
-      "tweet": "Hook tweet (max 280 karakter)",
-      "engagement_prediction": "Çok Yüksek"
-    },
-    {
-      "style": "Kişisel Hikaye",
-      "tweet": "Hook tweet (max 280 karakter)",
-      "engagement_prediction": "Yüksek"
-    }
-  ],
-  "thread": [
-    {
-      "number": 1,
-      "type": "Hook",
-      "tweet": "Tweet metni (MAX 280 karakter)",
-      "character_count": 250,
-      "purpose": "Dikkat çekme",
-      "emoji_suggestion": "🔥"
-    },
-    {
-      "number": 2,
-      "type": "Context",
-      "tweet": "Tweet metni (MAX 280 karakter)",
-      "character_count": 270,
-      "purpose": "Bağlam oluşturma"
-    }
-  ],
-  "engagement_boosters": {
-    "best_tweet_to_quote": 3,
-    "best_tweet_for_screenshot": 5,
-    "reply_bait_tweet": 7,
-    "save_worthy_tweet": 4
-  },
-  "posting_strategy": {
-    "best_day": "Salı veya Çarşamba",
-    "best_time": "09:00-10:00 veya 20:00-21:00",
-    "spacing": "Her tweet arası 1-2 dakika",
-    "first_reply": "İlk yanıtta ne yazmalısın"
-  },
-  "amplification_tactics": [
-    { "tactic": "Taktik 1", "how": "Nasıl yapılacak" },
-    { "tactic": "Taktik 2", "how": "Nasıl yapılacak" }
-  ],
-  "repurpose_ideas": {
-    "carousel": "Carousel için nasıl uyarlanır",
-    "linkedin": "LinkedIn için nasıl uyarlanır",
-    "newsletter": "Newsletter için nasıl uyarlanır"
-  },
-  "metrics_to_track": ["Metrik 1", "Metrik 2", "Metrik 3"]
-}`
+  "tweets": [
+    "Tweet 1 (hook - dikkat çekici)...",
+    "Tweet 2...",
+    "Tweet 3...",
+    "Son tweet (CTA)..."
+  ]
+}
+
+Her tweet 280 karakterden kısa olmalı.`
 
     const userPrompt = `Konu: ${topic}
-Thread Tipi: ${threadType || 'Eğitici'}
-Tweet Sayısı: ${count}
-Hedef: ${goal || 'Viral olmak ve takipçi kazanmak'}
+Tweet sayısı: ${count}
+Dil: ${language}
 
-Bu konu için ${count} tweetlik viral bir thread oluştur. Her tweet MAX 280 karakter olmalı.`
+Bu konu hakkında viral bir thread yaz.`
 
-    const result = await callAI(systemPrompt, userPrompt, { temperature: 0.85, maxTokens: 5000 })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
-    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
-
-    return NextResponse.json({ 
-      success: true, 
-      result: result.data,
-      creditsUsed: CREDIT_COST 
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 3000,
+        response_format: { type: 'json_object' }
+      })
     })
 
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const aiContent = data.choices?.[0]?.message?.content
+
+    let result
+    try {
+      result = JSON.parse(aiContent)
+    } catch {
+      result = { tweets: [] }
+    }
+
+    return NextResponse.json({ success: true, result })
   } catch (error: any) {
-    console.error('Thread Composer Error:', error)
-    return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

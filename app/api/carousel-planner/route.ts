@@ -1,123 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { callAI, checkCredits, deductCredits } from '@/lib/groq'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const CREDIT_COST = 4
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, slideCount, style, platform, userId, language = 'tr' } = await request.json()
+    const { topic, slideCount, platform, language = 'tr' } = await request.json()
 
     if (!topic?.trim()) {
       return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
     }
 
-    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    // TEST MODE: if (!creditCheck.ok) {
-      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    // TEST MODE: }
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    }
 
-    const count = slideCount || 10
+    const count = parseInt(slideCount) || 7
 
-    const systemPrompt = `Sen carousel içerik tasarımcısısın. Yüksek kaydırma oranı ve etkileşim alan carousel'ler planlıyorsun.
+    const systemPrompt = `Sen carousel içerik uzmanısın. Swipe-worthy carousel planla.
 
-JSON formatında yanıt ver:
+SADECE bu JSON formatında yanıt ver:
 {
-  "carousel_concept": {
-    "title": "Carousel başlığı",
-    "hook": "Kapak slide hook",
-    "value_proposition": "Ne öğrenecekler",
-    "target_save_rate": "Hedef kaydetme oranı"
-  },
-  "cover_slide_options": [
-    {
-      "headline": "Ana başlık (max 8 kelime)",
-      "subheadline": "Alt başlık",
-      "visual_style": "Görsel öneri",
-      "color_scheme": "Renk önerisi"
-    }
-  ],
   "slides": [
-    {
-      "slide_number": 1,
-      "type": "Cover",
-      "headline": "Dikkat çekici başlık",
-      "subtext": "Merak uyandıran alt metin",
-      "visual_suggestion": "Görsel öneri",
-      "design_notes": "Tasarım notları",
-      "swipe_trigger": "Kaydırma tetikleyicisi"
-    },
-    {
-      "slide_number": 2,
-      "type": "Problem/Hook",
-      "headline": "Problem tanımı",
-      "body_text": "Açıklama metni",
-      "visual_suggestion": "Görsel öneri",
-      "design_notes": "Tasarım notları"
-    },
-    {
-      "slide_number": 3,
-      "type": "Content",
-      "headline": "İçerik başlığı",
-      "key_point": "Ana nokta",
-      "supporting_text": "Destekleyici metin",
-      "icon_suggestion": "İkon önerisi",
-      "visual_suggestion": "Görsel öneri"
-    }
-  ],
-  "caption": {
-    "hook": "Caption hook",
-    "body": "Caption gövdesi",
-    "cta": "Call to action",
-    "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3"]
-  },
-  "design_guidelines": {
-    "font_pairing": "Font önerisi",
-    "color_palette": ["#renk1", "#renk2", "#renk3"],
-    "image_style": "Fotoğraf/İllüstrasyon stili",
-    "consistency_tips": ["Tutarlılık ipucu 1", "Tutarlılık ipucu 2"]
-  },
-  "engagement_tactics": {
-    "save_trigger_slide": 5,
-    "share_trigger_slide": 8,
-    "comment_trigger": "Yorum tetikleyici soru",
-    "last_slide_cta": "Son slide CTA"
-  },
-  "repurpose_options": {
-    "thread": "Twitter thread'e nasıl çevrilir",
-    "reel": "Reel'e nasıl çevrilir",
-    "blog": "Blog yazısına nasıl çevrilir"
-  }
+    { "type": "cover", "headline": "Dikkat çekici başlık", "body": "Alt metin", "visual": "Görsel önerisi" },
+    { "type": "content", "headline": "Slide başlığı", "body": "İçerik", "visual": "Görsel önerisi" },
+    { "type": "cta", "headline": "CTA başlığı", "body": "Call to action", "visual": "Görsel önerisi" }
+  ]
 }`
 
-    const userPrompt = `Konu: ${topic}
-Slide Sayısı: ${count}
-Stil: ${style || 'Eğitici'}
-Platform: ${platform || 'Instagram'}
+    const userPrompt = `Platform: ${platform || 'Instagram'}
+Konu: ${topic}
+Slide sayısı: ${count}
+Dil: ${language}
 
-Bu konu için ${count} slide'lık profesyonel carousel planı oluştur.`
+Bu konu için carousel planla.`
 
-    const result = await callAI(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 5000 })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
-    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
-
-    return NextResponse.json({ 
-      success: true, 
-      result: result.data,
-      creditsUsed: CREDIT_COST 
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+        response_format: { type: 'json_object' }
+      })
     })
 
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const aiContent = data.choices?.[0]?.message?.content
+
+    let result
+    try {
+      result = JSON.parse(aiContent)
+    } catch {
+      result = { slides: [] }
+    }
+
+    return NextResponse.json({ success: true, result })
   } catch (error: any) {
-    console.error('Carousel Planner Error:', error)
-    return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
