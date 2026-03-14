@@ -115,7 +115,7 @@ Bu konu için ${count} tweetlik viral bir thread oluştur. Her tweet MAX 280 kar
 
     return NextResponse.json({ 
       success: true, 
-      thread: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

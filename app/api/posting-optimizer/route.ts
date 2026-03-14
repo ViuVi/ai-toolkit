@@ -127,7 +127,7 @@ Bu bilgilere göre optimal paylaşım zamanlarını analiz et.`
 
     return NextResponse.json({ 
       success: true, 
-      schedule: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

@@ -112,7 +112,7 @@ Bu konu için ${count} slide'lık profesyonel carousel planı oluştur.`
 
     return NextResponse.json({ 
       success: true, 
-      carousel: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

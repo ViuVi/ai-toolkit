@@ -108,7 +108,7 @@ Bu içeriği 7 farklı platforma profesyonelce uyarla. Her platform için o plat
 
     return NextResponse.json({ 
       success: true, 
-      repurposed: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

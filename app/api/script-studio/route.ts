@@ -150,7 +150,7 @@ Bu konu için profesyonel video scripti, thumbnail konseptleri ve başlık seçe
 
     return NextResponse.json({ 
       success: true, 
-      script: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

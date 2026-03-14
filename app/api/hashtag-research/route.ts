@@ -109,7 +109,7 @@ Bu konu için kapsamlı hashtag araştırması yap. Türkiye pazarına uygun has
 
     return NextResponse.json({ 
       success: true, 
-      research: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

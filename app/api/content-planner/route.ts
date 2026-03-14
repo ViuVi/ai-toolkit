@@ -98,7 +98,7 @@ Platformlar: ${platforms?.join(', ') || 'Instagram, TikTok'}
 
     return NextResponse.json({ 
       success: true, 
-      planner: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

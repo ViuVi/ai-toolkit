@@ -228,7 +228,7 @@ export default function ViralAnalyzerPage() {
 
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
-      setResult(data.analysis)
+      setResult(data.result)
     } catch (err: any) {
       setError(err.message)
     } finally {

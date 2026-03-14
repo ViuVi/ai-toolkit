@@ -114,7 +114,7 @@ Bu niş için güncel trendleri, yükselen konuları ve içerik fırsatlarını 
 
     return NextResponse.json({ 
       success: true, 
-      trends: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

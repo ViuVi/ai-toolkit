@@ -73,7 +73,7 @@ Bu içeriğin viral potansiyelini analiz et.`
 
     return NextResponse.json({ 
       success: true, 
-      analysis: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

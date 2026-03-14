@@ -98,7 +98,7 @@ Bu rakibi analiz et. Bu nişteki başarılı hesapların genel stratejilerini ba
 
     return NextResponse.json({ 
       success: true, 
-      analysis: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

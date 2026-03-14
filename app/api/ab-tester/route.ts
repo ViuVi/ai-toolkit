@@ -128,7 +128,7 @@ Bu içeriğin 5 farklı versiyonunu oluştur. Her versiyon farklı bir psikoloji
 
     return NextResponse.json({ 
       success: true, 
-      test: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 

@@ -134,7 +134,7 @@ Bu hesabın etkileşimini artırmak için kapsamlı strateji oluştur.`
 
     return NextResponse.json({ 
       success: true, 
-      strategy: result.data,
+      result: result.data,
       creditsUsed: CREDIT_COST 
     })
 
