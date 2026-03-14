@@ -1,200 +1,122 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/LanguageContext'
 
-export default function ScriptStudioPage() {
+const texts: any = {
+  tr: { title: 'Script Studio', icon: '🎬', credits: '6 Kredi', back: '← Geri', testMode: '🧪 Test Modu', purpose: 'TikTok, Reels ve YouTube Shorts için viral video scriptleri oluşturur. Hook, gövde ve CTA içerir.', topicLabel: 'Video Konusu', topicPlaceholder: 'örn: evde fitness egzersizleri...', durationLabel: 'Süre', platformLabel: 'Platform', btn: 'Script Oluştur', loading: 'Oluşturuluyor...' },
+  en: { title: 'Script Studio', icon: '🎬', credits: '6 Credits', back: '← Back', testMode: '🧪 Test Mode', purpose: 'Creates viral video scripts for TikTok, Reels and YouTube Shorts. Includes hook, body and CTA.', topicLabel: 'Video Topic', topicPlaceholder: 'e.g., home fitness exercises...', durationLabel: 'Duration', platformLabel: 'Platform', btn: 'Create Script', loading: 'Creating...' },
+  ru: { title: 'Script Studio', icon: '🎬', credits: '6', back: '← Назад', testMode: '🧪 Тест', purpose: 'Создаёт вирусные видео-сценарии.', topicLabel: 'Тема', topicPlaceholder: 'напр: фитнес...', durationLabel: 'Длительность', platformLabel: 'Платформа', btn: 'Создать', loading: 'Создание...' },
+  de: { title: 'Script Studio', icon: '🎬', credits: '6', back: '← Zurück', testMode: '🧪 Test', purpose: 'Erstellt virale Video-Skripte.', topicLabel: 'Thema', topicPlaceholder: 'z.B. Fitness...', durationLabel: 'Dauer', platformLabel: 'Plattform', btn: 'Erstellen', loading: 'Erstelle...' },
+  fr: { title: 'Script Studio', icon: '🎬', credits: '6', back: '← Retour', testMode: '🧪 Test', purpose: 'Crée des scripts vidéo viraux.', topicLabel: 'Sujet', topicPlaceholder: 'ex: fitness...', durationLabel: 'Durée', platformLabel: 'Plateforme', btn: 'Créer', loading: 'Création...' }
+}
+
+export default function Page() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
-  const [error, setError] = useState('')
-  
   const [topic, setTopic] = useState('')
-  const [platform, setPlatform] = useState('youtube')
-  const [duration, setDuration] = useState('short')
-  const [style, setStyle] = useState('educational')
-  
+  const [duration, setDuration] = useState('30')
+  const [platform, setPlatform] = useState('tiktok')
   const router = useRouter()
+  const { language, setLanguage } = useLanguage()
+  const t = texts[language] || texts.en
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth'); return }
-      setUser(user)
-    }
-    getUser()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else setUser(user)
+    })
   }, [])
 
-  const handleGenerate = async () => {
-    if (!topic.trim()) { setError('Konu gerekli'); return }
-    setLoading(true); setError(''); setResult(null)
-
+  const handleSubmit = async () => {
+    if (!topic.trim()) return
+    setLoading(true)
     try {
       const res = await fetch('/api/script-studio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, duration, style, userId: user?.id })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, duration, platform, userId: user?.id, language })
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Bir hata oluştu')
-      setResult(data.script)
-    } catch (err: any) { setError(err.message) }
-    finally { setLoading(false) }
+      if (res.ok) setResult(data.result)
+    } catch (e) {}
+    setLoading(false)
   }
 
-  const copyToClipboard = (text: string) => navigator.clipboard.writeText(text)
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Geri</Link>
-          <h1 className="text-xl font-bold text-white">🎬 Script Studio</h1>
-          <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">6 kredi</span>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Video Script Oluştur</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Konu</label>
-                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Video konusunu yaz..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Platform</label>
-                  <select value={platform} onChange={(e) => setPlatform(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
-                    <option value="youtube">YouTube</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="reels">Reels</option>
-                    <option value="shorts">Shorts</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Süre</label>
-                  <select value={duration} onChange={(e) => setDuration(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
-                    <option value="short">Kısa (15-60sn)</option>
-                    <option value="medium">Orta (1-3dk)</option>
-                    <option value="long">Uzun (5-10dk)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Stil</label>
-                <select value={style} onChange={(e) => setStyle(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
-                  <option value="educational">Eğitici</option>
-                  <option value="entertaining">Eğlenceli</option>
-                  <option value="storytelling">Hikaye</option>
-                  <option value="tutorial">Tutorial</option>
-                  <option value="vlog">Vlog</option>
-                </select>
-              </div>
-
-              {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">{error}</div>}
-
-              <button onClick={handleGenerate} disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
-                {loading ? 'Script Yazılıyor...' : '🎬 Script Oluştur'}
-              </button>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
+            <span className="text-2xl">{t.icon}</span>
+            <h1 className="text-xl font-bold">{t.title}</h1>
+            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+          </div>
+          <div className="relative group">
+            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
+            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
             </div>
           </div>
-
+        </div>
+      </header>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
+      <main className="pt-32 pb-12 px-4 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6">
+              <p className="text-gray-400 text-sm">{t.purpose}</p>
+            </div>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.topicLabel}</label>
+                <input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t.topicPlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.durationLabel}</label>
+                  <select value={duration} onChange={e => setDuration(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+                    <option value="15">15 sec</option>
+                    <option value="30">30 sec</option>
+                    <option value="60">60 sec</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
+                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+                    <option value="tiktok">TikTok</option>
+                    <option value="reels">Instagram Reels</option>
+                    <option value="shorts">YouTube Shorts</option>
+                  </select>
+                </div>
+              </div>
+              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+            </div>
+          </div>
           <div>
             {result ? (
               <div className="space-y-4">
-                {/* Title Options */}
-                {result.title_options && (
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">📝 Başlık Önerileri</h3>
-                    <div className="space-y-2">
-                      {result.title_options.map((title: string, i: number) => (
-                        <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-                          <span className="text-white">{title}</span>
-                          <button onClick={() => copyToClipboard(title)} className="text-purple-400 text-xs">Kopyala</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Thumbnail Ideas */}
-                {result.thumbnail_ideas && (
-                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">🖼️ Thumbnail Fikirleri</h3>
-                    <ul className="space-y-2">
-                      {result.thumbnail_ideas.map((idea: string, i: number) => (
-                        <li key={i} className="text-gray-300 flex items-start gap-2">
-                          <span className="text-purple-400">•</span> {idea}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Script */}
-                {result.script && (
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">📜 Script</h3>
-                      <button onClick={() => copyToClipboard(result.script.full_script || JSON.stringify(result.script))} 
-                        className="text-purple-400 text-sm">📋 Tümünü Kopyala</button>
-                    </div>
-
-                    {result.script.hook && (
-                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4">
-                        <div className="text-yellow-400 text-sm mb-1">🎣 Hook (İlk 3 saniye)</div>
-                        <p className="text-white">{result.script.hook}</p>
-                      </div>
-                    )}
-
-                    {result.script.sections && result.script.sections.map((section: any, i: number) => (
-                      <div key={i} className="bg-white/5 rounded-xl p-4 mb-2">
-                        <div className="text-purple-400 text-sm mb-1">{section.title || `Bölüm ${i + 1}`}</div>
-                        <p className="text-gray-300 text-sm">{section.content}</p>
-                        {section.duration && <div className="text-gray-500 text-xs mt-1">⏱️ {section.duration}</div>}
-                      </div>
-                    ))}
-
-                    {result.script.cta && (
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mt-4">
-                        <div className="text-green-400 text-sm mb-1">📢 CTA</div>
-                        <p className="text-white">{result.script.cta}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* B-Roll Suggestions */}
-                {result.broll_suggestions && (
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">🎥 B-Roll Önerileri</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {result.broll_suggestions.map((suggestion: string, i: number) => (
-                        <span key={i} className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm">{suggestion}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                  <h4 className="text-red-400 font-medium mb-2">🎣 Hook (0-3s)</h4>
+                  <p className="text-white">{result.hook}</p>
+                </div>
+                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                  <h4 className="text-white font-medium mb-2">📝 Body</h4>
+                  <p className="text-gray-300 whitespace-pre-wrap">{result.body}</p>
+                </div>
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+                  <h4 className="text-purple-400 font-medium mb-2">🎯 CTA</h4>
+                  <p className="text-white">{result.cta}</p>
+                </div>
+                {result.tips && <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4"><p className="text-yellow-400 text-sm">💡 {result.tips}</p></div>}
               </div>
             ) : (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-                <div className="text-6xl mb-4">🎬</div>
-                <h3 className="text-xl font-semibold text-white mb-2">Script Studio</h3>
-                <p className="text-gray-400">Profesyonel video scriptleri, başlık önerileri ve thumbnail fikirleri al.</p>
+              <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
+                <div className="text-6xl mb-4">{t.icon}</div>
+                <p className="text-gray-500">{t.purpose}</p>
               </div>
             )}
           </div>

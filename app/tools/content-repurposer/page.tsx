@@ -2,289 +2,192 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/LanguageContext'
+
+const getTexts = (lang: string) => {
+  const data: any = {
+    tr: {
+      title: 'Content Repurposer',
+      icon: '🔄',
+      credits: '8 Kredi',
+      back: '← Dashboard\'a Dön',
+      testMode: '🧪 Test Modu - Kredi düşmüyor',
+      purpose: 'Bu araç ne işe yarar?',
+      purposeDesc: 'Tek bir içeriği 7 farklı sosyal medya platformuna (Instagram, TikTok, Twitter, LinkedIn, YouTube, Facebook, Pinterest) otomatik olarak uyarlar.',
+      howTo: 'Nasıl kullanılır?',
+      howToSteps: ['Orijinal içeriğini yapıştır', 'Hedef platformları seç', '"Dönüştür" butonuna tıkla'],
+      contentLabel: 'Orijinal İçerik',
+      contentPlaceholder: 'Dönüştürmek istediğin içeriği yapıştır...',
+      platformsLabel: 'Hedef Platformlar',
+      generateBtn: 'Dönüştür',
+      generating: 'Dönüştürülüyor...',
+      copyAll: 'Tümünü Kopyala',
+      copied: 'Kopyalandı!'
+    },
+    en: {
+      title: 'Content Repurposer',
+      icon: '🔄',
+      credits: '8 Credits',
+      back: '← Back to Dashboard',
+      testMode: '🧪 Test Mode - No credits deducted',
+      purpose: 'What does this tool do?',
+      purposeDesc: 'Automatically adapts a single piece of content to 7 different social media platforms (Instagram, TikTok, Twitter, LinkedIn, YouTube, Facebook, Pinterest).',
+      howTo: 'How to use?',
+      howToSteps: ['Paste your original content', 'Select target platforms', 'Click "Repurpose"'],
+      contentLabel: 'Original Content',
+      contentPlaceholder: 'Paste the content you want to repurpose...',
+      platformsLabel: 'Target Platforms',
+      generateBtn: 'Repurpose',
+      generating: 'Repurposing...',
+      copyAll: 'Copy All',
+      copied: 'Copied!'
+    },
+    ru: { title: 'Content Repurposer', icon: '🔄', credits: '8 Кредитов', back: '← Назад', testMode: '🧪 Тест режим', purpose: 'Что делает?', purposeDesc: 'Адаптирует контент для 7 платформ', howTo: 'Как использовать?', howToSteps: ['Вставьте контент', 'Выберите платформы', 'Нажмите кнопку'], contentLabel: 'Контент', contentPlaceholder: 'Вставьте контент...', platformsLabel: 'Платформы', generateBtn: 'Создать', generating: 'Создаём...', copyAll: 'Копировать', copied: 'Скопировано!' },
+    de: { title: 'Content Repurposer', icon: '🔄', credits: '8 Credits', back: '← Zurück', testMode: '🧪 Testmodus', purpose: 'Was macht es?', purposeDesc: 'Passt Inhalte für 7 Plattformen an', howTo: 'Wie benutzen?', howToSteps: ['Inhalt einfügen', 'Plattformen wählen', 'Klicken'], contentLabel: 'Inhalt', contentPlaceholder: 'Inhalt einfügen...', platformsLabel: 'Plattformen', generateBtn: 'Erstellen', generating: 'Erstelle...', copyAll: 'Kopieren', copied: 'Kopiert!' },
+    fr: { title: 'Content Repurposer', icon: '🔄', credits: '8 Crédits', back: '← Retour', testMode: '🧪 Mode Test', purpose: 'Que fait-il?', purposeDesc: 'Adapte le contenu pour 7 plateformes', howTo: 'Comment utiliser?', howToSteps: ['Collez le contenu', 'Sélectionnez les plateformes', 'Cliquez'], contentLabel: 'Contenu', contentPlaceholder: 'Collez le contenu...', platformsLabel: 'Plateformes', generateBtn: 'Créer', generating: 'Création...', copyAll: 'Copier', copied: 'Copié!' }
+  }
+  return data[lang] || data.en
+}
+
+const platforms = ['Instagram', 'TikTok', 'Twitter/X', 'LinkedIn', 'YouTube', 'Facebook', 'Pinterest']
 
 export default function ContentRepurposerPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
-  const [activePlatform, setActivePlatform] = useState('instagram_post')
-  
+  const [copied, setCopied] = useState(false)
   const [content, setContent] = useState('')
-  const [sourceType, setSourceType] = useState('blog')
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram', 'TikTok', 'Twitter/X'])
   
   const router = useRouter()
+  const { language, setLanguage } = useLanguage()
+  const t = getTexts(language)
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth')
-        return
-      }
-      setUser(user)
-    }
-    getUser()
-  }, [])
+  useEffect(() => { checkUser() }, [])
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login'); return }
+    setUser(user)
+  }
 
-  const handleRepurpose = async () => {
-    if (!content.trim()) {
-      setError('İçerik gerekli')
-      return
-    }
+  const togglePlatform = (p: string) => {
+    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+  }
 
-    setLoading(true)
-    setError('')
-    setResult(null)
-
+  const handleGenerate = async () => {
+    if (!content.trim()) { setError('Content required'); return }
+    setLoading(true); setError(''); setResult(null)
     try {
       const res = await fetch('/api/content-repurposer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          sourceType,
-          userId: user?.id
-        })
+        body: JSON.stringify({ content, platforms: selectedPlatforms, userId: user?.id, language })
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Bir hata oluştu')
-      }
-
-      setResult(data.repurposed)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+      if (!res.ok) throw new Error(data.error)
+      setResult(data.result)
+    } catch (err: any) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  const platforms = [
-    { id: 'instagram_post', name: 'Instagram Post', icon: '📸' },
-    { id: 'instagram_reels', name: 'Reels', icon: '🎬' },
-    { id: 'tiktok', name: 'TikTok', icon: '🎵' },
-    { id: 'twitter', name: 'Twitter/X', icon: '🐦' },
-    { id: 'linkedin', name: 'LinkedIn', icon: '💼' },
-    { id: 'youtube_shorts', name: 'Shorts', icon: '📺' },
-    { id: 'pinterest', name: 'Pinterest', icon: '📌' }
-  ]
-
-  const copyToClipboard = (text: string) => {
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">
-            ← Geri
-          </Link>
-          <h1 className="text-xl font-bold text-white">🔄 Content Repurposer</h1>
-          <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">
-            8 kredi
-          </span>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="text-gray-400 hover:text-white transition">{t.back}</Link>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{t.icon}</span>
+                <h1 className="text-xl font-bold">{t.title}</h1>
+                <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+              </div>
+            </div>
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800/80 rounded-lg text-sm text-gray-300 hover:bg-gray-700 transition border border-gray-700">
+                <span>🌐</span><span>{language.toUpperCase()}</span>
+              </button>
+              <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                {['en', 'tr', 'ru', 'de', 'fr'].map((lang) => (
+                  <button key={lang} onClick={() => setLanguage(lang as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition ${language === lang ? 'text-purple-400' : 'text-gray-300'}`}>
+                    {lang === 'en' && '🇺🇸 English'}{lang === 'tr' && '🇹🇷 Türkçe'}{lang === 'ru' && '🇷🇺 Русский'}{lang === 'de' && '🇩🇪 Deutsch'}{lang === 'fr' && '🇫🇷 Français'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {!result ? (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">1 İçerik → 7 Platform</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">Kaynak Tipi</label>
-                  <select
-                    value={sourceType}
-                    onChange={(e) => setSourceType(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
-                  >
-                    <option value="blog">Blog Yazısı</option>
-                    <option value="video">Video Script</option>
-                    <option value="podcast">Podcast Özeti</option>
-                    <option value="article">Makale</option>
-                    <option value="notes">Notlar</option>
-                  </select>
-                </div>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30">
+        <div className="max-w-7xl mx-auto px-4 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
+      </div>
 
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">İçerik</label>
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Dönüştürmek istediğin içeriği yapıştır..."
-                    className="w-full h-60 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
-                  />
-                </div>
+      <main className="pt-32 pb-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-2">{t.purpose}</h2>
+                <p className="text-gray-400 text-sm mb-4">{t.purposeDesc}</p>
+                <h3 className="text-md font-semibold text-white mb-2">{t.howTo}</h3>
+                <ol className="text-gray-500 text-sm space-y-1 list-decimal list-inside">
+                  {t.howToSteps.map((step: string, i: number) => <li key={i}>{step}</li>)}
+                </ol>
+              </div>
 
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
-                    {error}
+              <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label>
+                  <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-40 bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.platformsLabel}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {platforms.map(p => (
+                      <button key={p} onClick={() => togglePlatform(p)} className={`px-3 py-2 rounded-lg text-sm transition ${selectedPlatforms.includes(p) ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>{p}</button>
+                    ))}
                   </div>
-                )}
-
-                <button
-                  onClick={handleRepurpose}
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      7 Platforma Uyarlanıyor...
-                    </span>
-                  ) : (
-                    '🔄 Dönüştür'
-                  )}
+                </div>
+                {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">{error}</div>}
+                <button onClick={handleGenerate} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
+                  {loading ? t.generating : `${t.icon} ${t.generateBtn}`}
                 </button>
               </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            {/* Platform Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {platforms.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => setActivePlatform(p.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
-                    activePlatform === p.id
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                      : 'bg-white/5 text-gray-300 hover:bg-white/10'
-                  }`}
-                >
-                  {p.icon} {p.name}
-                </button>
-              ))}
-            </div>
 
-            {/* Platform Content */}
-            {result.platforms && result.platforms[activePlatform] && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-white">
-                    {platforms.find(p => p.id === activePlatform)?.icon} {platforms.find(p => p.id === activePlatform)?.name}
-                  </h3>
-                  <button
-                    onClick={() => copyToClipboard(JSON.stringify(result.platforms[activePlatform], null, 2))}
-                    className="text-purple-400 hover:text-purple-300 text-sm"
-                  >
-                    📋 Tümünü Kopyala
-                  </button>
-                </div>
-
+            <div>
+              {result ? (
                 <div className="space-y-4">
-                  {/* Content */}
-                  {result.platforms[activePlatform].content && (
-                    <div className="bg-white/5 rounded-xl p-4">
+                  {Object.entries(result).map(([platform, content]: [string, any]) => (
+                    <div key={platform} className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-gray-400 text-sm">İçerik</span>
-                        <button onClick={() => copyToClipboard(result.platforms[activePlatform].content)} className="text-purple-400 text-xs">Kopyala</button>
+                        <h3 className="font-semibold text-white">{platform}</h3>
+                        <button onClick={() => handleCopy(content)} className="text-xs text-purple-400 hover:text-purple-300">{copied ? t.copied : 'Copy'}</button>
                       </div>
-                      <p className="text-white whitespace-pre-wrap">{result.platforms[activePlatform].content}</p>
-                    </div>
-                  )}
-
-                  {/* Hook */}
-                  {result.platforms[activePlatform].hook && (
-                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-purple-400 text-sm">🎣 Hook</span>
-                        <button onClick={() => copyToClipboard(result.platforms[activePlatform].hook)} className="text-purple-400 text-xs">Kopyala</button>
-                      </div>
-                      <p className="text-white">{result.platforms[activePlatform].hook}</p>
-                    </div>
-                  )}
-
-                  {/* Script */}
-                  {result.platforms[activePlatform].script && (
-                    <div className="bg-white/5 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-gray-400 text-sm">📝 Script</span>
-                        <button onClick={() => copyToClipboard(result.platforms[activePlatform].script)} className="text-purple-400 text-xs">Kopyala</button>
-                      </div>
-                      <p className="text-white whitespace-pre-wrap">{result.platforms[activePlatform].script}</p>
-                    </div>
-                  )}
-
-                  {/* Thread */}
-                  {result.platforms[activePlatform].thread && (
-                    <div className="space-y-2">
-                      <span className="text-gray-400 text-sm">🧵 Thread</span>
-                      {result.platforms[activePlatform].thread.map((tweet: string, i: number) => (
-                        <div key={i} className="bg-white/5 rounded-xl p-4">
-                          <div className="flex justify-between items-start">
-                            <span className="text-purple-400 text-xs">{i + 1}/{result.platforms[activePlatform].thread.length}</span>
-                            <button onClick={() => copyToClipboard(tweet)} className="text-purple-400 text-xs">Kopyala</button>
-                          </div>
-                          <p className="text-white mt-2">{tweet}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Hashtags */}
-                  {result.platforms[activePlatform].hashtags && (
-                    <div className="bg-white/5 rounded-xl p-4">
-                      <span className="text-gray-400 text-sm">🏷️ Hashtags</span>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {result.platforms[activePlatform].hashtags.map((tag: string, i: number) => (
-                          <span key={i} className="bg-purple-500/20 text-purple-300 px-2 py-1 rounded text-sm">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Best Time */}
-                  {result.platforms[activePlatform].best_time && (
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                      <span className="text-green-400 text-sm">⏰ En İyi Zaman: {result.platforms[activePlatform].best_time}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Content Calendar */}
-            {result.content_calendar && (
-              <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">📅 Önerilen Paylaşım Takvimi</h3>
-                <div className="grid grid-cols-7 gap-2">
-                  {Object.entries(result.content_calendar).map(([day, info]: [string, any]) => (
-                    <div key={day} className="bg-white/5 rounded-xl p-3 text-center">
-                      <div className="text-gray-400 text-xs">{day.replace('day_', 'Gün ')}</div>
-                      <div className="text-white text-sm font-medium mt-1">{info.platform}</div>
-                      <div className="text-purple-400 text-xs mt-1">{info.time}</div>
+                      <p className="text-gray-300 text-sm whitespace-pre-wrap">{content}</p>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* New Content Button */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setResult(null)}
-                className="text-purple-400 hover:text-purple-300"
-              >
-                ← Yeni İçerik Dönüştür
-              </button>
+              ) : (
+                <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
+                  <div className="text-6xl mb-4">{t.icon}</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">{t.title}</h3>
+                  <p className="text-gray-500">{t.purposeDesc}</p>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </main>
     </div>
   )

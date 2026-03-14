@@ -1,199 +1,106 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/lib/LanguageContext'
 
-export default function PostingOptimizerPage() {
+const texts: any = {
+  tr: { title: 'Smart Posting Times', icon: '⏰', credits: '2 Kredi', back: '← Geri', testMode: '🧪 Test Modu', purpose: 'Nişine özel en iyi paylaşım zamanlarını analiz eder.', nicheLabel: 'Niş', nichePlaceholder: 'örn: fitness, teknoloji...', platformLabel: 'Platform', btn: 'Zamanları Bul', loading: 'Analiz ediliyor...' },
+  en: { title: 'Smart Posting Times', icon: '⏰', credits: '2 Credits', back: '← Back', testMode: '🧪 Test Mode', purpose: 'Analyzes the best posting times for your niche.', nicheLabel: 'Niche', nichePlaceholder: 'e.g., fitness, tech...', platformLabel: 'Platform', btn: 'Find Times', loading: 'Analyzing...' },
+  ru: { title: 'Smart Posting Times', icon: '⏰', credits: '2', back: '← Назад', testMode: '🧪 Тест', purpose: 'Анализирует лучшее время публикации.', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', platformLabel: 'Платформа', btn: 'Найти', loading: 'Анализ...' },
+  de: { title: 'Smart Posting Times', icon: '⏰', credits: '2', back: '← Zurück', testMode: '🧪 Test', purpose: 'Analysiert die besten Posting-Zeiten.', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', platformLabel: 'Plattform', btn: 'Finden', loading: 'Analyse...' },
+  fr: { title: 'Smart Posting Times', icon: '⏰', credits: '2', back: '← Retour', testMode: '🧪 Test', purpose: 'Analyse les meilleurs moments de publication.', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', platformLabel: 'Plateforme', btn: 'Trouver', loading: 'Analyse...' }
+}
+
+export default function Page() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
-  const [error, setError] = useState('')
-  
   const [niche, setNiche] = useState('')
-  const [targetAudience, setTargetAudience] = useState('')
-  const [platforms, setPlatforms] = useState(['instagram'])
-  const [region, setRegion] = useState('TR')
-  
+  const [platform, setPlatform] = useState('instagram')
   const router = useRouter()
+  const { language, setLanguage } = useLanguage()
+  const t = texts[language] || texts.en
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth')
-        return
-      }
-      setUser(user)
-    }
-    getUser()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else setUser(user)
+    })
   }, [])
 
-  const handleOptimize = async () => {
-    if (!niche.trim()) {
-      setError('Niş gerekli')
-      return
-    }
-
+  const handleSubmit = async () => {
+    if (!niche.trim()) return
     setLoading(true)
-    setError('')
-    setResult(null)
-
     try {
       const res = await fetch('/api/posting-optimizer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, targetAudience, platforms, region, userId: user?.id })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche, platform, userId: user?.id, language })
       })
-
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Bir hata oluştu')
-      setResult(data.optimization)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const platformOptions = [
-    { id: 'instagram', name: 'Instagram', icon: '📸' },
-    { id: 'tiktok', name: 'TikTok', icon: '🎵' },
-    { id: 'twitter', name: 'Twitter/X', icon: '🐦' },
-    { id: 'youtube', name: 'YouTube', icon: '📺' },
-    { id: 'linkedin', name: 'LinkedIn', icon: '💼' }
-  ]
-
-  const togglePlatform = (p: string) => {
-    setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+      if (res.ok) setResult(data.result)
+    } catch (e) {}
+    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Geri</Link>
-          <h1 className="text-xl font-bold text-white">⏰ Smart Posting Times</h1>
-          <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">2 kredi</span>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Paylaşım Zamanlarını Optimize Et</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Niş / Sektör</label>
-                <input type="text" value={niche} onChange={(e) => setNiche(e.target.value)}
-                  placeholder="örn: fitness, teknoloji, moda..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Hedef Kitle (opsiyonel)</label>
-                <input type="text" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)}
-                  placeholder="örn: 25-35 yaş kadınlar, girişimciler..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Platformlar</label>
-                <div className="flex flex-wrap gap-2">
-                  {platformOptions.map(p => (
-                    <button key={p.id} onClick={() => togglePlatform(p.id)}
-                      className={`px-4 py-2 rounded-xl text-sm transition ${
-                        platforms.includes(p.id)
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-white/5 text-gray-300 hover:bg-white/10'
-                      }`}>
-                      {p.icon} {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Bölge</label>
-                <select value={region} onChange={(e) => setRegion(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
-                  <option value="TR">Türkiye</option>
-                  <option value="US">Amerika</option>
-                  <option value="EU">Avrupa</option>
-                  <option value="GLOBAL">Global</option>
-                </select>
-              </div>
-
-              {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">{error}</div>}
-
-              <button onClick={handleOptimize} disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
-                {loading ? 'Analiz Ediliyor...' : '⏰ Zamanları Bul'}
-              </button>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
+            <span className="text-2xl">{t.icon}</span>
+            <h1 className="text-xl font-bold">{t.title}</h1>
+            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+          </div>
+          <div className="relative group">
+            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
+            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
             </div>
           </div>
-
+        </div>
+      </header>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
+      <main className="pt-32 pb-12 px-4 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6">
+              <p className="text-gray-400 text-sm">{t.purpose}</p>
+            </div>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label>
+                <input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
+                <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="twitter">Twitter/X</option>
+                  <option value="youtube">YouTube</option>
+                </select>
+              </div>
+              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+            </div>
+          </div>
           <div>
             {result ? (
-              <div className="space-y-4">
-                {result.platforms && Object.entries(result.platforms).map(([platform, data]: [string, any]) => (
-                  <div key={platform} className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4 capitalize">
-                      {platformOptions.find(p => p.id === platform)?.icon} {platform}
-                    </h3>
-                    
-                    {data.best_times && (
-                      <div className="space-y-3 mb-4">
-                        <div className="text-sm text-gray-400">En İyi Zamanlar</div>
-                        {data.best_times.map((time: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-                            <div>
-                              <span className="text-white font-medium">{time.day}</span>
-                              <span className="text-purple-400 ml-2">{time.time}</span>
-                            </div>
-                            <span className="text-green-400 text-sm">{time.engagement}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {data.worst_times && (
-                      <div className="bg-red-500/10 rounded-xl p-3">
-                        <div className="text-red-400 text-sm">⚠️ Kaçınılması Gereken: {data.worst_times.join(', ')}</div>
-                      </div>
-                    )}
-
-                    {data.frequency && (
-                      <div className="mt-3 text-gray-300 text-sm">
-                        📊 Önerilen Sıklık: <span className="text-white">{data.frequency}</span>
-                      </div>
-                    )}
+              <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
+                {result.schedule?.map((day: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-gray-900/50 rounded-xl">
+                    <span className="text-white font-medium">{day.day}</span>
+                    <span className="text-purple-400">{day.times?.join(', ')}</span>
                   </div>
                 ))}
-
-                {result.weekly_schedule && (
-                  <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">📅 Haftalık Program</h3>
-                    <div className="grid grid-cols-7 gap-2 text-center text-sm">
-                      {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((day, i) => (
-                        <div key={day} className="bg-white/5 rounded-lg p-2">
-                          <div className="text-gray-400">{day}</div>
-                          <div className="text-white font-medium mt-1">
-                            {result.weekly_schedule[day.toLowerCase()] || '-'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {result.tips && <p className="text-gray-400 text-sm mt-4">{result.tips}</p>}
               </div>
             ) : (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-                <div className="text-6xl mb-4">⏰</div>
-                <h3 className="text-xl font-semibold text-white mb-2">Paylaşım Zamanlarını Bul</h3>
-                <p className="text-gray-400">Nişine ve hedef kitlene özel en iyi paylaşım zamanlarını öğren.</p>
+              <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
+                <div className="text-6xl mb-4">{t.icon}</div>
+                <p className="text-gray-500">{t.purpose}</p>
               </div>
             )}
           </div>
