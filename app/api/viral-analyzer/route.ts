@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Kredi kontrolü
-    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    if (!creditCheck.ok) {
-      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    }
+    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: if (!creditCheck.ok) {
+      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+    // TEST MODE: }
 
     const systemPrompt = `Sen viral içerik analistisin. İçeriklerin viral potansiyelini 0-100 arasında puanla ve detaylı analiz yap.
 
@@ -69,7 +69,7 @@ Bu içeriğin viral potansiyelini analiz et.`
     }
 
     // Kredi düş
-    await deductCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
 
     return NextResponse.json({ 
       success: true, 

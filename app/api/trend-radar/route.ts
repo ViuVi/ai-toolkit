@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
     }
 
-    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    if (!creditCheck.ok) {
-      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    }
+    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: if (!creditCheck.ok) {
+      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+    // TEST MODE: }
 
     const systemPrompt = `Sen sosyal medya trend analisti ve içerik stratejistisin. Verilen niş için güncel trendleri ve içerik fırsatlarını analiz et.
 
@@ -110,7 +110,7 @@ Bu niş için güncel trendleri, yükselen konuları ve içerik fırsatlarını 
       return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    await deductCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
 
     return NextResponse.json({ 
       success: true, 

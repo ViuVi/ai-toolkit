@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'İçerik gerekli' }, { status: 400 })
     }
 
-    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    if (!creditCheck.ok) {
-      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    }
+    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: if (!creditCheck.ok) {
+      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+    // TEST MODE: }
 
     const systemPrompt = `Sen A/B test ve içerik optimizasyon uzmanısın. Verilen içeriğin 5 farklı versiyonunu oluştur ve karşılaştır.
 
@@ -124,7 +124,7 @@ Bu içeriğin 5 farklı versiyonunu oluştur. Her versiyon farklı bir psikoloji
       return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    await deductCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
 
     return NextResponse.json({ 
       success: true, 

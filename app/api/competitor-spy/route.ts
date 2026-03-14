@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rakip hesap adı gerekli' }, { status: 400 })
     }
 
-    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    if (!creditCheck.ok) {
-      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    }
+    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: if (!creditCheck.ok) {
+      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+    // TEST MODE: }
 
     const systemPrompt = `Sen sosyal medya analisti ve rekabet uzmanısın. Verilen rakip hesabı analiz et ve stratejik öneriler sun.
 
@@ -94,7 +94,7 @@ Bu rakibi analiz et. Bu nişteki başarılı hesapların genel stratejilerini ba
       return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    await deductCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
 
     return NextResponse.json({ 
       success: true, 

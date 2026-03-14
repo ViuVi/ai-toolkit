@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
     }
 
-    const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
-    if (!creditCheck.ok) {
-      return NextResponse.json({ error: creditCheck.error }, { status: 403 })
-    }
+    // TEST MODE: const creditCheck = await checkCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: if (!creditCheck.ok) {
+      // TEST MODE: return NextResponse.json({ error: creditCheck.error }, { status: 403 })
+    // TEST MODE: }
 
     const systemPrompt = `Sen profesyonel video script yazarı ve içerik stratejistisin. Viral video scripti ve tüm detayları oluştur.
 
@@ -146,7 +146,7 @@ Bu konu için profesyonel video scripti, thumbnail konseptleri ve başlık seçe
       return NextResponse.json({ error: result.error }, { status: 500 })
     }
 
-    await deductCredits(supabase, userId, CREDIT_COST)
+    // TEST MODE: await deductCredits(supabase, userId, CREDIT_COST)
 
     return NextResponse.json({ 
       success: true, 
