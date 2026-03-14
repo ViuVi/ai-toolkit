@@ -5,7 +5,7 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { captionA, captionB, language = 'tr' } = await request.json()
+    const { captionA, captionB, platform, goal, language = 'tr' } = await request.json()
 
     if (!captionA?.trim() || !captionB?.trim()) {
       return NextResponse.json({ error: 'İki caption gerekli' }, { status: 400 })
@@ -13,29 +13,84 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+      return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
     }
 
-    const systemPrompt = `Sen caption analiz uzmanısın. İki caption'ı karşılaştır.
+    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
 
-SADECE bu JSON formatında yanıt ver:
+    const systemPrompt = `Sen A/B test uzmanı ve copywriting analistsin. İçerikleri psikoloji, pazarlama ve platform algoritmaları açısından değerlendiriyorsun.
+
+DEĞERLENDİRME KRİTERLERİ:
+1. Hook Gücü (30%) - İlk cümlenin dikkat çekme kapasitesi
+2. Duygusal Bağ (20%) - Okuyucuyla kurulan duygusal bağlantı
+3. Okunabilirlik (15%) - Akıcılık ve anlaşılırlık
+4. CTA Gücü (15%) - Aksiyon aldırma potansiyeli
+5. Platform Uyumu (10%) - ${platform || 'Instagram'} için uygunluk
+6. Özgünlük (10%) - Farklılık ve yaratıcılık
+
+HEDEF: ${goal || 'Engagement artışı'}
+
+YANIT DİLİ: ${lang}
+
+JSON formatında detaylı karşılaştırma ver:
 {
-  "winner": "A",
-  "scoreA": 75,
-  "scoreB": 65,
-  "analysisA": "Caption A analizi...",
-  "analysisB": "Caption B analizi..."
+  "winner": "A veya B",
+  "confidence": "Kazanma güven yüzdesi (örn: 75%)",
+  "score_a": 0-100,
+  "score_b": 0-100,
+  "verdict": "Samimi ve yapıcı genel değerlendirme",
+  "analysis_a": {
+    "overall_impression": "Genel izlenim",
+    "hook_score": 0-100,
+    "hook_analysis": "Hook analizi",
+    "emotional_score": 0-100,
+    "emotional_analysis": "Duygusal etki analizi",
+    "readability_score": 0-100,
+    "readability_analysis": "Okunabilirlik analizi",
+    "cta_score": 0-100,
+    "cta_analysis": "CTA analizi",
+    "strengths": ["Güçlü yönler"],
+    "weaknesses": ["Zayıf yönler"],
+    "predicted_engagement": "Tahmini engagement"
+  },
+  "analysis_b": {
+    "overall_impression": "Genel izlenim",
+    "hook_score": 0-100,
+    "hook_analysis": "Hook analizi",
+    "emotional_score": 0-100,
+    "emotional_analysis": "Duygusal etki analizi",
+    "readability_score": 0-100,
+    "readability_analysis": "Okunabilirlik analizi",
+    "cta_score": 0-100,
+    "cta_analysis": "CTA analizi",
+    "strengths": ["Güçlü yönler"],
+    "weaknesses": ["Zayıf yönler"],
+    "predicted_engagement": "Tahmini engagement"
+  },
+  "head_to_head": {
+    "hook": { "winner": "A/B", "margin": "Fark açıklaması" },
+    "emotional": { "winner": "A/B", "margin": "Fark açıklaması" },
+    "cta": { "winner": "A/B", "margin": "Fark açıklaması" }
+  },
+  "hybrid_suggestion": "İki caption'ın en iyi özelliklerini birleştiren yeni versiyon",
+  "improvement_tips": ["Her iki caption için de geçerli iyileştirme önerileri"],
+  "test_recommendation": "Gerçek A/B test önerisi"
 }`
 
-    const userPrompt = `Caption A:
+    const userPrompt = `CAPTION A:
+"""
 ${captionA}
+"""
 
-Caption B:
+CAPTION B:
+"""
 ${captionB}
+"""
 
-Dil: ${language}
+Platform: ${platform || 'Instagram'}
+Hedef: ${goal || 'Engagement artışı'}
 
-Bu iki caption'ı karşılaştır ve kazananı belirle.`
+Bu iki caption'ı profesyonelce karşılaştır ve kazananı belirle.`
 
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
@@ -50,7 +105,7 @@ Bu iki caption'ı karşılaştır ve kazananı belirle.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.6,
-        max_tokens: 2000,
+        max_tokens: 4000,
         response_format: { type: 'json_object' }
       })
     })
@@ -66,7 +121,7 @@ Bu iki caption'ı karşılaştır ve kazananı belirle.`
     try {
       result = JSON.parse(aiContent)
     } catch {
-      result = { winner: 'A', scoreA: 50, scoreB: 50 }
+      result = { winner: 'A', score_a: 50, score_b: 50, error: true }
     }
 
     return NextResponse.json({ success: true, result })

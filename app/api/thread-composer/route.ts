@@ -5,7 +5,7 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, tweetCount, language = 'tr' } = await request.json()
+    const { topic, tweetCount, tone, platform, language = 'tr' } = await request.json()
 
     if (!topic?.trim()) {
       return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
@@ -13,30 +13,83 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+      return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
     }
 
-    const count = parseInt(tweetCount) || 7
+    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const count = parseInt(tweetCount) || 10
 
-    const systemPrompt = `Sen Twitter/X thread yazarısın. Viral thread oluştur.
+    const systemPrompt = `Sen viral Twitter/X thread yazarısın. Binlerce RT ve like alan threadler yazdın.
 
-SADECE bu JSON formatında yanıt ver:
+VİRAL THREAD FORMÜLÜ:
+
+1. HOOK TWEET (1. tweet) - En kritik
+   - Büyük bir iddia veya vaat
+   - Merak uyandırıcı
+   - "🧵" thread emoji
+   - 280 karakteri maksimum kullan
+
+2. CONTEXT (2-3. tweet)
+   - Neden önemli?
+   - Neden şimdi?
+   - Credibility/kaynak
+
+3. BODY (4-8. tweet)
+   - Her tweet bir değer
+   - Numaralandırma kullan
+   - Kısa paragraflar
+   - Emoji ile görsellik
+
+4. CLIMAX (9. tweet)
+   - En güçlü nokta
+   - "Plot twist" veya reveal
+
+5. CTA (Son tweet)
+   - RT/Like iste
+   - Takip et
+   - Bookmark yap
+   - Yorum iste
+
+TON: ${tone || 'Bilgilendirici ve samimi'}
+PLATFORM: ${platform || 'Twitter/X'}
+
+YANIT DİLİ: ${lang}
+
+JSON formatında viral thread ver:
 {
+  "thread_title": "Thread başlığı",
+  "hook_options": [
+    { "version": "A", "tweet": "Hook versiyon A", "style": "Stil açıklaması" },
+    { "version": "B", "tweet": "Hook versiyon B", "style": "Stil açıklaması" }
+  ],
   "tweets": [
-    "Tweet 1 (hook - dikkat çekici)...",
-    "Tweet 2...",
-    "Tweet 3...",
-    "Son tweet (CTA)..."
-  ]
-}
-
-Her tweet 280 karakterden kısa olmalı.`
+    {
+      "number": 1,
+      "type": "hook",
+      "content": "Tweet içeriği (emoji dahil)",
+      "char_count": 280,
+      "purpose": "Bu tweetin amacı",
+      "tip": "Yazım/paylaşım ipucu"
+    }
+  ],
+  "full_thread": "Tüm threadı kopyalamaya hazır formatta",
+  "engagement_boosters": {
+    "best_time_to_post": "En iyi paylaşım zamanı",
+    "reply_to_self_tip": "Kendi tweetine yanıt stratejisi",
+    "quote_tweet_bait": "QRT teşvik edici cümle",
+    "controversy_hook": "Tartışma başlatıcı (opsiyonel)"
+  },
+  "hashtags": ["Önerilen hashtagler (1-2 max)"],
+  "follow_up_ideas": ["Thread sonrası içerik fikirleri"],
+  "repurpose_tips": ["Bu threadi başka platformlara nasıl uyarlarsın"]
+}`
 
     const userPrompt = `Konu: ${topic}
-Tweet sayısı: ${count}
-Dil: ${language}
+Tweet Sayısı: ${count}
+Ton: ${tone || 'Bilgilendirici ve samimi'}
+Platform: ${platform || 'Twitter/X'}
 
-Bu konu hakkında viral bir thread yaz.`
+Bu konu hakkında viral bir thread yaz. İlk tweet çok dikkat çekici olmalı.`
 
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
@@ -51,7 +104,7 @@ Bu konu hakkında viral bir thread yaz.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 3000,
+        max_tokens: 5000,
         response_format: { type: 'json_object' }
       })
     })
@@ -67,7 +120,7 @@ Bu konu hakkında viral bir thread yaz.`
     try {
       result = JSON.parse(aiContent)
     } catch {
-      result = { tweets: [] }
+      result = { tweets: [], error: true }
     }
 
     return NextResponse.json({ success: true, result })

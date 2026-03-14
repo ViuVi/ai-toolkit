@@ -5,7 +5,7 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile'
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, goals, language = 'tr' } = await request.json()
+    const { niche, goals, platform, language = 'tr' } = await request.json()
 
     if (!niche?.trim()) {
       return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
@@ -13,24 +13,61 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+      return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
     }
 
-    const systemPrompt = `Sen içerik planlama uzmanısın. 7 günlük içerik planı oluştur.
+    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
 
-SADECE bu JSON formatında yanıt ver:
+    const systemPrompt = `Sen 15 yıllık deneyime sahip bir içerik stratejisti ve sosyal medya planlama uzmanısın. Fortune 500 şirketleri ve viral influencer'lar için içerik takvimleri oluşturdun.
+
+Görevin: ${niche} nişi için 30 günlük kapsamlı ve stratejik içerik planı oluşturmak.
+
+PLANLAMA PRENSİPLERİN:
+1. İçerik Çeşitliliği: Eğitici (%40), Eğlenceli (%30), İlham Verici (%20), Satış/CTA (%10)
+2. Format Çeşitliliği: Carousel, Reel/Video, Tek Görsel, Story serisi, Canlı yayın
+3. Haftalık Tema: Her haftanın tutarlı bir alt teması olmalı
+4. Engagement Stratejisi: Soru günleri, anket günleri, takipçi içeriği günleri
+5. Trend Entegrasyonu: Güncel trendlere açık alanlar bırak
+6. Tutarlı Paylaşım: Optimal saat ve gün dağılımı
+
+HEDEFLER: ${goals || 'Organik büyüme ve engagement artışı'}
+PLATFORM: ${platform || 'Instagram'}
+
+YANIT DİLİ: ${lang}
+
+JSON formatında 30 günlük plan ver:
 {
+  "strategy_overview": "Genel strateji özeti ve hedefler",
+  "weekly_themes": [
+    { "week": 1, "theme": "Hafta teması", "focus": "Odak noktası" }
+  ],
   "days": [
-    { "day": 1, "topic": "Konu", "format": "Carousel", "time": "10:00" },
-    { "day": 2, "topic": "Konu", "format": "Reel", "time": "19:00" }
-  ]
+    {
+      "day": 1,
+      "weekday": "Pazartesi",
+      "theme": "Günün teması",
+      "content_type": "Carousel / Reel / Post / Story / Live",
+      "topic": "Spesifik içerik konusu",
+      "hook": "Dikkat çekici açılış cümlesi",
+      "description": "İçerik açıklaması ve ne anlatılacağı",
+      "cta": "Call-to-action önerisi",
+      "hashtags": ["5 hashtag"],
+      "best_time": "Paylaşım saati",
+      "engagement_tip": "Etkileşim artırma ipucu",
+      "content_pillar": "Eğitici / Eğlenceli / İlham Verici / Satış"
+    }
+  ],
+  "bonus_ideas": ["5 adet bonus içerik fikri"],
+  "content_tips": ["Genel içerik üretim ipuçları"],
+  "engagement_strategy": "30 günlük engagement stratejisi",
+  "success_metrics": ["Takip edilmesi gereken metrikler"]
 }`
 
     const userPrompt = `Niş: ${niche}
-Hedefler: ${goals || 'Genel büyüme'}
-Dil: ${language}
+Platform: ${platform || 'Instagram'}  
+Hedefler: ${goals || 'Organik büyüme, takipçi artışı, engagement yükseltme'}
 
-7 günlük içerik planı oluştur.`
+30 günlük profesyonel ve uygulanabilir içerik planı oluştur. Her gün için spesifik, yaratıcı ve özgün fikirler sun.`
 
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
@@ -44,8 +81,8 @@ Dil: ${language}
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
+        temperature: 0.8,
+        max_tokens: 8000,
         response_format: { type: 'json_object' }
       })
     })
@@ -61,7 +98,7 @@ Dil: ${language}
     try {
       result = JSON.parse(aiContent)
     } catch {
-      result = { days: [] }
+      result = { days: [], error: true }
     }
 
     return NextResponse.json({ success: true, result })
