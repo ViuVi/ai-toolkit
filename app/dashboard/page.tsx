@@ -14,7 +14,15 @@ const texts: any = {
 }
 
 // Tema uyumlu hazır avatarlar
-const defaultAvatars = [
+type AvatarType = {
+  id: string
+  type: 'gradient' | 'solid'
+  colors?: [string, string]
+  color?: string
+  icon: string
+}
+
+const defaultAvatars: AvatarType[] = [
   { id: 'gradient-1', type: 'gradient', colors: ['#8B5CF6', '#EC4899'], icon: '🚀' },
   { id: 'gradient-2', type: 'gradient', colors: ['#6366F1', '#8B5CF6'], icon: '⚡' },
   { id: 'gradient-3', type: 'gradient', colors: ['#EC4899', '#F97316'], icon: '🔥' },
@@ -119,9 +127,9 @@ export default function DashboardPage() {
     // JSON ise (hazır avatar)
     try {
       const avatar = JSON.parse(avatarUrl)
-      const bgStyle = avatar.type === 'gradient'
+      const bgStyle = avatar.type === 'gradient' && avatar.colors
         ? { background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})` }
-        : { backgroundColor: avatar.color }
+        : { backgroundColor: avatar.color || '#8B5CF6' }
       return <div className={`${size} rounded-xl flex items-center justify-center`} style={bgStyle}><span className="text-lg">{avatar.icon}</span></div>
     } catch {
       return <div className={`${size} rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold`}>{user?.email?.[0]?.toUpperCase() || 'U'}</div>
@@ -247,9 +255,9 @@ export default function DashboardPage() {
             {/* Default Avatars */}
             <div className="grid grid-cols-6 gap-3">
               {defaultAvatars.map(avatar => {
-                const bgStyle = avatar.type === 'gradient'
+                const bgStyle = avatar.type === 'gradient' && avatar.colors
                   ? { background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})` }
-                  : { backgroundColor: avatar.color }
+                  : { backgroundColor: avatar.color || '#8B5CF6' }
                 return (
                   <button key={avatar.id} onClick={() => selectAvatar(avatar)} className="w-12 h-12 rounded-xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-transparent hover:border-white/30" style={bgStyle}>
                     <span>{avatar.icon}</span>
