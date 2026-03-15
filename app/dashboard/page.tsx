@@ -5,37 +5,13 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const texts: any = {
-  tr: { welcome: 'Hoş Geldin', credits: 'Kredi', tools: 'Araçlar', logout: 'Çıkış Yap', upgrade: 'Yükselt', create: 'Oluşturma', analyze: 'Analiz', optimize: 'Optimizasyon', allTools: 'Tüm Araçlar' },
-  en: { welcome: 'Welcome', credits: 'Credits', tools: 'Tools', logout: 'Log Out', upgrade: 'Upgrade', create: 'Create', analyze: 'Analyze', optimize: 'Optimize', allTools: 'All Tools' },
-  ru: { welcome: 'Добро пожаловать', credits: 'Кредиты', tools: 'Инструменты', logout: 'Выйти', upgrade: 'Улучшить', create: 'Создать', analyze: 'Анализ', optimize: 'Оптимизация', allTools: 'Все инструменты' },
-  de: { welcome: 'Willkommen', credits: 'Credits', tools: 'Tools', logout: 'Abmelden', upgrade: 'Upgrade', create: 'Erstellen', analyze: 'Analysieren', optimize: 'Optimieren', allTools: 'Alle Tools' },
-  fr: { welcome: 'Bienvenue', credits: 'Crédits', tools: 'Outils', logout: 'Déconnexion', upgrade: 'Améliorer', create: 'Créer', analyze: 'Analyser', optimize: 'Optimiser', allTools: 'Tous les outils' }
+const texts: Record<string, Record<string, string>> = {
+  tr: { welcome: 'Hoş Geldin', credits: 'Kredi', logout: 'Çıkış Yap', create: 'Oluşturma', analyze: 'Analiz', optimize: 'Optimizasyon', allTools: 'Tüm Araçlar', changePhoto: 'Fotoğraf Değiştir', uploadPhoto: 'Fotoğraf Yükle', uploading: 'Yükleniyor...', removePhoto: 'Fotoğrafı Kaldır' },
+  en: { welcome: 'Welcome', credits: 'Credits', logout: 'Log Out', create: 'Create', analyze: 'Analyze', optimize: 'Optimize', allTools: 'All Tools', changePhoto: 'Change Photo', uploadPhoto: 'Upload Photo', uploading: 'Uploading...', removePhoto: 'Remove Photo' },
+  ru: { welcome: 'Добро пожаловать', credits: 'Кредиты', logout: 'Выйти', create: 'Создать', analyze: 'Анализ', optimize: 'Оптимизация', allTools: 'Все инструменты', changePhoto: 'Изменить фото', uploadPhoto: 'Загрузить', uploading: 'Загрузка...', removePhoto: 'Удалить фото' },
+  de: { welcome: 'Willkommen', credits: 'Credits', logout: 'Abmelden', create: 'Erstellen', analyze: 'Analysieren', optimize: 'Optimieren', allTools: 'Alle Tools', changePhoto: 'Foto ändern', uploadPhoto: 'Hochladen', uploading: 'Lädt...', removePhoto: 'Foto entfernen' },
+  fr: { welcome: 'Bienvenue', credits: 'Crédits', logout: 'Déconnexion', create: 'Créer', analyze: 'Analyser', optimize: 'Optimiser', allTools: 'Tous les outils', changePhoto: 'Changer la photo', uploadPhoto: 'Télécharger', uploading: 'Téléchargement...', removePhoto: 'Supprimer' }
 }
-
-// Tema uyumlu hazır avatarlar
-type AvatarType = {
-  id: string
-  type: 'gradient' | 'solid'
-  colors?: [string, string]
-  color?: string
-  icon: string
-}
-
-const defaultAvatars: AvatarType[] = [
-  { id: 'gradient-1', type: 'gradient', colors: ['#8B5CF6', '#EC4899'], icon: '🚀' },
-  { id: 'gradient-2', type: 'gradient', colors: ['#6366F1', '#8B5CF6'], icon: '⚡' },
-  { id: 'gradient-3', type: 'gradient', colors: ['#EC4899', '#F97316'], icon: '🔥' },
-  { id: 'gradient-4', type: 'gradient', colors: ['#8B5CF6', '#06B6D4'], icon: '💎' },
-  { id: 'gradient-5', type: 'gradient', colors: ['#10B981', '#6366F1'], icon: '🎯' },
-  { id: 'gradient-6', type: 'gradient', colors: ['#F59E0B', '#EC4899'], icon: '✨' },
-  { id: 'gradient-7', type: 'gradient', colors: ['#6366F1', '#EC4899'], icon: '🎬' },
-  { id: 'gradient-8', type: 'gradient', colors: ['#8B5CF6', '#F97316'], icon: '📈' },
-  { id: 'solid-1', type: 'solid', color: '#8B5CF6', icon: '👤' },
-  { id: 'solid-2', type: 'solid', color: '#EC4899', icon: '🎨' },
-  { id: 'solid-3', type: 'solid', color: '#6366F1', icon: '💡' },
-  { id: 'solid-4', type: 'solid', color: '#10B981', icon: '🌟' },
-]
 
 const tools = [
   { icon: '🔍', name: 'Viral Video Finder', slug: 'video-finder', credits: 5, category: 'analyze' },
@@ -57,7 +33,7 @@ const tools = [
 ]
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string; name?: string } } | null>(null)
   const [credits, setCredits] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [showAvatarModal, setShowAvatarModal] = useState(false)
@@ -68,31 +44,40 @@ export default function DashboardPage() {
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
+  // Kullanıcı adını al
+  const getUserName = () => {
+    if (!user) return ''
+    const meta = user.user_metadata
+    if (meta?.full_name) return meta.full_name
+    if (meta?.name) return meta.name
+    if (user.email) return user.email.split('@')[0]
+    return ''
+  }
+
+  const getInitial = () => {
+    const name = getUserName()
+    return name ? name[0].toUpperCase() : 'U'
+  }
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else {
+      if (!user) {
+        router.push('/login')
+      } else {
         setUser(user)
         supabase.from('credits').select('balance, avatar_url').eq('user_id', user.id).single().then(({ data }) => {
           if (data) {
             setCredits(data.balance || 0)
-            setAvatarUrl(data.avatar_url)
+            setAvatarUrl(data.avatar_url || null)
           }
         })
       }
     })
-  }, [])
+  }, [router])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
-  }
-
-  const selectAvatar = async (avatar: typeof defaultAvatars[0]) => {
-    const avatarData = JSON.stringify(avatar)
-    await supabase.from('credits').update({ avatar_url: avatarData }).eq('user_id', user.id)
-    setAvatarUrl(avatarData)
-    setShowAvatarModal(false)
   }
 
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,37 +91,33 @@ export default function DashboardPage() {
     const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true })
 
     if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName)
-      await supabase.from('credits').update({ avatar_url: publicUrl }).eq('user_id', user.id)
-      setAvatarUrl(publicUrl)
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
+      await supabase.from('credits').update({ avatar_url: data.publicUrl }).eq('user_id', user.id)
+      setAvatarUrl(data.publicUrl)
       setShowAvatarModal(false)
     }
     setUploading(false)
   }
 
-  const renderAvatar = (size: string = 'w-10 h-10') => {
-    if (!avatarUrl) {
-      return <div className={`${size} rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold`}>{user?.email?.[0]?.toUpperCase() || 'U'}</div>
-    }
-
-    // URL ise (yüklenen fotoğraf)
-    if (avatarUrl.startsWith('http')) {
-      return <img src={avatarUrl} alt="Avatar" className={`${size} rounded-xl object-cover`} />
-    }
-
-    // JSON ise (hazır avatar)
-    try {
-      const avatar = JSON.parse(avatarUrl)
-      const bgStyle = avatar.type === 'gradient' && avatar.colors
-        ? { background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})` }
-        : { backgroundColor: avatar.color || '#8B5CF6' }
-      return <div className={`${size} rounded-xl flex items-center justify-center`} style={bgStyle}><span className="text-lg">{avatar.icon}</span></div>
-    } catch {
-      return <div className={`${size} rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold`}>{user?.email?.[0]?.toUpperCase() || 'U'}</div>
-    }
+  const removeAvatar = async () => {
+    if (!user) return
+    await supabase.from('credits').update({ avatar_url: null }).eq('user_id', user.id)
+    setAvatarUrl(null)
+    setShowAvatarModal(false)
   }
 
-  const filteredTools = filter === 'all' ? tools : tools.filter(t => t.category === filter)
+  const renderAvatar = (size: string = 'w-10 h-10', textSize: string = 'text-lg') => {
+    if (avatarUrl) {
+      return <img src={avatarUrl} alt="Avatar" className={`${size} rounded-xl object-cover`} />
+    }
+    return (
+      <div className={`${size} rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold ${textSize}`}>
+        {getInitial()}
+      </div>
+    )
+  }
+
+  const filteredTools = filter === 'all' ? tools : tools.filter(tool => tool.category === filter)
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
@@ -160,27 +141,27 @@ export default function DashboardPage() {
             <div className="relative group">
               <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
               <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => (
-                  <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
+                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
+                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
                 ))}
               </div>
             </div>
 
             {/* Profile */}
             <div className="relative group">
-              <button className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAvatarModal(true)}>
-                {renderAvatar('w-10 h-10')}
+              <button className="flex items-center gap-2 cursor-pointer">
+                {renderAvatar('w-10 h-10', 'text-lg')}
               </button>
               <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-2 z-50">
-                <div className="px-4 py-2 border-b border-gray-800">
-                  <div className="text-sm text-gray-400">Signed in as</div>
-                  <div className="text-sm font-medium truncate">{user?.email}</div>
+                <div className="px-4 py-3 border-b border-gray-800">
+                  <div className="font-semibold text-white">{getUserName()}</div>
+                  <div className="text-sm text-gray-500">{user?.email}</div>
                 </div>
-                <button onClick={() => setShowAvatarModal(true)} className="w-full px-4 py-2 text-left text-sm text-gray-400 hover:bg-gray-800 hover:text-white flex items-center gap-2">
-                  <span>🖼️</span> Change Avatar
+                <button onClick={() => setShowAvatarModal(true)} className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                  {t.changePhoto}
                 </button>
-                <button onClick={handleLogout} className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800 flex items-center gap-2">
-                  <span>🚪</span> {t.logout}
+                <button onClick={handleLogout} className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-gray-800 transition">
+                  {t.logout}
                 </button>
               </div>
             </div>
@@ -192,7 +173,7 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold">{t.welcome}, {user?.email?.split('@')[0]} 👋</h1>
+          <h1 className="text-2xl font-bold">{t.welcome}, {getUserName()} 👋</h1>
           <p className="text-gray-500">Ready to create viral content?</p>
         </div>
 
@@ -231,40 +212,29 @@ export default function DashboardPage() {
       {/* Avatar Modal */}
       {showAvatarModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowAvatarModal(false)}>
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Choose Avatar</h2>
-              <button onClick={() => setShowAvatarModal(false)} className="text-gray-500 hover:text-white">✕</button>
+              <h2 className="text-xl font-bold">{t.changePhoto}</h2>
+              <button onClick={() => setShowAvatarModal(false)} className="text-gray-500 hover:text-white text-xl">✕</button>
             </div>
 
             {/* Current Avatar */}
             <div className="flex justify-center mb-6">
-              {renderAvatar('w-24 h-24')}
+              {renderAvatar('w-24 h-24', 'text-4xl')}
             </div>
 
             {/* Upload Button */}
-            <div className="mb-6">
-              <input type="file" ref={fileInputRef} onChange={uploadAvatar} accept="image/*" className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2">
-                {uploading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Uploading...</> : <>📤 Upload Photo</>}
+            <input type="file" ref={fileInputRef} onChange={uploadAvatar} accept="image/*" className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 mb-3">
+              {uploading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.uploading}</> : t.uploadPhoto}
+            </button>
+
+            {/* Remove Button */}
+            {avatarUrl && (
+              <button onClick={removeAvatar} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-red-400 hover:border-red-500/30 transition">
+                {t.removePhoto}
               </button>
-            </div>
-
-            <div className="text-center text-gray-500 text-sm mb-4">— or choose from below —</div>
-
-            {/* Default Avatars */}
-            <div className="grid grid-cols-6 gap-3">
-              {defaultAvatars.map(avatar => {
-                const bgStyle = avatar.type === 'gradient' && avatar.colors
-                  ? { background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})` }
-                  : { backgroundColor: avatar.color || '#8B5CF6' }
-                return (
-                  <button key={avatar.id} onClick={() => selectAvatar(avatar)} className="w-12 h-12 rounded-xl flex items-center justify-center hover:scale-110 transition-transform border-2 border-transparent hover:border-white/30" style={bgStyle}>
-                    <span>{avatar.icon}</span>
-                  </button>
-                )
-              })}
-            </div>
+            )}
           </div>
         </div>
       )}
