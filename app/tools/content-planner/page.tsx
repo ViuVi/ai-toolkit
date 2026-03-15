@@ -6,72 +6,22 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const texts: any = {
-  tr: { 
-    title: 'Content Calendar', 
-    icon: '📅', 
-    credits: '10 Kredi', 
-    back: '← Geri', 
-    testMode: '🧪 Test Modu', 
-    purpose: '30 günlük kapsamlı içerik planı oluşturur.',
-    nicheLabel: 'Niş / Sektör',
-    nichePlaceholder: 'örn: fitness, kişisel finans, yemek...',
-    goalsLabel: 'Hedefler',
-    goalsPlaceholder: 'örn: takipçi artışı, satış...',
-    platformLabel: 'Platform',
-    btn: '30 Günlük Plan Oluştur',
-    loading: 'Plan oluşturuluyor...',
-    strategy: '📊 Strateji',
-    weeklyThemes: '🎯 Haftalık Temalar',
-    bonusIdeas: '💡 Bonus Fikirler',
-    week: 'Hafta',
-    downloadMD: '📄 Markdown İndir',
-    downloadTXT: '📝 TXT İndir',
-    newPlan: '← Yeni Plan'
-  },
-  en: { 
-    title: 'Content Calendar', 
-    icon: '📅', 
-    credits: '10 Credits', 
-    back: '← Back', 
-    testMode: '🧪 Test Mode', 
-    purpose: 'Creates a comprehensive 30-day content plan.',
-    nicheLabel: 'Niche',
-    nichePlaceholder: 'e.g., fitness, finance...',
-    goalsLabel: 'Goals',
-    goalsPlaceholder: 'e.g., growth, sales...',
-    platformLabel: 'Platform',
-    btn: 'Create 30-Day Plan',
-    loading: 'Creating...',
-    strategy: '📊 Strategy',
-    weeklyThemes: '🎯 Weekly Themes',
-    bonusIdeas: '💡 Bonus Ideas',
-    week: 'Week',
-    downloadMD: '📄 Download Markdown',
-    downloadTXT: '📝 Download TXT',
-    newPlan: '← New Plan'
-  },
-  ru: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Назад', testMode: '🧪 Тест', purpose: '30-дневный план.', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', goalsLabel: 'Цели', goalsPlaceholder: 'напр: рост...', platformLabel: 'Платформа', btn: 'Создать', loading: 'Создание...', strategy: '📊 Стратегия', weeklyThemes: '🎯 Темы', bonusIdeas: '💡 Идеи', week: 'Неделя', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Новый' },
-  de: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Zurück', testMode: '🧪 Test', purpose: '30-Tage Plan.', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', goalsLabel: 'Ziele', goalsPlaceholder: 'z.B. Wachstum...', platformLabel: 'Plattform', btn: 'Erstellen', loading: 'Erstelle...', strategy: '📊 Strategie', weeklyThemes: '🎯 Themen', bonusIdeas: '💡 Ideen', week: 'Woche', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Neu' },
-  fr: { title: 'Content Calendar', icon: '📅', credits: '10', back: '← Retour', testMode: '🧪 Test', purpose: 'Plan 30 jours.', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', goalsLabel: 'Objectifs', goalsPlaceholder: 'ex: croissance...', platformLabel: 'Plateforme', btn: 'Créer', loading: 'Création...', strategy: '📊 Stratégie', weeklyThemes: '🎯 Thèmes', bonusIdeas: '💡 Idées', week: 'Semaine', downloadMD: '📄 Markdown', downloadTXT: '📝 TXT', newPlan: '← Nouveau' }
+  tr: { back: 'Dashboard', nicheLabel: 'Niş/Konu', nichePlaceholder: 'örn: fitness, yemek tarifleri...', platformLabel: 'Platform', daysLabel: 'Gün Sayısı', goalsLabel: 'Hedefler', btn: 'Plan Oluştur', loading: 'Oluşturuluyor...', copy: 'Kopyala', copied: '✓', calendar: 'İçerik Takvimi', download: 'CSV İndir', newPlan: 'Yeni Plan' },
+  en: { back: 'Dashboard', nicheLabel: 'Niche/Topic', nichePlaceholder: 'e.g., fitness, recipes...', platformLabel: 'Platform', daysLabel: 'Days', goalsLabel: 'Goals', btn: 'Create Plan', loading: 'Creating...', copy: 'Copy', copied: '✓', calendar: 'Content Calendar', download: 'Download CSV', newPlan: 'New Plan' },
+  ru: { back: 'Панель', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', platformLabel: 'Платформа', daysLabel: 'Дни', goalsLabel: 'Цели', btn: 'Создать', loading: 'Создание...', copy: 'Копировать', copied: '✓', calendar: 'Календарь', download: 'Скачать', newPlan: 'Новый' },
+  de: { back: 'Dashboard', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', platformLabel: 'Plattform', daysLabel: 'Tage', goalsLabel: 'Ziele', btn: 'Erstellen', loading: 'Erstelle...', copy: 'Kopieren', copied: '✓', calendar: 'Kalender', download: 'CSV', newPlan: 'Neu' },
+  fr: { back: 'Tableau', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', platformLabel: 'Plateforme', daysLabel: 'Jours', goalsLabel: 'Objectifs', btn: 'Créer', loading: 'Création...', copy: 'Copier', copied: '✓', calendar: 'Calendrier', download: 'CSV', newPlan: 'Nouveau' }
 }
 
-const contentTypeColors: any = {
-  'Carousel': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  'Reel': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-  'Post': 'bg-green-500/20 text-green-400 border-green-500/30',
-  'Story': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  'Live': 'bg-red-500/20 text-red-400 border-red-500/30',
-  'Video': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-}
-
-export default function Page() {
+export default function ContentPlannerPage() {
   const [user, setUser] = useState<any>(null)
+  const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [niche, setNiche] = useState('')
-  const [goals, setGoals] = useState('')
   const [platform, setPlatform] = useState('instagram')
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null)
+  const [days, setDays] = useState('30')
+  const [goals, setGoals] = useState('')
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
@@ -79,348 +29,129 @@ export default function Page() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) router.push('/login')
-      else setUser(user)
+      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
     })
   }, [])
 
   const handleSubmit = async () => {
-    if (!niche.trim()) return
-    setLoading(true)
-    setResult(null)
+    if (!niche.trim() || loading) return
+    setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/content-planner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, goals, platform, language })
-      })
+      const res = await fetch('/api/content-planner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ niche, platform, days, goals, language }) })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) {
+        setResult(data.result)
+        if (credits >= 10) { await supabase.from('credits').update({ balance: credits - 10 }).eq('user_id', user.id); setCredits(prev => prev - 10) }
+      }
     } catch (e) { console.error(e) }
     setLoading(false)
   }
 
-  const getWeekDays = (weekNum: number) => {
-    if (!result?.days) return []
-    const start = (weekNum - 1) * 7
-    return result.days.slice(start, start + 7)
+  const downloadCSV = () => {
+    if (!result?.calendar) return
+    let csv = 'Gün,Başlık,Format,Hook,Açıklama\n'
+    result.calendar.forEach((day: any) => {
+      csv += `${day.day},"${day.title}","${day.format}","${day.hook || ''}","${day.description || ''}"\n`
+    })
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `content-plan-${days}days.csv`
+    link.click()
   }
 
-  // Markdown İndirme
-  const downloadMarkdown = () => {
-    if (!result?.days) return
-    const date = new Date().toLocaleDateString('tr-TR')
-    
-    let md = `# 📅 30 Günlük İçerik Planı
-
-**Niş:** ${niche}
-**Platform:** ${platform.charAt(0).toUpperCase() + platform.slice(1)}
-**Hedefler:** ${goals || 'Belirtilmedi'}
-**Oluşturulma Tarihi:** ${date}
-
----
-
-`
-
-    if (result.strategy_overview) {
-      md += `## 📊 Strateji Özeti
-
-${result.strategy_overview}
-
----
-
-`
-    }
-
-    if (result.weekly_themes && result.weekly_themes.length > 0) {
-      md += `## 🎯 Haftalık Temalar
-
-| Hafta | Tema | Odak |
-|-------|------|------|
-`
-      result.weekly_themes.forEach((wt: any) => {
-        md += `| ${wt.week} | ${wt.theme || '-'} | ${wt.focus || '-'} |\n`
-      })
-      md += `\n---\n\n`
-    }
-
-    md += `## 📋 Günlük Plan
-
-`
-
-    result.days.forEach((day: any) => {
-      md += `### 📌 Gün ${day.day} - ${day.weekday || ''}
-
-- **Format:** ${day.content_type || '-'}
-- **Paylaşım Saati:** ${day.best_time || '-'}
-- **Konu:** ${day.topic || '-'}
-`
-      if (day.hook) md += `- **Hook:** "${day.hook}"\n`
-      if (day.description) md += `- **Açıklama:** ${day.description}\n`
-      if (day.cta) md += `- **CTA:** ${day.cta}\n`
-      if (day.engagement_tip) md += `- **İpucu:** ${day.engagement_tip}\n`
-      if (day.hashtags && day.hashtags.length > 0) {
-        md += `- **Hashtags:** ${day.hashtags.join(' ')}\n`
-      }
-      md += `\n`
-    })
-
-    if (result.bonus_ideas && result.bonus_ideas.length > 0) {
-      md += `---
-
-## 💡 Bonus Fikirler
-
-`
-      result.bonus_ideas.forEach((idea: string, i: number) => {
-        md += `${i + 1}. ${idea}\n`
-      })
-    }
-
-    if (result.content_tips && result.content_tips.length > 0) {
-      md += `\n---
-
-## 🚀 İçerik İpuçları
-
-`
-      result.content_tips.forEach((tip: string) => {
-        md += `- ${tip}\n`
-      })
-    }
-
-    md += `\n---
-*Bu plan MediaToolkit.site tarafından oluşturulmuştur.*
-`
-
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `icerik-plani-${niche.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.md`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  // TXT İndirme
-  const downloadTXT = () => {
-    if (!result?.days) return
-    const date = new Date().toLocaleDateString('tr-TR')
-    const line = '═'.repeat(50)
-    const thinLine = '─'.repeat(50)
-
-    let txt = `${line}
-       30 GÜNLÜK İÇERİK PLANI
-${line}
-
-Niş: ${niche}
-Platform: ${platform.charAt(0).toUpperCase() + platform.slice(1)}
-Hedefler: ${goals || 'Belirtilmedi'}
-Tarih: ${date}
-
-${line}
-`
-
-    if (result.strategy_overview) {
-      txt += `
-STRATEJİ ÖZETİ
-${thinLine}
-${result.strategy_overview}
-
-`
-    }
-
-    if (result.weekly_themes && result.weekly_themes.length > 0) {
-      txt += `HAFTALIK TEMALAR
-${thinLine}
-`
-      result.weekly_themes.forEach((wt: any) => {
-        txt += `Hafta ${wt.week}: ${wt.theme || '-'}\n`
-        if (wt.focus) txt += `         Odak: ${wt.focus}\n`
-      })
-      txt += `\n`
-    }
-
-    txt += `${line}
-              GÜNLÜK PLAN
-${line}
-
-`
-
-    result.days.forEach((day: any) => {
-      txt += `${thinLine}
-GÜN ${day.day} - ${day.weekday || ''}
-${thinLine}
-Format: ${day.content_type || '-'}
-Saat: ${day.best_time || '-'}
-Konu: ${day.topic || '-'}
-`
-      if (day.hook) txt += `Hook: "${day.hook}"\n`
-      if (day.description) txt += `Açıklama: ${day.description}\n`
-      if (day.cta) txt += `CTA: ${day.cta}\n`
-      if (day.engagement_tip) txt += `İpucu: ${day.engagement_tip}\n`
-      if (day.hashtags && day.hashtags.length > 0) {
-        txt += `Hashtags: ${day.hashtags.join(' ')}\n`
-      }
-      txt += `\n`
-    })
-
-    if (result.bonus_ideas && result.bonus_ideas.length > 0) {
-      txt += `${line}
-              BONUS FİKİRLER
-${line}
-
-`
-      result.bonus_ideas.forEach((idea: string, i: number) => {
-        txt += `${i + 1}. ${idea}\n`
-      })
-    }
-
-    txt += `
-${line}
-Bu plan MediaToolkit.site tarafından oluşturulmuştur.
-${line}
-`
-
-    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `icerik-plani-${niche.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`
-    link.click()
-    URL.revokeObjectURL(url)
+  const formatColors: any = {
+    'reel': 'bg-pink-500/20 text-pink-400',
+    'carousel': 'bg-blue-500/20 text-blue-400',
+    'story': 'bg-purple-500/20 text-purple-400',
+    'post': 'bg-green-500/20 text-green-400',
+    'live': 'bg-red-500/20 text-red-400',
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
-            <span className="text-2xl">{t.icon}</span>
-            <h1 className="text-xl font-bold">{t.title}</h1>
-            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
+            <div className="h-6 w-px bg-white/10"></div>
+            <div className="flex items-center gap-3"><span className="text-2xl">📅</span><h1 className="font-semibold">Content Calendar</h1></div>
           </div>
-          <div className="relative group">
-            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
-            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
+            <div className="relative group">
+              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
+              </div>
             </div>
           </div>
         </div>
       </header>
-      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
-      
-      <main className="pt-32 pb-12 px-4 max-w-7xl mx-auto">
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {!result ? (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6">
-              <p className="text-gray-400 text-sm">{t.purpose}</p>
-            </div>
-            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-5">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
               <div>
                 <label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label>
-                <input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
+                <input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
+                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="multi">Multi-Platform</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.daysLabel}</label>
+                  <select value={days} onChange={e => setDays(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="7">7 Gün</option>
+                    <option value="14">14 Gün</option>
+                    <option value="30">30 Gün</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">{t.goalsLabel}</label>
-                <input type="text" value={goals} onChange={e => setGoals(e.target.value)} placeholder={t.goalsPlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
+                <input type="text" value={goals} onChange={e => setGoals(e.target.value)} placeholder="örn: takipçi artışı, satış..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
-                <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
-                  <option value="instagram">Instagram</option>
-                  <option value="tiktok">TikTok</option>
-                  <option value="youtube">YouTube</option>
-                  <option value="twitter">Twitter/X</option>
-                  <option value="linkedin">LinkedIn</option>
-                </select>
-              </div>
-              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+              <button onClick={handleSubmit} disabled={loading || !niche.trim() || credits < 10} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 10 ✦</span></>}
+              </button>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* İndirme Butonları */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              <button onClick={downloadMarkdown} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition flex items-center gap-2 font-medium">
-                📄 Markdown İndir
-              </button>
-              <button onClick={downloadTXT} className="px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-500 transition flex items-center gap-2 font-medium">
-                📝 TXT İndir
-              </button>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">📅 {t.calendar}</h2>
+              <button onClick={downloadCSV} className="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30 transition">{t.download}</button>
             </div>
-            
-            {/* Strateji */}
-            {result.strategy_overview && (
-              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">{t.strategy}</h3>
-                <p className="text-gray-300">{result.strategy_overview}</p>
-              </div>
-            )}
-            
-            {/* Haftalık Temalar */}
-            {result.weekly_themes && result.weekly_themes.length > 0 && (
-              <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">{t.weeklyThemes}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {result.weekly_themes.map((wt: any, i: number) => (
-                    <button key={i} onClick={() => setSelectedWeek(selectedWeek === wt.week ? null : wt.week)} className={`p-3 rounded-xl border transition-all text-left ${selectedWeek === wt.week ? 'bg-purple-500/20 border-purple-500' : 'bg-gray-900/50 border-gray-700 hover:border-gray-600'}`}>
-                      <div className="text-purple-400 font-semibold text-sm">{t.week} {wt.week}</div>
-                      <div className="text-white text-sm mt-1 line-clamp-2">{wt.theme}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Hafta Filtreleme */}
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              <button onClick={() => setSelectedWeek(null)} className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${!selectedWeek ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'}`}>Tümü</button>
-              {[1,2,3,4,5].map(w => (
-                <button key={w} onClick={() => setSelectedWeek(w)} className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${selectedWeek === w ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-300'}`}>{t.week} {w}</button>
-              ))}
-            </div>
-            
-            {/* Takvim */}
+
             <div className="grid gap-3">
-              {(selectedWeek ? getWeekDays(selectedWeek) : result.days)?.map((day: any, i: number) => (
-                <div key={i} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-colors">
-                  <div className="flex flex-wrap items-start gap-4">
-                    <div className="w-14 text-center flex-shrink-0">
-                      <div className="text-2xl font-bold text-purple-400">{day.day}</div>
-                      <div className="text-xs text-gray-500">{day.weekday}</div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className={`px-2 py-0.5 rounded text-xs border ${contentTypeColors[day.content_type] || 'bg-gray-700 text-gray-300 border-gray-600'}`}>{day.content_type}</span>
-                        {day.best_time && <span className="text-xs text-gray-500">⏰ {day.best_time}</span>}
+              {result.calendar?.map((day: any, i: number) => (
+                <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-4 hover:border-white/10 transition">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">{day.day}</div>
+                      <div>
+                        <h3 className="font-medium text-white">{day.title}</h3>
+                        {day.hook && <p className="text-gray-500 text-sm mt-1">🎣 {day.hook}</p>}
                       </div>
-                      <h4 className="text-white font-medium">{day.topic}</h4>
-                      {day.hook && <p className="text-purple-400 text-sm mt-1">🎣 "{day.hook}"</p>}
-                      {day.description && <p className="text-gray-400 text-sm mt-1">{day.description}</p>}
-                      {day.cta && <p className="text-green-400 text-sm mt-1">📢 {day.cta}</p>}
-                      {day.hashtags && day.hashtags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {day.hashtags.slice(0, 5).map((tag: string, j: number) => <span key={j} className="text-xs text-blue-400">{tag}</span>)}
-                        </div>
-                      )}
                     </div>
+                    <span className={`px-2 py-1 rounded text-xs ${formatColors[day.format?.toLowerCase()] || 'bg-gray-500/20 text-gray-400'}`}>{day.format}</span>
                   </div>
+                  {day.description && <p className="text-gray-400 text-sm mt-3 pl-13">{day.description}</p>}
                 </div>
               ))}
             </div>
-            
-            {/* Bonus */}
-            {result.bonus_ideas && result.bonus_ideas.length > 0 && (
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-yellow-400 mb-3">{t.bonusIdeas}</h3>
-                <ul className="space-y-2">
-                  {result.bonus_ideas.map((idea: string, i: number) => <li key={i} className="text-gray-300 text-sm">💡 {idea}</li>)}
-                </ul>
-              </div>
-            )}
-            
-            {/* Alt Butonlar */}
-            <div className="flex flex-wrap gap-3 justify-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600">{t.newPlan}</button>
+
+            <div className="text-center pt-4">
+              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newPlan}</button>
             </div>
           </div>
         )}

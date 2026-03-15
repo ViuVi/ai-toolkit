@@ -5,109 +5,133 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const platforms = ['Instagram', 'TikTok', 'Twitter', 'LinkedIn', 'YouTube', 'Facebook']
 const texts: any = {
-  tr: { title: 'Content Repurposer', icon: '🔄', credits: '8 Kredi', back: '← Geri', testMode: '🧪 Test Modu', purpose: 'Bir içeriği tüm platformlara uygun formatlara dönüştürür.', contentLabel: 'Orijinal İçerik', contentPlaceholder: 'Dönüştürmek istediğin içeriği yapıştır...', platformsLabel: 'Hedef Platformlar', btn: 'Dönüştür', loading: 'Dönüştürülüyor...', copy: 'Kopyala', copied: '✓' },
-  en: { title: 'Content Repurposer', icon: '🔄', credits: '8 Credits', back: '← Back', testMode: '🧪 Test Mode', purpose: 'Transforms content for all platforms.', contentLabel: 'Original Content', contentPlaceholder: 'Paste content...', platformsLabel: 'Target Platforms', btn: 'Transform', loading: 'Transforming...', copy: 'Copy', copied: '✓' },
-  ru: { title: 'Content Repurposer', icon: '🔄', credits: '8', back: '← Назад', testMode: '🧪 Тест', purpose: 'Преобразует контент.', contentLabel: 'Контент', contentPlaceholder: 'Вставьте...', platformsLabel: 'Платформы', btn: 'Преобразовать', loading: 'Преобразование...', copy: 'Копировать', copied: '✓' },
-  de: { title: 'Content Repurposer', icon: '🔄', credits: '8', back: '← Zurück', testMode: '🧪 Test', purpose: 'Transformiert Inhalte.', contentLabel: 'Inhalt', contentPlaceholder: 'Einfügen...', platformsLabel: 'Plattformen', btn: 'Transformieren', loading: 'Transformiere...', copy: 'Kopieren', copied: '✓' },
-  fr: { title: 'Content Repurposer', icon: '🔄', credits: '8', back: '← Retour', testMode: '🧪 Test', purpose: 'Transforme le contenu.', contentLabel: 'Contenu', contentPlaceholder: 'Collez...', platformsLabel: 'Plateformes', btn: 'Transformer', loading: 'Transformation...', copy: 'Copier', copied: '✓' }
+  tr: { back: 'Dashboard', contentLabel: 'Orijinal İçerik', contentPlaceholder: 'Dönüştürmek istediğiniz içeriği yapıştırın...', sourceLabel: 'Kaynak Format', btn: 'Dönüştür', loading: 'Dönüştürülüyor...', copy: 'Kopyala', copied: '✓', platforms: 'Platform Versiyonları', newConvert: 'Yeni Dönüşüm' },
+  en: { back: 'Dashboard', contentLabel: 'Original Content', contentPlaceholder: 'Paste the content you want to repurpose...', sourceLabel: 'Source Format', btn: 'Repurpose', loading: 'Converting...', copy: 'Copy', copied: '✓', platforms: 'Platform Versions', newConvert: 'New Conversion' },
+  ru: { back: 'Панель', contentLabel: 'Контент', contentPlaceholder: 'Вставьте контент...', sourceLabel: 'Формат', btn: 'Конвертировать', loading: 'Конвертация...', copy: 'Копировать', copied: '✓', platforms: 'Платформы', newConvert: 'Новый' },
+  de: { back: 'Dashboard', contentLabel: 'Inhalt', contentPlaceholder: 'Inhalt einfügen...', sourceLabel: 'Format', btn: 'Konvertieren', loading: 'Konvertiere...', copy: 'Kopieren', copied: '✓', platforms: 'Plattformen', newConvert: 'Neu' },
+  fr: { back: 'Tableau', contentLabel: 'Contenu', contentPlaceholder: 'Collez le contenu...', sourceLabel: 'Format', btn: 'Convertir', loading: 'Conversion...', copy: 'Copier', copied: '✓', platforms: 'Plateformes', newConvert: 'Nouveau' }
 }
 
-export default function Page() {
+const platformIcons: any = {
+  'instagram': '📸',
+  'tiktok': '🎵',
+  'youtube': '▶️',
+  'twitter': '🐦',
+  'linkedin': '💼',
+  'threads': '🧵',
+  'facebook': '👥'
+}
+
+export default function ContentRepurposerPage() {
   const [user, setUser] = useState<any>(null)
+  const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [content, setContent] = useState('')
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram', 'TikTok', 'Twitter'])
-  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null)
+  const [sourceFormat, setSourceFormat] = useState('blog')
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (!user) router.push('/login'); else setUser(user) }) }, [])
-  const togglePlatform = (p: string) => setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
+    })
+  }, [])
 
   const handleSubmit = async () => {
-    if (!content.trim() || selectedPlatforms.length === 0) return
+    if (!content.trim() || loading) return
     setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/content-repurposer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, platforms: selectedPlatforms, language }) })
+      const res = await fetch('/api/content-repurposer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, sourceFormat, language }) })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) {
+        setResult(data.result)
+        if (credits >= 8) { await supabase.from('credits').update({ balance: credits - 8 }).eq('user_id', user.id); setCredits(prev => prev - 8) }
+      }
     } catch (e) { console.error(e) }
     setLoading(false)
   }
 
-  const copyToClipboard = (platform: string, text: string) => { navigator.clipboard.writeText(text); setCopiedPlatform(platform); setTimeout(() => setCopiedPlatform(null), 2000) }
-  const getPlatformContent = (platform: string) => {
-    const p = result?.platforms?.[platform]
-    if (!p) return null
-    if (platform === 'Instagram') return p.caption
-    if (platform === 'TikTok') return p.script
-    if (platform === 'Twitter') return p.tweet
-    if (platform === 'LinkedIn') return p.post
-    if (platform === 'YouTube') return p.shorts_script
-    if (platform === 'Facebook') return p.post
-    return JSON.stringify(p)
-  }
+  const copyText = (key: string, text: string) => { navigator.clipboard.writeText(text); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1500) }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
-            <span className="text-2xl">{t.icon}</span><h1 className="text-xl font-bold">{t.title}</h1>
-            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
+            <div className="h-6 w-px bg-white/10"></div>
+            <div className="flex items-center gap-3"><span className="text-2xl">♻️</span><h1 className="font-semibold">Content Repurposer</h1></div>
           </div>
-          <div className="relative group">
-            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
-            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
+            <div className="relative group">
+              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
+              </div>
             </div>
           </div>
         </div>
       </header>
-      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
-      
-      <main className="pt-32 pb-12 px-4 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6"><p className="text-gray-400 text-sm">{t.purpose}</p></div>
-            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
-              <div><label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label><textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-40 bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" /></div>
-              <div><label className="block text-sm text-gray-400 mb-2">{t.platformsLabel}</label><div className="flex flex-wrap gap-2">{platforms.map(p => <button key={p} onClick={() => togglePlatform(p)} className={`px-3 py-2 rounded-lg text-sm transition ${selectedPlatforms.includes(p) ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-400'}`}>{p}</button>)}</div></div>
-              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {!result ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label>
+                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-48 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none transition" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.sourceLabel}</label>
+                <select value={sourceFormat} onChange={e => setSourceFormat(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                  <option value="blog">Blog Post</option>
+                  <option value="video_script">Video Script</option>
+                  <option value="podcast">Podcast Notes</option>
+                  <option value="article">Article</option>
+                </select>
+              </div>
+              <button onClick={handleSubmit} disabled={loading || !content.trim() || credits < 8} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 8 ✦</span></>}
+              </button>
             </div>
           </div>
-          
-          <div className="space-y-4 max-h-[700px] overflow-y-auto">
-            {result?.platforms ? (
-              <>
-                {result.original_analysis && <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4"><p className="text-gray-300 text-sm">{result.original_analysis}</p></div>}
-                {selectedPlatforms.map(platform => {
-                  const pd = result.platforms[platform]
-                  if (!pd) return null
-                  return (
-                    <div key={platform} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-semibold text-white text-lg">{platform}</h3>
-                        <button onClick={() => copyToClipboard(platform, getPlatformContent(platform) || '')} className="text-xs bg-purple-500/20 text-purple-400 px-3 py-1 rounded-lg">{copiedPlatform === platform ? t.copied : t.copy}</button>
-                      </div>
-                      {platform === 'Instagram' && <><p className="text-gray-300 text-sm">{pd.caption}</p>{pd.hashtags && <div className="flex flex-wrap gap-1 mt-2">{pd.hashtags.slice(0,10).map((h:string,i:number) => <span key={i} className="text-xs text-blue-400">{h}</span>)}</div>}</>}
-                      {platform === 'TikTok' && <><p className="text-white text-sm font-medium mb-1">{pd.hook}</p><p className="text-gray-300 text-sm">{pd.script}</p></>}
-                      {platform === 'Twitter' && <><p className="text-gray-300 text-sm">{pd.tweet}</p>{pd.thread && <div className="border-t border-gray-700 pt-2 mt-2"><span className="text-purple-400 text-xs">🧵 Thread:</span>{pd.thread.map((tw:string,i:number) => <p key={i} className="text-gray-400 text-sm mt-1 pl-3 border-l-2 border-gray-600">{i+1}. {tw}</p>)}</div>}</>}
-                      {platform === 'LinkedIn' && <p className="text-gray-300 text-sm whitespace-pre-wrap">{pd.post}</p>}
-                      {platform === 'YouTube' && <p className="text-gray-300 text-sm">{pd.shorts_script}</p>}
-                      {platform === 'Facebook' && <p className="text-gray-300 text-sm">{pd.post}</p>}
-                    </div>
-                  )
-                })}
-              </>
-            ) : <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center"><div className="text-6xl mb-4">{t.icon}</div><p className="text-gray-500">{t.purpose}</p></div>}
+        ) : (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">{t.platforms}</h2>
+            {result.versions?.map((ver: any, i: number) => (
+              <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:border-white/10 transition">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{platformIcons[ver.platform?.toLowerCase()] || '📱'}</span>
+                    <h3 className="font-semibold capitalize">{ver.platform}</h3>
+                    {ver.format && <span className="text-xs px-2 py-1 bg-white/5 text-gray-400 rounded">{ver.format}</span>}
+                  </div>
+                  <button onClick={() => copyText(`ver-${i}`, ver.content)} className={`px-3 py-1.5 rounded-lg text-sm transition ${copiedKey === `ver-${i}` ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+                    {copiedKey === `ver-${i}` ? t.copied : t.copy}
+                  </button>
+                </div>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <p className="text-gray-300 whitespace-pre-wrap">{ver.content}</p>
+                </div>
+                {ver.hashtags && (
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {ver.hashtags.map((h: string, j: number) => <span key={j} className="text-blue-400 text-sm">{h}</span>)}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="text-center pt-4">
+              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newConvert}</button>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

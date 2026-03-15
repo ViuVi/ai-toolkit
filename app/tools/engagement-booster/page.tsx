@@ -6,34 +6,43 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const texts: any = {
-  tr: { title: 'Engagement Booster', icon: '🚀', credits: '4 Kredi', back: '← Geri', testMode: '🧪 Test Modu', purpose: 'İçeriğiniz için hook, CTA ve yorum çekici sorular üretir.', contentLabel: 'İçerik', contentPlaceholder: 'Caption veya içerik metnini yapıştır...', nicheLabel: 'Niş', nichePlaceholder: 'örn: fitness, moda...', platformLabel: 'Platform', btn: 'Boost Et', loading: 'Üretiliyor...', copy: 'Kopyala', copied: '✓' },
-  en: { title: 'Engagement Booster', icon: '🚀', credits: '4 Credits', back: '← Back', testMode: '🧪 Test Mode', purpose: 'Creates hooks, CTAs and engagement questions for your content.', contentLabel: 'Content', contentPlaceholder: 'Paste your caption or content...', nicheLabel: 'Niche', nichePlaceholder: 'e.g., fitness, fashion...', platformLabel: 'Platform', btn: 'Boost', loading: 'Creating...', copy: 'Copy', copied: '✓' },
-  ru: { title: 'Engagement Booster', icon: '🚀', credits: '4', back: '← Назад', testMode: '🧪 Тест', purpose: 'Создаёт хуки и вопросы.', contentLabel: 'Контент', contentPlaceholder: 'Вставьте текст...', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', platformLabel: 'Платформа', btn: 'Создать', loading: 'Создание...', copy: 'Копировать', copied: '✓' },
-  de: { title: 'Engagement Booster', icon: '🚀', credits: '4', back: '← Zurück', testMode: '🧪 Test', purpose: 'Erstellt Hooks und Fragen.', contentLabel: 'Inhalt', contentPlaceholder: 'Text einfügen...', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', platformLabel: 'Plattform', btn: 'Erstellen', loading: 'Erstelle...', copy: 'Kopieren', copied: '✓' },
-  fr: { title: 'Engagement Booster', icon: '🚀', credits: '4', back: '← Retour', testMode: '🧪 Test', purpose: 'Crée des hooks et questions.', contentLabel: 'Contenu', contentPlaceholder: 'Collez le texte...', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', platformLabel: 'Plateforme', btn: 'Créer', loading: 'Création...', copy: 'Copier', copied: '✓' }
+  tr: { back: 'Dashboard', contentLabel: 'Mevcut İçerik', contentPlaceholder: 'İyileştirmek istediğiniz caption veya içeriği yapıştırın...', platformLabel: 'Platform', goalLabel: 'Hedef', btn: 'İyileştir', loading: 'İyileştiriliyor...', copy: 'Kopyala', copied: '✓', improved: 'İyileştirilmiş Versiyon', hooks: 'Alternatif Hook\'lar', ctas: 'CTA Önerileri', tips: 'Engagement İpuçları', newBoost: 'Yeni İyileştirme' },
+  en: { back: 'Dashboard', contentLabel: 'Current Content', contentPlaceholder: 'Paste the caption or content you want to improve...', platformLabel: 'Platform', goalLabel: 'Goal', btn: 'Boost', loading: 'Boosting...', copy: 'Copy', copied: '✓', improved: 'Improved Version', hooks: 'Alternative Hooks', ctas: 'CTA Suggestions', tips: 'Engagement Tips', newBoost: 'New Boost' },
+  ru: { back: 'Панель', contentLabel: 'Контент', contentPlaceholder: 'Вставьте контент...', platformLabel: 'Платформа', goalLabel: 'Цель', btn: 'Улучшить', loading: 'Улучшение...', copy: 'Копировать', copied: '✓', improved: 'Улучшенная версия', hooks: 'Хуки', ctas: 'CTA', tips: 'Советы', newBoost: 'Новый' },
+  de: { back: 'Dashboard', contentLabel: 'Inhalt', contentPlaceholder: 'Inhalt einfügen...', platformLabel: 'Plattform', goalLabel: 'Ziel', btn: 'Verbessern', loading: 'Verbessere...', copy: 'Kopieren', copied: '✓', improved: 'Verbesserte Version', hooks: 'Hooks', ctas: 'CTAs', tips: 'Tipps', newBoost: 'Neu' },
+  fr: { back: 'Tableau', contentLabel: 'Contenu', contentPlaceholder: 'Collez le contenu...', platformLabel: 'Plateforme', goalLabel: 'Objectif', btn: 'Améliorer', loading: 'Amélioration...', copy: 'Copier', copied: '✓', improved: 'Version améliorée', hooks: 'Hooks', ctas: 'CTAs', tips: 'Conseils', newBoost: 'Nouveau' }
 }
 
-export default function Page() {
+export default function EngagementBoosterPage() {
   const [user, setUser] = useState<any>(null)
+  const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [content, setContent] = useState('')
-  const [niche, setNiche] = useState('')
   const [platform, setPlatform] = useState('instagram')
+  const [goal, setGoal] = useState('engagement')
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (!user) router.push('/login'); else setUser(user) }) }, [])
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
+    })
+  }, [])
 
   const handleSubmit = async () => {
-    if (!content.trim()) return
+    if (!content.trim() || loading) return
     setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/engagement-booster', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, niche, platform, language }) })
+      const res = await fetch('/api/engagement-booster', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, platform, goal, language }) })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) {
+        setResult(data.result)
+        if (credits >= 4) { await supabase.from('credits').update({ balance: credits - 4 }).eq('user_id', user.id); setCredits(prev => prev - 4) }
+      }
     } catch (e) { console.error(e) }
     setLoading(false)
   }
@@ -41,143 +50,111 @@ export default function Page() {
   const copyText = (key: string, text: string) => { navigator.clipboard.writeText(text); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1500) }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
-            <span className="text-2xl">{t.icon}</span><h1 className="text-xl font-bold">{t.title}</h1>
-            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
+            <div className="h-6 w-px bg-white/10"></div>
+            <div className="flex items-center gap-3"><span className="text-2xl">🚀</span><h1 className="font-semibold">Engagement Booster</h1></div>
           </div>
-          <div className="relative group">
-            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
-            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
+            <div className="relative group">
+              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
+              </div>
             </div>
           </div>
         </div>
       </header>
-      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
-      
-      <main className="pt-32 pb-12 px-4 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6"><p className="text-gray-400 text-sm">{t.purpose}</p></div>
-            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
-              <div><label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label><textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-32 bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none" /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label><input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-3 py-3 text-white placeholder-gray-500" /></div>
-                <div><label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label><select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-3 py-3 text-white"><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="twitter">Twitter</option><option value="linkedin">LinkedIn</option></select></div>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        {!result ? (
+          <div className="max-w-xl mx-auto">
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label>
+                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-32 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none transition" />
               </div>
-              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
+                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="youtube">YouTube</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.goalLabel}</label>
+                  <select value={goal} onChange={e => setGoal(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="engagement">💬 Engagement</option>
+                    <option value="saves">📌 Saves</option>
+                    <option value="shares">🔄 Shares</option>
+                    <option value="followers">👥 Followers</option>
+                  </select>
+                </div>
+              </div>
+              <button onClick={handleSubmit} disabled={loading || !content.trim() || credits < 4} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 4 ✦</span></>}
+              </button>
             </div>
           </div>
-          
-          <div className="space-y-4 max-h-[700px] overflow-y-auto">
-            {result ? (
-              <>
-                {/* Hooks */}
-                {result.hooks && result.hooks.length > 0 && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                    <h3 className="text-red-400 font-semibold mb-3">🎣 Hook Önerileri</h3>
-                    <div className="space-y-2">
-                      {result.hooks.map((h: any, i: number) => (
-                        <div key={i} className="bg-gray-900/50 rounded-lg p-3">
-                          <div className="flex justify-between items-start">
-                            <span className="text-xs text-gray-500">{h.type}</span>
-                            <button onClick={() => copyText(`hook-${i}`, h.hook)} className="text-xs text-purple-400">{copiedKey === `hook-${i}` ? t.copied : t.copy}</button>
-                          </div>
-                          <p className="text-white text-sm mt-1">{h.hook}</p>
-                          {h.why_works && <p className="text-gray-500 text-xs mt-1">💡 {h.why_works}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* CTAs */}
-                {result.ctas && result.ctas.length > 0 && (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                    <h3 className="text-green-400 font-semibold mb-3">📢 CTA Önerileri</h3>
-                    <div className="space-y-2">
-                      {result.ctas.map((c: any, i: number) => (
-                        <div key={i} className="bg-gray-900/50 rounded-lg p-3">
-                          <div className="flex justify-between items-start">
-                            <span className="text-xs text-gray-500">{c.type}</span>
-                            <button onClick={() => copyText(`cta-${i}`, c.cta)} className="text-xs text-purple-400">{copiedKey === `cta-${i}` ? t.copied : t.copy}</button>
-                          </div>
-                          <p className="text-white text-sm mt-1">{c.cta}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Sorular */}
-                {result.questions && result.questions.length > 0 && (
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
-                    <h3 className="text-yellow-400 font-semibold mb-3">❓ Yorum Çekici Sorular</h3>
-                    <div className="space-y-2">
-                      {result.questions.map((q: any, i: number) => (
-                        <div key={i} className="bg-gray-900/50 rounded-lg p-3">
-                          <div className="flex justify-between items-start">
-                            <span className="text-xs text-gray-500">{q.type}</span>
-                            <button onClick={() => copyText(`q-${i}`, q.question)} className="text-xs text-purple-400">{copiedKey === `q-${i}` ? t.copied : t.copy}</button>
-                          </div>
-                          <p className="text-white text-sm mt-1">{q.question}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Comment Bait */}
-                {result.comment_bait && result.comment_bait.length > 0 && (
-                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
-                    <h3 className="text-purple-400 font-semibold mb-3">💬 Yorum Tuzakları</h3>
-                    <div className="space-y-2">
-                      {result.comment_bait.map((cb: any, i: number) => (
-                        <div key={i} className="bg-gray-900/50 rounded-lg p-3">
-                          <p className="text-white text-sm">{cb.example}</p>
-                          <p className="text-gray-500 text-xs mt-1">Teknik: {cb.technique}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* İyileştirilmiş Caption */}
-                {result.caption_rewrite && (
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-blue-400 font-semibold">✨ İyileştirilmiş Caption</h3>
-                      <button onClick={() => copyText('improved', result.caption_rewrite.improved_version)} className="text-xs text-blue-400">{copiedKey === 'improved' ? t.copied : t.copy}</button>
-                    </div>
-                    {result.caption_rewrite.original_issue && <p className="text-red-400 text-xs mb-2">⚠️ {result.caption_rewrite.original_issue}</p>}
-                    <p className="text-white text-sm whitespace-pre-wrap">{result.caption_rewrite.improved_version}</p>
-                  </div>
-                )}
-                
-                {/* Hashtag Stratejisi */}
-                {result.hashtag_strategy && (
-                  <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                    <h3 className="text-white font-semibold mb-2">🏷️ Hashtag Stratejisi</h3>
-                    {result.hashtag_strategy.engagement_hashtags && (
-                      <div className="flex flex-wrap gap-1">
-                        {result.hashtag_strategy.engagement_hashtags.map((h: string, i: number) => <span key={i} className="text-blue-400 text-xs">{h}</span>)}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
-                <div className="text-6xl mb-4">{t.icon}</div>
-                <p className="text-gray-500">{t.purpose}</p>
+        ) : (
+          <div className="space-y-6">
+            {/* Improved Version */}
+            {result.improved_content && (
+              <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-green-400 font-semibold">✨ {t.improved}</h3>
+                  <button onClick={() => copyText('improved', result.improved_content)} className={`px-3 py-1.5 rounded-lg text-sm ${copiedKey === 'improved' ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400'}`}>{copiedKey === 'improved' ? t.copied : t.copy}</button>
+                </div>
+                <div className="bg-white/5 rounded-xl p-4">
+                  <p className="text-white whitespace-pre-wrap">{result.improved_content}</p>
+                </div>
               </div>
             )}
+
+            {/* Hooks */}
+            {result.alternative_hooks?.length > 0 && (
+              <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
+                <h3 className="text-red-400 font-semibold mb-3">🎣 {t.hooks}</h3>
+                <div className="space-y-2">
+                  {result.alternative_hooks.map((h: string, i: number) => (
+                    <div key={i} className="flex justify-between items-center bg-white/5 rounded-lg p-3">
+                      <p className="text-white text-sm">{h}</p>
+                      <button onClick={() => copyText(`hook-${i}`, h)} className="text-xs text-red-400 ml-2">{copiedKey === `hook-${i}` ? t.copied : t.copy}</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CTAs */}
+            {result.cta_suggestions?.length > 0 && (
+              <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5">
+                <h3 className="text-blue-400 font-semibold mb-3">📢 {t.ctas}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {result.cta_suggestions.map((cta: string, i: number) => <span key={i} className="px-3 py-1.5 bg-blue-500/10 text-blue-300 rounded-full text-sm cursor-pointer hover:bg-blue-500/20" onClick={() => copyText(`cta-${i}`, cta)}>{cta}</span>)}
+                </div>
+              </div>
+            )}
+
+            {/* Tips */}
+            {result.engagement_tips?.length > 0 && (
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5">
+                <h3 className="text-yellow-400 font-semibold mb-3">💡 {t.tips}</h3>
+                <ul className="space-y-2">{result.engagement_tips.map((tip: string, i: number) => <li key={i} className="text-gray-300 text-sm">• {tip}</li>)}</ul>
+              </div>
+            )}
+
+            <div className="text-center pt-4">
+              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newBoost}</button>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

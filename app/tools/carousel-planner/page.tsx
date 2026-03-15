@@ -6,168 +6,138 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const texts: any = {
-  tr: { title: 'Carousel Planner', icon: '🎠', credits: '5 Kredi', back: '← Geri', testMode: '🧪 Test Modu', purpose: 'Instagram carousel\'leri için slide-by-slide içerik planı oluşturur.', topicLabel: 'Carousel Konusu', topicPlaceholder: 'örn: 10 tasarruf ipucu...', slideCountLabel: 'Slide Sayısı', platformLabel: 'Platform', btn: 'Carousel Planla', loading: 'Planlanıyor...', copy: 'Kopyala', copied: '✓', download: '📥 İndir' },
-  en: { title: 'Carousel Planner', icon: '🎠', credits: '5 Credits', back: '← Back', testMode: '🧪 Test Mode', purpose: 'Creates slide-by-slide content plans for Instagram carousels.', topicLabel: 'Carousel Topic', topicPlaceholder: 'e.g., 10 saving tips...', slideCountLabel: 'Slide Count', platformLabel: 'Platform', btn: 'Plan Carousel', loading: 'Planning...', copy: 'Copy', copied: '✓', download: '📥 Download' },
-  ru: { title: 'Carousel Planner', icon: '🎠', credits: '5', back: '← Назад', testMode: '🧪 Тест', purpose: 'Планирует карусели.', topicLabel: 'Тема', topicPlaceholder: 'напр: 10 советов...', slideCountLabel: 'Слайдов', platformLabel: 'Платформа', btn: 'Создать', loading: 'Создание...', copy: 'Копировать', copied: '✓', download: '📥 Скачать' },
-  de: { title: 'Carousel Planner', icon: '🎠', credits: '5', back: '← Zurück', testMode: '🧪 Test', purpose: 'Plant Karusselle.', topicLabel: 'Thema', topicPlaceholder: 'z.B. 10 Tipps...', slideCountLabel: 'Slides', platformLabel: 'Plattform', btn: 'Erstellen', loading: 'Erstelle...', copy: 'Kopieren', copied: '✓', download: '📥 Herunterladen' },
-  fr: { title: 'Carousel Planner', icon: '🎠', credits: '5', back: '← Retour', testMode: '🧪 Test', purpose: 'Planifie les carrousels.', topicLabel: 'Sujet', topicPlaceholder: 'ex: 10 conseils...', slideCountLabel: 'Slides', platformLabel: 'Plateforme', btn: 'Créer', loading: 'Création...', copy: 'Copier', copied: '✓', download: '📥 Télécharger' }
+  tr: { back: 'Dashboard', topicLabel: 'Konu', topicPlaceholder: 'örn: 10 fitness hatası, para biriktirme yolları...', slidesLabel: 'Slide Sayısı', styleLabel: 'Stil', btn: 'Carousel Planla', loading: 'Planlanıyor...', copy: 'Kopyala', copied: '✓', slides: 'Slide\'lar', caption: 'Caption', newPlan: 'Yeni Plan' },
+  en: { back: 'Dashboard', topicLabel: 'Topic', topicPlaceholder: 'e.g., 10 fitness mistakes, saving money tips...', slidesLabel: 'Number of Slides', styleLabel: 'Style', btn: 'Plan Carousel', loading: 'Planning...', copy: 'Copy', copied: '✓', slides: 'Slides', caption: 'Caption', newPlan: 'New Plan' },
+  ru: { back: 'Панель', topicLabel: 'Тема', topicPlaceholder: 'напр: 10 ошибок...', slidesLabel: 'Слайдов', styleLabel: 'Стиль', btn: 'Создать', loading: 'Создание...', copy: 'Копировать', copied: '✓', slides: 'Слайды', caption: 'Подпись', newPlan: 'Новый' },
+  de: { back: 'Dashboard', topicLabel: 'Thema', topicPlaceholder: 'z.B. 10 Fehler...', slidesLabel: 'Anzahl', styleLabel: 'Stil', btn: 'Planen', loading: 'Plane...', copy: 'Kopieren', copied: '✓', slides: 'Slides', caption: 'Caption', newPlan: 'Neu' },
+  fr: { back: 'Tableau', topicLabel: 'Sujet', topicPlaceholder: 'ex: 10 erreurs...', slidesLabel: 'Nombre', styleLabel: 'Style', btn: 'Planifier', loading: 'Planification...', copy: 'Copier', copied: '✓', slides: 'Slides', caption: 'Légende', newPlan: 'Nouveau' }
 }
 
-export default function Page() {
+export default function CarouselPlannerPage() {
   const [user, setUser] = useState<any>(null)
+  const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [topic, setTopic] = useState('')
-  const [slideCount, setSlideCount] = useState('10')
-  const [platform, setPlatform] = useState('instagram')
-  const [copiedSlide, setCopiedSlide] = useState<number | null>(null)
+  const [slides, setSlides] = useState('10')
+  const [style, setStyle] = useState('educational')
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  useEffect(() => { supabase.auth.getUser().then(({ data: { user } }) => { if (!user) router.push('/login'); else setUser(user) }) }, [])
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
+    })
+  }, [])
 
   const handleSubmit = async () => {
-    if (!topic.trim()) return
+    if (!topic.trim() || loading) return
     setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/carousel-planner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, slideCount, platform, language }) })
+      const res = await fetch('/api/carousel-planner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, slides, style, language }) })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) {
+        setResult(data.result)
+        if (credits >= 5) { await supabase.from('credits').update({ balance: credits - 5 }).eq('user_id', user.id); setCredits(prev => prev - 5) }
+      }
     } catch (e) { console.error(e) }
     setLoading(false)
   }
 
-  const copySlide = (index: number, slide: any) => {
-    const text = `${slide.headline}\n${slide.subheadline || ''}\n${slide.body || ''}`
-    navigator.clipboard.writeText(text)
-    setCopiedSlide(index); setTimeout(() => setCopiedSlide(null), 1500)
-  }
-
-  const downloadCarousel = () => {
-    if (!result?.slides) return
-    let txt = `🎠 CAROUSEL PLANI\n${'═'.repeat(50)}\n\n`
-    txt += `Konu: ${topic}\nPlatform: ${platform}\n\n`
-    
-    result.slides.forEach((slide: any) => {
-      txt += `${'─'.repeat(50)}\n`
-      txt += `SLIDE ${slide.number} (${slide.type})\n`
-      txt += `${'─'.repeat(50)}\n`
-      txt += `Başlık: ${slide.headline}\n`
-      if (slide.subheadline) txt += `Alt Başlık: ${slide.subheadline}\n`
-      if (slide.body) txt += `İçerik: ${slide.body}\n`
-      if (slide.visual_suggestion) txt += `Görsel: ${slide.visual_suggestion}\n`
-      if (slide.design_tip) txt += `Tasarım: ${slide.design_tip}\n`
-      txt += `\n`
-    })
-    
-    if (result.caption) {
-      txt += `${'═'.repeat(50)}\nCAPTION\n${'═'.repeat(50)}\n`
-      txt += `${result.caption.hook}\n\n${result.caption.body}\n\n${result.caption.cta}\n\n`
-      if (result.caption.hashtags) txt += `Hashtags: ${result.caption.hashtags.join(' ')}`
-    }
-    
-    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' })
-    const link = document.createElement('a'); link.href = URL.createObjectURL(blob)
-    link.download = `carousel-${topic.replace(/\s+/g, '-').slice(0, 20)}.txt`; link.click()
-  }
-
-  const typeColors: any = { 'cover': 'bg-purple-500/20 text-purple-400 border-purple-500/50', 'hook': 'bg-red-500/20 text-red-400 border-red-500/50', 'content': 'bg-blue-500/20 text-blue-400 border-blue-500/50', 'bonus': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', 'cta': 'bg-green-500/20 text-green-400 border-green-500/50' }
+  const copyText = (key: string, text: string) => { navigator.clipboard.writeText(text); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1500) }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-400 hover:text-white">{t.back}</Link>
-            <span className="text-2xl">{t.icon}</span><h1 className="text-xl font-bold">{t.title}</h1>
-            <span className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full">{t.credits}</span>
+            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
+            <div className="h-6 w-px bg-white/10"></div>
+            <div className="flex items-center gap-3"><span className="text-2xl">🎠</span><h1 className="font-semibold">Carousel Planner</h1></div>
           </div>
-          <div className="relative group">
-            <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
-            <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>)}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
+            <div className="relative group">
+              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
+              </div>
             </div>
           </div>
         </div>
       </header>
-      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">{t.testMode}</div>
-      
-      <main className="pt-32 pb-12 px-4 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6"><p className="text-gray-400 text-sm">{t.purpose}</p></div>
-            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
-              <div><label className="block text-sm text-gray-400 mb-2">{t.topicLabel}</label><input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t.topicPlaceholder} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="block text-sm text-gray-400 mb-2">{t.slideCountLabel}</label><select value={slideCount} onChange={e => setSlideCount(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-3 py-3 text-white"><option value="5">5 slide</option><option value="7">7 slide</option><option value="10">10 slide</option></select></div>
-                <div><label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label><select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-3 py-3 text-white"><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option></select></div>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        {!result ? (
+          <div className="max-w-xl mx-auto">
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">{t.topicLabel}</label>
+                <input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t.topicPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition" />
               </div>
-              <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold disabled:opacity-50">{loading ? t.loading : t.btn}</button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.slidesLabel}</label>
+                  <select value={slides} onChange={e => setSlides(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="5">5 Slides</option>
+                    <option value="7">7 Slides</option>
+                    <option value="10">10 Slides</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">{t.styleLabel}</label>
+                  <select value={style} onChange={e => setStyle(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="educational">📚 Eğitici</option>
+                    <option value="tips">💡 İpuçları</option>
+                    <option value="story">📖 Hikaye</option>
+                    <option value="comparison">⚖️ Karşılaştırma</option>
+                  </select>
+                </div>
+              </div>
+              <button onClick={handleSubmit} disabled={loading || !topic.trim() || credits < 5} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 5 ✦</span></>}
+              </button>
             </div>
-            
-            {/* Caption */}
-            {result?.caption && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-                <h4 className="text-blue-400 font-medium mb-3">📝 Caption</h4>
-                <div className="space-y-2">
-                  <p className="text-white text-sm font-medium">{result.caption.hook}</p>
-                  <p className="text-gray-300 text-sm">{result.caption.body}</p>
-                  <p className="text-green-400 text-sm">{result.caption.cta}</p>
-                  {result.caption.hashtags && <div className="flex flex-wrap gap-1 mt-2">{result.caption.hashtags.slice(0,10).map((h: string, i: number) => <span key={i} className="text-blue-400 text-xs">{h}</span>)}</div>}
-                </div>
-              </div>
-            )}
           </div>
-          
-          <div className="space-y-3 max-h-[700px] overflow-y-auto">
-            {result?.slides ? (
-              <>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-400 text-sm">{result.slides.length} slide</span>
-                  <button onClick={downloadCarousel} className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-lg">{t.download}</button>
-                </div>
-                
-                {result.slides.map((slide: any, i: number) => (
-                  <div key={i} className={`rounded-xl p-4 border ${typeColors[slide.type] || 'bg-gray-800/50 border-gray-700'}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sm font-bold">{slide.number}</span>
-                        <span className="text-xs uppercase opacity-70">{slide.type}</span>
-                      </div>
-                      <button onClick={() => copySlide(i, slide)} className={`text-xs px-2 py-1 rounded ${copiedSlide === i ? 'bg-green-500/30 text-green-400' : 'bg-white/10'}`}>{copiedSlide === i ? t.copied : t.copy}</button>
+        ) : (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold">🎠 {t.slides}</h2>
+            <div className="grid gap-3">
+              {result.slides?.map((slide: any, i: number) => (
+                <div key={i} className={`rounded-xl p-5 border ${i === 0 ? 'bg-red-500/5 border-red-500/20' : i === (result.slides?.length - 1) ? 'bg-green-500/5 border-green-500/20' : 'bg-white/[0.02] border-white/5'}`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">{i + 1}</span>
+                      <span className="text-xs px-2 py-1 bg-white/5 text-gray-400 rounded">{slide.type || (i === 0 ? 'Hook' : i === result.slides?.length - 1 ? 'CTA' : 'Content')}</span>
                     </div>
-                    
-                    <h3 className="text-white font-bold text-lg mb-1">{slide.headline}</h3>
-                    {slide.subheadline && <p className="text-gray-300 text-sm mb-2">{slide.subheadline}</p>}
-                    {slide.body && <p className="text-gray-400 text-sm">{slide.body}</p>}
-                    
-                    {(slide.visual_suggestion || slide.design_tip) && (
-                      <div className="mt-3 pt-3 border-t border-white/10 space-y-1">
-                        {slide.visual_suggestion && <p className="text-xs text-gray-500">🎨 {slide.visual_suggestion}</p>}
-                        {slide.design_tip && <p className="text-xs text-gray-500">💡 {slide.design_tip}</p>}
-                      </div>
-                    )}
+                    <button onClick={() => copyText(`slide-${i}`, slide.text || slide.content)} className="text-xs text-purple-400">{copiedKey === `slide-${i}` ? t.copied : t.copy}</button>
                   </div>
-                ))}
-                
-                {/* Design Guidelines */}
-                {result.design_guidelines && (
-                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 mt-4">
-                    <h4 className="text-purple-400 font-medium mb-2">🎨 Tasarım Önerileri</h4>
-                    {result.design_guidelines.color_palette && <p className="text-gray-300 text-sm">Renkler: {result.design_guidelines.color_palette}</p>}
-                    {result.design_guidelines.overall_style && <p className="text-gray-300 text-sm">Stil: {result.design_guidelines.overall_style}</p>}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
-                <div className="text-6xl mb-4">{t.icon}</div>
-                <p className="text-gray-500">{t.purpose}</p>
+                  <h3 className="font-semibold text-white mb-2">{slide.headline || slide.title}</h3>
+                  <p className="text-gray-400 text-sm">{slide.text || slide.content}</p>
+                  {slide.visual_suggestion && <p className="text-gray-500 text-xs mt-2">🎨 {slide.visual_suggestion}</p>}
+                </div>
+              ))}
+            </div>
+
+            {/* Caption */}
+            {result.caption && (
+              <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-blue-400 font-semibold">✍️ {t.caption}</h3>
+                  <button onClick={() => copyText('caption', result.caption)} className="text-xs text-blue-400">{copiedKey === 'caption' ? t.copied : t.copy}</button>
+                </div>
+                <p className="text-gray-300">{result.caption}</p>
               </div>
             )}
+
+            <div className="text-center pt-4">
+              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newPlan}</button>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
