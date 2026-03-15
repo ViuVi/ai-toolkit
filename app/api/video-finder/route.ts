@@ -1,0 +1,70 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    const { platform, niche, customKeyword, minViews, dateRange, language = 'tr' } = await request.json()
+    if (!niche?.trim() && !customKeyword?.trim()) return NextResponse.json({ error: 'Niş veya anahtar kelime gerekli' }, { status: 400 })
+
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+
+    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+
+    const systemPrompt = `Sen viral video trend analistsin. Belirli bir nişteki en viral içerik formatlarını, hook'ları ve trendleri biliyorsun. Yanıt dili: ${lang}
+
+JSON formatında yanıt ver:
+{
+  "niche_overview": "Niş hakkında viral içerik analizi",
+  "trending_formats": ["Format 1", "Format 2"],
+  "viral_videos": [
+    {
+      "title": "Video konsepti",
+      "description": "İçerik açıklaması",
+      "estimated_views": "1M-5M",
+      "estimated_likes": "100K",
+      "estimated_comments": "5K",
+      "engagement_rate": "8.5%",
+      "hook": "Hook cümlesi",
+      "caption_style": "Caption tarzı",
+      "why_viral": "Neden viral",
+      "content_structure": "Yapı",
+      "duration": "30sn",
+      "key_elements": ["Element 1"],
+      "recreate_tips": "Yeniden yaratma ipucu"
+    }
+  ],
+  "common_hooks": [
+    { "hook": "Hook örneği", "type": "Tip", "effectiveness": 90 }
+  ],
+  "content_gaps": ["Fırsat 1", "Fırsat 2"],
+  "best_posting_times": ["Zaman 1"],
+  "hashtag_trends": ["#trend1"],
+  "sound_trends": ["Ses trendi"],
+  "pro_tips": ["İpucu 1"]
+}`
+
+    const searchTerm = customKeyword || niche
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Platform: ${platform || 'TikTok'}\nNiş: ${searchTerm}\nMin Views: ${minViews || '100K'}\nZaman: ${dateRange || 'Son 30 gün'}\n\n8-10 viral video konsepti analiz et.` }
+        ],
+        temperature: 0.85,
+        max_tokens: 6000,
+        response_format: { type: 'json_object' }
+      })
+    })
+
+    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
+    const data = await response.json()
+    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
+    return NextResponse.json({ success: true, result })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

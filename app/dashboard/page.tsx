@@ -1,329 +1,186 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-// Tool verileri - çok dilli
-const getTools = (lang: string) => {
-  const toolsData: any = {
-    tr: [
-      { id: 'viral-analyzer', name: 'Viral Analyzer', description: 'İçeriğinin viral potansiyelini analiz et, 0-100 skor al', icon: '🔥', credits: 5, category: 'analysis', badge: 'Popüler' },
-      { id: 'content-repurposer', name: 'Content Repurposer', description: '1 içeriği 7 farklı platforma otomatik uyarla', icon: '🔄', credits: 8, category: 'content', badge: 'Güçlü' },
-      { id: 'hashtag-research', name: 'Hashtag Research', description: 'Hacim, rekabet ve trend analizi ile hashtag bul', icon: '#️⃣', credits: 3, category: 'research' },
-      { id: 'posting-optimizer', name: 'Smart Posting Times', description: 'Nişine özel en iyi paylaşım zamanlarını öğren', icon: '⏰', credits: 2, category: 'optimization' },
-      { id: 'content-planner', name: 'Content Calendar', description: '30 günlük içerik planı oluştur', icon: '📅', credits: 10, category: 'planning', badge: 'Pro' },
-      { id: 'competitor-spy', name: 'Competitor Spy', description: 'Rakiplerinin stratejilerini analiz et', icon: '🕵️', credits: 8, category: 'analysis' },
-      { id: 'trend-radar', name: 'Trend Radar', description: 'Nişindeki trend konuları keşfet', icon: '📡', credits: 5, category: 'research' },
-      { id: 'ab-tester', name: 'A/B Caption Tester', description: 'İki caption\'ı karşılaştır, kazananı bul', icon: '⚖️', credits: 5, category: 'optimization' },
-      { id: 'script-studio', name: 'Script Studio', description: 'Viral video scriptleri oluştur', icon: '🎬', credits: 6, category: 'content' },
-      { id: 'thread-composer', name: 'Thread Composer', description: 'Viral Twitter/X threadleri yaz', icon: '🧵', credits: 5, category: 'content' },
-      { id: 'carousel-planner', name: 'Carousel Planner', description: 'Swipe-worthy carousel içerikleri planla', icon: '📱', credits: 4, category: 'planning' },
-      { id: 'engagement-booster', name: 'Engagement Booster', description: 'Yorumları artıracak CTA\'lar ve sorular üret', icon: '💬', credits: 5, category: 'optimization' },
-    ],
-    en: [
-      { id: 'viral-analyzer', name: 'Viral Analyzer', description: 'Analyze your content\'s viral potential, get 0-100 score', icon: '🔥', credits: 5, category: 'analysis', badge: 'Popular' },
-      { id: 'content-repurposer', name: 'Content Repurposer', description: 'Automatically adapt 1 content to 7 different platforms', icon: '🔄', credits: 8, category: 'content', badge: 'Powerful' },
-      { id: 'hashtag-research', name: 'Hashtag Research', description: 'Find hashtags with volume, competition & trend analysis', icon: '#️⃣', credits: 3, category: 'research' },
-      { id: 'posting-optimizer', name: 'Smart Posting Times', description: 'Learn the best posting times for your niche', icon: '⏰', credits: 2, category: 'optimization' },
-      { id: 'content-planner', name: 'Content Calendar', description: 'Create a 30-day content plan', icon: '📅', credits: 10, category: 'planning', badge: 'Pro' },
-      { id: 'competitor-spy', name: 'Competitor Spy', description: 'Analyze your competitors\' strategies', icon: '🕵️', credits: 8, category: 'analysis' },
-      { id: 'trend-radar', name: 'Trend Radar', description: 'Discover trending topics in your niche', icon: '📡', credits: 5, category: 'research' },
-      { id: 'ab-tester', name: 'A/B Caption Tester', description: 'Compare two captions, find the winner', icon: '⚖️', credits: 5, category: 'optimization' },
-      { id: 'script-studio', name: 'Script Studio', description: 'Create viral video scripts', icon: '🎬', credits: 6, category: 'content' },
-      { id: 'thread-composer', name: 'Thread Composer', description: 'Write viral Twitter/X threads', icon: '🧵', credits: 5, category: 'content' },
-      { id: 'carousel-planner', name: 'Carousel Planner', description: 'Plan swipe-worthy carousel content', icon: '📱', credits: 4, category: 'planning' },
-      { id: 'engagement-booster', name: 'Engagement Booster', description: 'Generate CTAs and questions to boost comments', icon: '💬', credits: 5, category: 'optimization' },
-    ],
-    ru: [
-      { id: 'viral-analyzer', name: 'Viral Analyzer', description: 'Анализируйте вирусный потенциал контента, получите оценку 0-100', icon: '🔥', credits: 5, category: 'analysis', badge: 'Популярный' },
-      { id: 'content-repurposer', name: 'Content Repurposer', description: 'Автоматически адаптируйте 1 контент для 7 платформ', icon: '🔄', credits: 8, category: 'content', badge: 'Мощный' },
-      { id: 'hashtag-research', name: 'Hashtag Research', description: 'Найдите хештеги с анализом объема и трендов', icon: '#️⃣', credits: 3, category: 'research' },
-      { id: 'posting-optimizer', name: 'Smart Posting Times', description: 'Узнайте лучшее время публикации для вашей ниши', icon: '⏰', credits: 2, category: 'optimization' },
-      { id: 'content-planner', name: 'Content Calendar', description: 'Создайте 30-дневный контент-план', icon: '📅', credits: 10, category: 'planning', badge: 'Pro' },
-      { id: 'competitor-spy', name: 'Competitor Spy', description: 'Анализируйте стратегии конкурентов', icon: '🕵️', credits: 8, category: 'analysis' },
-      { id: 'trend-radar', name: 'Trend Radar', description: 'Откройте трендовые темы в вашей нише', icon: '📡', credits: 5, category: 'research' },
-      { id: 'ab-tester', name: 'A/B Caption Tester', description: 'Сравните две подписи, найдите победителя', icon: '⚖️', credits: 5, category: 'optimization' },
-      { id: 'script-studio', name: 'Script Studio', description: 'Создавайте вирусные видео-сценарии', icon: '🎬', credits: 6, category: 'content' },
-      { id: 'thread-composer', name: 'Thread Composer', description: 'Пишите вирусные треды Twitter/X', icon: '🧵', credits: 5, category: 'content' },
-      { id: 'carousel-planner', name: 'Carousel Planner', description: 'Планируйте карусельный контент', icon: '📱', credits: 4, category: 'planning' },
-      { id: 'engagement-booster', name: 'Engagement Booster', description: 'Генерируйте CTA для увеличения комментариев', icon: '💬', credits: 5, category: 'optimization' },
-    ],
-    de: [
-      { id: 'viral-analyzer', name: 'Viral Analyzer', description: 'Analysiere das virale Potenzial deines Inhalts, erhalte 0-100 Score', icon: '🔥', credits: 5, category: 'analysis', badge: 'Beliebt' },
-      { id: 'content-repurposer', name: 'Content Repurposer', description: 'Passe 1 Inhalt automatisch für 7 Plattformen an', icon: '🔄', credits: 8, category: 'content', badge: 'Stark' },
-      { id: 'hashtag-research', name: 'Hashtag Research', description: 'Finde Hashtags mit Volumen- und Trendanalyse', icon: '#️⃣', credits: 3, category: 'research' },
-      { id: 'posting-optimizer', name: 'Smart Posting Times', description: 'Lerne die besten Posting-Zeiten für deine Nische', icon: '⏰', credits: 2, category: 'optimization' },
-      { id: 'content-planner', name: 'Content Calendar', description: 'Erstelle einen 30-Tage Content-Plan', icon: '📅', credits: 10, category: 'planning', badge: 'Pro' },
-      { id: 'competitor-spy', name: 'Competitor Spy', description: 'Analysiere die Strategien deiner Konkurrenten', icon: '🕵️', credits: 8, category: 'analysis' },
-      { id: 'trend-radar', name: 'Trend Radar', description: 'Entdecke Trendthemen in deiner Nische', icon: '📡', credits: 5, category: 'research' },
-      { id: 'ab-tester', name: 'A/B Caption Tester', description: 'Vergleiche zwei Captions, finde den Gewinner', icon: '⚖️', credits: 5, category: 'optimization' },
-      { id: 'script-studio', name: 'Script Studio', description: 'Erstelle virale Video-Skripte', icon: '🎬', credits: 6, category: 'content' },
-      { id: 'thread-composer', name: 'Thread Composer', description: 'Schreibe virale Twitter/X Threads', icon: '🧵', credits: 5, category: 'content' },
-      { id: 'carousel-planner', name: 'Carousel Planner', description: 'Plane Swipe-würdige Carousel-Inhalte', icon: '📱', credits: 4, category: 'planning' },
-      { id: 'engagement-booster', name: 'Engagement Booster', description: 'Generiere CTAs und Fragen für mehr Kommentare', icon: '💬', credits: 5, category: 'optimization' },
-    ],
-    fr: [
-      { id: 'viral-analyzer', name: 'Viral Analyzer', description: 'Analysez le potentiel viral de votre contenu, obtenez un score 0-100', icon: '🔥', credits: 5, category: 'analysis', badge: 'Populaire' },
-      { id: 'content-repurposer', name: 'Content Repurposer', description: 'Adaptez automatiquement 1 contenu pour 7 plateformes', icon: '🔄', credits: 8, category: 'content', badge: 'Puissant' },
-      { id: 'hashtag-research', name: 'Hashtag Research', description: 'Trouvez des hashtags avec analyse de volume et tendances', icon: '#️⃣', credits: 3, category: 'research' },
-      { id: 'posting-optimizer', name: 'Smart Posting Times', description: 'Apprenez les meilleurs moments de publication', icon: '⏰', credits: 2, category: 'optimization' },
-      { id: 'content-planner', name: 'Content Calendar', description: 'Créez un plan de contenu de 30 jours', icon: '📅', credits: 10, category: 'planning', badge: 'Pro' },
-      { id: 'competitor-spy', name: 'Competitor Spy', description: 'Analysez les stratégies de vos concurrents', icon: '🕵️', credits: 8, category: 'analysis' },
-      { id: 'trend-radar', name: 'Trend Radar', description: 'Découvrez les sujets tendance dans votre niche', icon: '📡', credits: 5, category: 'research' },
-      { id: 'ab-tester', name: 'A/B Caption Tester', description: 'Comparez deux légendes, trouvez le gagnant', icon: '⚖️', credits: 5, category: 'optimization' },
-      { id: 'script-studio', name: 'Script Studio', description: 'Créez des scripts vidéo viraux', icon: '🎬', credits: 6, category: 'content' },
-      { id: 'thread-composer', name: 'Thread Composer', description: 'Écrivez des threads Twitter/X viraux', icon: '🧵', credits: 5, category: 'content' },
-      { id: 'carousel-planner', name: 'Carousel Planner', description: 'Planifiez du contenu carrousel attrayant', icon: '📱', credits: 4, category: 'planning' },
-      { id: 'engagement-booster', name: 'Engagement Booster', description: 'Générez des CTAs pour augmenter les commentaires', icon: '💬', credits: 5, category: 'optimization' },
-    ],
-  }
-  return toolsData[lang] || toolsData.en
-}
+const tools = [
+  // Discovery & Research
+  { id: 'video-finder', icon: '🔍', name: 'Viral Video Finder', nameEn: 'Viral Video Finder', desc: 'Nişindeki viral trendleri keşfet', descEn: 'Discover viral trends in your niche', credits: 5, category: 'discovery', isNew: true },
+  { id: 'trend-radar', icon: '📡', name: 'Trend Radar', nameEn: 'Trend Radar', desc: 'Güncel trendleri yakala', descEn: 'Catch current trends', credits: 4, category: 'discovery' },
+  { id: 'competitor-spy', icon: '🕵️', name: 'Competitor Spy', nameEn: 'Competitor Spy', desc: 'Rakip analizi yap', descEn: 'Analyze competitors', credits: 8, category: 'discovery' },
+  { id: 'hashtag-research', icon: '#️⃣', name: 'Hashtag Research', nameEn: 'Hashtag Research', desc: 'Etkili hashtagler bul', descEn: 'Find effective hashtags', credits: 3, category: 'discovery' },
+  
+  // Content Creation
+  { id: 'hook-generator', icon: '🎣', name: 'Hook Generator Pro', nameEn: 'Hook Generator Pro', desc: 'Viral hook\'lar üret', descEn: 'Generate viral hooks', credits: 3, category: 'creation', isNew: true },
+  { id: 'script-studio', icon: '🎬', name: 'Script Studio', nameEn: 'Script Studio', desc: 'Video scriptleri yaz', descEn: 'Write video scripts', credits: 6, category: 'creation' },
+  { id: 'caption-generator', icon: '✍️', name: 'Caption Generator', nameEn: 'Caption Generator', desc: 'Viral caption\'lar oluştur', descEn: 'Create viral captions', credits: 3, category: 'creation', isNew: true },
+  { id: 'thread-composer', icon: '🧵', name: 'Thread Composer', nameEn: 'Thread Composer', desc: 'Twitter thread\'leri yaz', descEn: 'Write Twitter threads', credits: 5, category: 'creation' },
+  { id: 'carousel-planner', icon: '🎠', name: 'Carousel Planner', nameEn: 'Carousel Planner', desc: 'Carousel içerikleri planla', descEn: 'Plan carousel content', credits: 5, category: 'creation' },
+  
+  // Analysis & Optimization
+  { id: 'viral-analyzer', icon: '🔬', name: 'Viral Analyzer', nameEn: 'Viral Analyzer', desc: 'İçerik potansiyelini analiz et', descEn: 'Analyze content potential', credits: 5, category: 'analysis' },
+  { id: 'steal-video', icon: '🎯', name: 'Steal This Video', nameEn: 'Steal This Video', desc: 'Viral videoları reverse engineer yap', descEn: 'Reverse engineer viral videos', credits: 8, category: 'analysis', isNew: true },
+  { id: 'ab-tester', icon: '⚖️', name: 'A/B Tester', nameEn: 'A/B Tester', desc: 'Caption\'ları karşılaştır', descEn: 'Compare captions', credits: 5, category: 'analysis' },
+  { id: 'engagement-booster', icon: '🚀', name: 'Engagement Booster', nameEn: 'Engagement Booster', desc: 'Etkileşimi artır', descEn: 'Boost engagement', credits: 4, category: 'analysis' },
+  
+  // Planning & Repurposing
+  { id: 'content-planner', icon: '📅', name: 'Content Calendar', nameEn: 'Content Calendar', desc: '30 günlük plan oluştur', descEn: 'Create 30-day plan', credits: 10, category: 'planning' },
+  { id: 'posting-optimizer', icon: '⏰', name: 'Smart Posting Times', nameEn: 'Smart Posting Times', desc: 'Optimal paylaşım saatleri', descEn: 'Optimal posting times', credits: 2, category: 'planning' },
+  { id: 'content-repurposer', icon: '♻️', name: 'Content Repurposer', nameEn: 'Content Repurposer', desc: 'İçeriği tüm platformlara uyarla', descEn: 'Repurpose for all platforms', credits: 8, category: 'planning' },
+]
 
-const getCategories = (lang: string) => {
-  const cats: any = {
-    tr: { all: 'Tümü', content: 'İçerik', analysis: 'Analiz', research: 'Araştırma', optimization: 'Optimizasyon', planning: 'Planlama' },
-    en: { all: 'All', content: 'Content', analysis: 'Analysis', research: 'Research', optimization: 'Optimization', planning: 'Planning' },
-    ru: { all: 'Все', content: 'Контент', analysis: 'Анализ', research: 'Исследование', optimization: 'Оптимизация', planning: 'Планирование' },
-    de: { all: 'Alle', content: 'Inhalt', analysis: 'Analyse', research: 'Forschung', optimization: 'Optimierung', planning: 'Planung' },
-    fr: { all: 'Tout', content: 'Contenu', analysis: 'Analyse', research: 'Recherche', optimization: 'Optimisation', planning: 'Planification' },
-  }
-  return cats[lang] || cats.en
-}
+const categories = [
+  { id: 'all', label: '🏠 Tümü', labelEn: '🏠 All' },
+  { id: 'discovery', label: '🔍 Keşif', labelEn: '🔍 Discovery' },
+  { id: 'creation', label: '✨ Oluşturma', labelEn: '✨ Creation' },
+  { id: 'analysis', label: '📊 Analiz', labelEn: '📊 Analysis' },
+  { id: 'planning', label: '📅 Planlama', labelEn: '📅 Planning' },
+]
 
-const getTexts = (lang: string) => {
-  const texts: any = {
-    tr: { 
-      welcome: 'Hoş Geldin', 
-      credits: 'Kredi', 
-      testMode: '🧪 Test Modu Aktif - Krediler düşmüyor',
-      logout: 'Çıkış',
-      upgrade: 'Pro\'ya Yükselt',
-      unlimitedAccess: 'Sınırsız erişim için Pro\'ya geçin'
-    },
-    en: { 
-      welcome: 'Welcome', 
-      credits: 'Credits', 
-      testMode: '🧪 Test Mode Active - Credits not deducted',
-      logout: 'Logout',
-      upgrade: 'Upgrade to Pro',
-      unlimitedAccess: 'Upgrade to Pro for unlimited access'
-    },
-    ru: { 
-      welcome: 'Добро пожаловать', 
-      credits: 'Кредиты', 
-      testMode: '🧪 Тестовый режим - Кредиты не списываются',
-      logout: 'Выход',
-      upgrade: 'Перейти на Pro',
-      unlimitedAccess: 'Перейдите на Pro для неограниченного доступа'
-    },
-    de: { 
-      welcome: 'Willkommen', 
-      credits: 'Credits', 
-      testMode: '🧪 Testmodus Aktiv - Credits werden nicht abgezogen',
-      logout: 'Abmelden',
-      upgrade: 'Auf Pro upgraden',
-      unlimitedAccess: 'Upgraden Sie auf Pro für unbegrenzten Zugang'
-    },
-    fr: { 
-      welcome: 'Bienvenue', 
-      credits: 'Crédits', 
-      testMode: '🧪 Mode Test Actif - Crédits non déduits',
-      logout: 'Déconnexion',
-      upgrade: 'Passer à Pro',
-      unlimitedAccess: 'Passez à Pro pour un accès illimité'
-    },
-  }
-  return texts[lang] || texts.en
+const texts: any = {
+  tr: { title: 'Dashboard', welcome: 'Hoş geldin', credits: 'Kredi', tools: 'araç', logout: 'Çıkış', newBadge: 'YENİ' },
+  en: { title: 'Dashboard', welcome: 'Welcome', credits: 'Credits', tools: 'tools', logout: 'Logout', newBadge: 'NEW' },
+  ru: { title: 'Панель', welcome: 'Добро пожаловать', credits: 'Кредиты', tools: 'инструменты', logout: 'Выход', newBadge: 'НОВЫЙ' },
+  de: { title: 'Dashboard', welcome: 'Willkommen', credits: 'Credits', tools: 'Tools', logout: 'Abmelden', newBadge: 'NEU' },
+  fr: { title: 'Tableau de bord', welcome: 'Bienvenue', credits: 'Crédits', tools: 'outils', logout: 'Déconnexion', newBadge: 'NOUVEAU' },
 }
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
-  const [credits, setCredits] = useState(50)
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [credits, setCredits] = useState(0)
+  const [activeCategory, setActiveCategory] = useState('all')
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
-
-  const tools = getTools(language)
-  const categories = getCategories(language)
-  const texts = getTexts(language)
+  const t = texts[language] || texts.en
 
   useEffect(() => {
-    checkUser()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push('/login')
+      else {
+        setUser(user)
+        // Fetch credits
+        supabase.from('credits').select('balance').eq('user_id', user.id).single()
+          .then(({ data }) => setCredits(data?.balance || 100))
+      }
+    })
   }, [])
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/login')
-      return
-    }
-    setUser(user)
-    
-    // Kredileri al
-    const { data } = await supabase
-      .from('credits')
-      .select('balance')
-      .eq('user_id', user.id)
-      .single()
-    
-    if (data) setCredits(data.balance)
-  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const filteredTools = selectedCategory === 'all' 
+  const filteredTools = activeCategory === 'all' 
     ? tools 
-    : tools.filter((t: any) => t.category === selectedCategory)
+    : tools.filter(tool => tool.category === activeCategory)
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header - Ana sayfa ile aynı */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl font-bold text-white">M</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Media
-                </span>
-                <span className="text-xl font-bold text-white">
-                  Tool Kit
-                </span>
-              </div>
-            </Link>
-
-            {/* Right Side */}
-            <div className="flex items-center gap-4">
-              {/* Credits */}
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
-                <span className="text-yellow-400">⚡</span>
-                <span className="text-white font-semibold">{credits}</span>
-                <span className="text-gray-400 text-sm">{texts.credits}</span>
-              </div>
-
-              {/* Language Switcher */}
-              <div className="relative group">
-                <button className="flex items-center gap-1 px-3 py-1.5 bg-gray-800/80 backdrop-blur-sm rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition border border-gray-700">
-                  <span>🌐</span>
-                  <span>{language.toUpperCase()}</span>
-                </button>
-                <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  {['en', 'tr', 'ru', 'de', 'fr'].map((lang) => (
-                    <button 
-                      key={lang}
-                      onClick={() => setLanguage(lang as any)} 
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition flex items-center gap-2 ${language === lang ? 'text-purple-400' : 'text-gray-300'} ${lang === 'en' ? 'rounded-t-lg' : ''} ${lang === 'fr' ? 'rounded-b-lg' : ''}`}
-                    >
-                      {lang === 'en' && '🇺🇸 English'}
-                      {lang === 'tr' && '🇹🇷 Türkçe'}
-                      {lang === 'ru' && '🇷🇺 Русский'}
-                      {lang === 'de' && '🇩🇪 Deutsch'}
-                      {lang === 'fr' && '🇫🇷 Français'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-gray-400 hover:text-white transition"
-              >
-                {texts.logout}
-              </button>
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">MediaToolkit</Link>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Credits */}
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl px-4 py-2">
+              <span className="text-gray-400 text-sm">{t.credits}:</span>
+              <span className="text-white font-bold ml-2">{credits}</span>
             </div>
+            
+            {/* Language */}
+            <div className="relative group">
+              <button className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300 border border-gray-700">🌐 {language.toUpperCase()}</button>
+              <div className="absolute right-0 mt-2 w-36 bg-gray-800 border border-gray-700 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                {['en','tr','ru','de','fr'].map(l => (
+                  <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 ${language === l ? 'text-purple-400' : 'text-gray-300'}`}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Logout */}
+            <button onClick={handleLogout} className="text-gray-400 hover:text-white text-sm">{t.logout}</button>
           </div>
         </div>
       </header>
 
+      {/* Test Mode Banner */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-green-500/10 border-b border-green-500/30 py-2 text-center text-green-400 text-sm">
+        🧪 Test Modu Aktif - Krediler düşmüyor
+      </div>
+
       {/* Main Content */}
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Welcome & Test Mode Banner */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">
-              {texts.welcome}, {user?.email?.split('@')[0]} 👋
-            </h1>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-sm">
-              {texts.testMode}
-            </div>
-          </div>
+      <main className="pt-32 pb-12 px-4 max-w-7xl mx-auto">
+        {/* Welcome */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">{t.welcome}, {user?.email?.split('@')[0]} 👋</h1>
+          <p className="text-gray-400">{tools.length} {t.tools}</p>
+        </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {Object.entries(categories).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setSelectedCategory(key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedCategory === key
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                }`}
-              >
-                {label as string}
-              </button>
-            ))}
-          </div>
-
-          {/* Tools Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredTools.map((tool: any) => (
-              <Link
-                key={tool.id}
-                href={`/tools/${tool.id}`}
-                className="group relative bg-gray-800/50 border border-gray-700 hover:border-purple-500/50 rounded-2xl p-6 transition-all hover:shadow-lg hover:shadow-purple-500/10"
-              >
-                {/* Badge */}
-                {tool.badge && (
-                  <span className="absolute top-4 right-4 px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-medium">
-                    {tool.badge}
-                  </span>
-                )}
-
-                {/* Icon */}
-                <div className="text-4xl mb-4">{tool.icon}</div>
-
-                {/* Name */}
-                <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-purple-400 transition">
-                  {tool.name}
-                </h3>
-
-                {/* Description */}
-                <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                  {tool.description}
-                </p>
-
-                {/* Credits */}
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-yellow-400">⚡</span>
-                  <span className="text-gray-300">{tool.credits} {texts.credits}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Pro Banner */}
-          <div className="mt-12 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">{texts.upgrade}</h2>
-            <p className="text-gray-400 mb-4">{texts.unlimitedAccess}</p>
-            <Link
-              href="/pricing"
-              className="inline-flex px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold hover:opacity-90 transition"
+        {/* Category Filter */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
+                activeCategory === cat.id
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
             >
-              {texts.upgrade} →
+              {language === 'tr' ? cat.label : cat.labelEn}
+            </button>
+          ))}
+        </div>
+
+        {/* Tools Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredTools.map(tool => (
+            <Link
+              key={tool.id}
+              href={`/tools/${tool.id}`}
+              className="group bg-gray-800/50 border border-gray-700 rounded-2xl p-5 hover:border-purple-500/50 hover:bg-gray-800 transition-all"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-4xl">{tool.icon}</span>
+                <div className="flex items-center gap-2">
+                  {tool.isNew && (
+                    <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full font-semibold">{t.newBadge}</span>
+                  )}
+                  <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">{tool.credits} {t.credits}</span>
+                </div>
+              </div>
+              <h3 className="text-white font-semibold mb-1 group-hover:text-purple-400 transition-colors">
+                {language === 'tr' ? tool.name : tool.nameEn}
+              </h3>
+              <p className="text-gray-500 text-sm">
+                {language === 'tr' ? tool.desc : tool.descEn}
+              </p>
             </Link>
+          ))}
+        </div>
+
+        {/* Quick Stats */}
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-5 text-center">
+            <div className="text-3xl font-bold text-white">{tools.length}</div>
+            <div className="text-gray-400 text-sm">AI Tools</div>
+          </div>
+          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-5 text-center">
+            <div className="text-3xl font-bold text-white">4</div>
+            <div className="text-gray-400 text-sm">New Tools</div>
+          </div>
+          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-2xl p-5 text-center">
+            <div className="text-3xl font-bold text-white">5</div>
+            <div className="text-gray-400 text-sm">Languages</div>
+          </div>
+          <div className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border border-orange-500/30 rounded-2xl p-5 text-center">
+            <div className="text-3xl font-bold text-white">{credits}</div>
+            <div className="text-gray-400 text-sm">Your Credits</div>
           </div>
         </div>
       </main>
