@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, platform, duration, style, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Write the entire script in fluent, conversational Turkish. It should sound like a native Turkish creator speaking naturally, not a translation. Use Turkish idioms and speech patterns.',
       'en': 'Write in conversational English.',
       'ru': 'Write in fluent, conversational Russian with native speech patterns.',

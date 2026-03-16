@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, threadLength, style, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Write the entire thread in fluent, native Turkish. Should sound like a Turkish thought leader.',
       'en': 'Write in English.',
       'ru': 'Write in fluent Russian. Should sound native and authoritative.',

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, platform, tone, count, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Respond entirely in Turkish. Make hooks sound natural in Turkish, not translated.',
       'en': 'Respond in English.',
       'ru': 'Respond entirely in Russian. Make hooks sound natural in Russian.',

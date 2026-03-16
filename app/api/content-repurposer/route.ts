@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const { originalContent, contentType, targetPlatforms, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Provide all repurposed content variations in fluent Turkish.',
       'en': 'Provide in English.',
       'ru': 'Provide all content in fluent Russian.',

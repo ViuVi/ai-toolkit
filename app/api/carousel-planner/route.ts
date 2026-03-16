@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, style, slideCount, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Create all carousel slide content in fluent Turkish. Make it sound native and engaging.',
       'en': 'Create in English.',
       'ru': 'Create all content in fluent Russian.',

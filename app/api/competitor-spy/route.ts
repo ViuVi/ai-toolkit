@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   try {
     const { competitorDescription, yourNiche, platform, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Provide all competitive analysis and strategies in fluent Turkish.',
       'en': 'Provide in English.',
       'ru': 'Provide all content in fluent Russian.',

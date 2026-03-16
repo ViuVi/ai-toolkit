@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   try {
     const { niche, platform, timeframe, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Provide all trend analysis and recommendations in fluent Turkish.',
       'en': 'Provide in English.',
       'ru': 'Provide all content in fluent Russian.',

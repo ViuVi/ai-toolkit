@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, niche, platform, contentType, language } = await request.json()
 
-    const langInstruction = {
+    const langInstruction: Record<string, string> = {
       'tr': 'Provide hashtag strategy and explanations in Turkish, but keep hashtags in their most effective language (often English for reach, Turkish for local targeting).',
       'en': 'Provide in English.',
       'ru': 'Provide strategy in Russian, hashtags in optimal language for reach.',
