@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
+import { supabase } from '@/lib/supabase'
 
 const texts: any = {
   tr: {
-    nav: { tools: 'Araçlar', pricing: 'Fiyatlar', reviews: 'Yorumlar', login: 'Giriş Yap', getStarted: 'Başla' },
+    nav: { tools: 'Araçlar', pricing: 'Fiyatlar', reviews: 'Yorumlar', login: 'Giriş Yap', getStarted: 'Başla', dashboard: 'Dashboard' },
     hero: { badge: '10.000+ içerik üreticisi tarafından güveniliyor', title1: 'Viral İçerik', title2: 'Üret', title3: 'AI ile 10 Kat Hızlı', subtitle: 'İçerik üreticileri için en kapsamlı AI araç seti. Hook, script, caption üret ve viral trendleri keşfet — hepsi tek yerde.', cta: 'Ücretsiz Başla', explore: 'Araçları Keşfet' },
     stats: { tools: 'AI Araç', content: 'İçerik Üretildi', languages: 'Dil', powered: 'AI Destekli' },
     tools: { title: 'Güçlü AI Araçları', subtitle: 'Viral içerik üretmek için ihtiyacın olan her şey', viewAll: 'Tüm 16 aracı gör' },
@@ -16,7 +17,7 @@ const texts: any = {
     footer: { privacy: 'Gizlilik', terms: 'Şartlar', contact: 'İletişim', rights: 'Tüm hakları saklıdır.' }
   },
   en: {
-    nav: { tools: 'Tools', pricing: 'Pricing', reviews: 'Reviews', login: 'Log in', getStarted: 'Get Started' },
+    nav: { tools: 'Tools', pricing: 'Pricing', reviews: 'Reviews', login: 'Log in', getStarted: 'Get Started', dashboard: 'Dashboard' },
     hero: { badge: 'Trusted by 10,000+ content creators', title1: 'Create', title2: 'Viral Content', title3: '10x Faster with AI', subtitle: 'The ultimate AI toolkit for content creators. Generate hooks, scripts, captions, and discover viral trends — all in one place.', cta: 'Start Creating Free', explore: 'Explore Tools' },
     stats: { tools: 'AI Tools', content: 'Content Created', languages: 'Languages', powered: 'AI Powered' },
     tools: { title: 'Powerful AI Tools', subtitle: 'Everything you need to create viral content', viewAll: 'View all 16 tools' },
@@ -27,7 +28,7 @@ const texts: any = {
     footer: { privacy: 'Privacy', terms: 'Terms', contact: 'Contact', rights: 'All rights reserved.' }
   },
   ru: {
-    nav: { tools: 'Инструменты', pricing: 'Цены', reviews: 'Отзывы', login: 'Войти', getStarted: 'Начать' },
+    nav: { tools: 'Инструменты', pricing: 'Цены', reviews: 'Отзывы', login: 'Войти', getStarted: 'Начать', dashboard: 'Панель' },
     hero: { badge: 'Доверяют 10,000+ создателей контента', title1: 'Создавайте', title2: 'Вирусный контент', title3: 'в 10 раз быстрее с ИИ', subtitle: 'Лучший набор ИИ-инструментов для создателей контента.', cta: 'Начать бесплатно', explore: 'Инструменты' },
     stats: { tools: 'ИИ инструментов', content: 'Контента создано', languages: 'Языков', powered: 'ИИ' },
     tools: { title: 'Мощные ИИ инструменты', subtitle: 'Всё для создания вирусного контента', viewAll: 'Все 16 инструментов' },
@@ -38,7 +39,7 @@ const texts: any = {
     footer: { privacy: 'Конфиденциальность', terms: 'Условия', contact: 'Контакты', rights: 'Все права защищены.' }
   },
   de: {
-    nav: { tools: 'Tools', pricing: 'Preise', reviews: 'Bewertungen', login: 'Anmelden', getStarted: 'Starten' },
+    nav: { tools: 'Tools', pricing: 'Preise', reviews: 'Bewertungen', login: 'Anmelden', getStarted: 'Starten', dashboard: 'Dashboard' },
     hero: { badge: 'Vertraut von 10.000+ Content-Erstellern', title1: 'Erstelle', title2: 'Viralen Content', title3: '10x schneller mit KI', subtitle: 'Das ultimative KI-Toolkit für Content-Ersteller.', cta: 'Kostenlos starten', explore: 'Tools erkunden' },
     stats: { tools: 'KI-Tools', content: 'Inhalte erstellt', languages: 'Sprachen', powered: 'KI-Betrieben' },
     tools: { title: 'Leistungsstarke KI-Tools', subtitle: 'Alles für viralen Content', viewAll: 'Alle 16 Tools' },
@@ -49,7 +50,7 @@ const texts: any = {
     footer: { privacy: 'Datenschutz', terms: 'AGB', contact: 'Kontakt', rights: 'Alle Rechte vorbehalten.' }
   },
   fr: {
-    nav: { tools: 'Outils', pricing: 'Tarifs', reviews: 'Avis', login: 'Connexion', getStarted: 'Commencer' },
+    nav: { tools: 'Outils', pricing: 'Tarifs', reviews: 'Avis', login: 'Connexion', getStarted: 'Commencer', dashboard: 'Tableau de bord' },
     hero: { badge: 'Approuvé par 10 000+ créateurs de contenu', title1: 'Créez du', title2: 'Contenu Viral', title3: '10x plus vite avec l\'IA', subtitle: 'La boîte à outils IA ultime pour les créateurs de contenu.', cta: 'Commencer gratuitement', explore: 'Explorer les outils' },
     stats: { tools: 'Outils IA', content: 'Contenus créés', languages: 'Langues', powered: 'IA' },
     tools: { title: 'Outils IA Puissants', subtitle: 'Tout pour créer du contenu viral', viewAll: 'Voir les 16 outils' },
@@ -80,6 +81,7 @@ const testimonials = [
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
@@ -87,6 +89,19 @@ export default function HomePage() {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Session kontrolü
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -122,8 +137,14 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <Link href="/login" className="text-gray-400 hover:text-white transition">{t.nav.login}</Link>
-            <Link href="/login" className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-medium hover:opacity-90 transition">{t.nav.getStarted}</Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-medium hover:opacity-90 transition">{t.nav.dashboard}</Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-gray-400 hover:text-white transition">{t.nav.login}</Link>
+                <Link href="/register" className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-medium hover:opacity-90 transition">{t.nav.getStarted}</Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
