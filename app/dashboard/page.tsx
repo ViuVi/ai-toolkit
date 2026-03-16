@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [filter, setFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
@@ -58,20 +59,35 @@ export default function DashboardPage() {
     return name ? name[0].toUpperCase() : 'U'
   }
 
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
+    // Önce mevcut session'ı kontrol et
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
         router.push('/login')
       } else {
-        setUser(user)
-        supabase.from('credits').select('balance, avatar_url').eq('user_id', user.id).single().then(({ data }) => {
+        setUser(session.user)
+        supabase.from('credits').select('balance, avatar_url').eq('user_id', session.user.id).single().then(({ data }) => {
           if (data) {
             setCredits(data.balance || 0)
             setAvatarUrl(data.avatar_url || null)
           }
+          setLoading(false)
         })
       }
     })
+
+    // Auth state değişikliklerini dinle
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push('/login')
+      } else {
+        setUser(session.user)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [router])
 
   const handleLogout = async () => {
@@ -135,6 +151,18 @@ export default function DashboardPage() {
   }
 
   const filteredTools = filter === 'all' ? tools : tools.filter(tool => tool.category === filter)
+
+  // Loading durumunda spinner göster
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
