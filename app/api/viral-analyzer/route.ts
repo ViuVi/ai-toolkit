@@ -56,13 +56,14 @@ export async function POST(request: NextRequest) {
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const contentTypeContext = {
+    const contentTypeContextMap: Record<string, string> = {
       'video_idea': 'Analyze this as a concept/idea before production.',
       'script': 'Analyze this script for viral potential.',
       'caption': 'Analyze this caption for engagement potential.',
       'hook': 'Analyze this hook for stopping power.',
       'full_content': 'Analyze this complete piece of content.'
-    }[contentType] || ''
+    }
+    const contentTypeContext = contentTypeContextMap[contentType as string] || ''
 
     const userPrompt = `Perform a comprehensive viral potential analysis:
 

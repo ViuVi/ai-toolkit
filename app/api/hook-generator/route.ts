@@ -42,19 +42,21 @@ export async function POST(request: NextRequest) {
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const platformContext = {
+    const platformContextMap: Record<string, string> = {
       'tiktok': 'TikTok hooks must be punchy, trendy, and work with fast-paced editing. Use current TikTok speech patterns.',
       'instagram': 'Instagram Reels hooks should be slightly more polished but still attention-grabbing. Consider the visual-first nature.',
       'youtube': 'YouTube Shorts hooks need to promise value quickly. Viewers expect slightly more substance.',
       'twitter': 'Twitter/X hooks must work as text-first. Brevity and wit are essential.'
-    }[platform] || ''
+    }
+    const platformContext = platformContextMap[platform as string] || ''
 
-    const toneContext = {
+    const toneContextMap: Record<string, string> = {
       'professional': 'Keep hooks authoritative and credible, but never boring.',
       'casual': 'Make hooks feel like talking to a friend who knows secrets.',
       'humorous': 'Add wit and unexpected twists, but ensure the hook still drives curiosity.',
       'dramatic': 'Use power words and create maximum tension and intrigue.'
-    }[tone] || ''
+    }
+    const toneContext = toneContextMap[tone as string] || ''
 
     const userPrompt = `Create ${count || 5} viral hooks for this topic: "${topic}"
 

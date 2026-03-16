@@ -56,21 +56,23 @@ export async function POST(request: NextRequest) {
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const styleGuide = {
+    const styleGuideMap: Record<string, string> = {
       'storytelling': 'Use narrative arc - setup, tension, resolution. Make it feel like a mini-movie.',
       'educational': 'Lead with the insight, break down complex ideas simply. Position as expert sharing secrets.',
       'promotional': 'Focus on transformation and results. Use social proof and urgency without being pushy.',
       'engaging': 'Maximize comments through questions, polls, challenges. Make responding irresistible.',
       'inspirational': 'Emotional resonance first. Use powerful imagery and relatable struggles.'
-    }[style] || ''
+    }
+    const styleGuide = styleGuideMap[style as string] || ''
 
-    const platformRules = {
+    const platformRulesMap: Record<string, string> = {
       'instagram': 'Can be longer (up to 2200 chars). Use line breaks for readability. First line is crucial for "more" click.',
       'tiktok': 'Keep punchy (under 300 chars ideal). Match TikTok\'s casual, trend-aware voice.',
       'youtube': 'Front-load keywords for search. Can be descriptive but must hook immediately.',
       'twitter': 'Under 280 chars. Wit and punch are everything. Thread potential for complex topics.',
       'linkedin': 'Professional but human. Story-driven posts perform best. Thought leadership angle.'
-    }[platform] || ''
+    }
+    const platformRules = platformRulesMap[platform as string] || ''
 
     const userPrompt = `Create a high-converting caption for: "${topic}"
 

@@ -69,26 +69,29 @@ export async function POST(request: NextRequest) {
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const durationGuide = {
+    const durationGuideMap: Record<string, string> = {
       '15': '15 seconds: Ultra-tight. One powerful idea, maximum impact. ~40 words.',
       '30': '30 seconds: Hook + one key point + CTA. ~80 words.',
       '60': '60 seconds: Full mini-story arc. Hook + 2-3 points + strong close. ~160 words.',
       '180': '3 minutes: Deep dive format. Multiple sections, story weaving, comprehensive value. ~450 words.'
-    }[duration] || '60 seconds format'
+    }
+    const durationGuide = durationGuideMap[duration as string] || '60 seconds format'
 
-    const styleGuide = {
+    const styleGuideMap: Record<string, string> = {
       'educational': 'Teacher energy - confident expertise delivered accessibly. "Let me show you..." vibe.',
       'entertaining': 'Entertainment first, value embedded. Personality-driven, reactions welcome.',
       'storytelling': 'Narrative arc essential. Character, conflict, resolution. Emotional journey.',
       'tutorial': 'Clear step-by-step. Visual cues noted. "First... Then... Finally..." structure.'
-    }[style] || ''
+    }
+    const styleGuide = styleGuideMap[style as string] || ''
 
-    const platformNotes = {
+    const platformNotesMap: Record<string, string> = {
       'tiktok': 'TikTok energy: Fast cuts implied, trend-aware language, hook in first 1 second.',
       'reels': 'Reels: Slightly more polished than TikTok, but same urgency. Visual-first scripting.',
       'shorts': 'YouTube Shorts: Can be slightly more substantive. Searchability matters.',
       'youtube': 'Long-form YouTube: Deeper storytelling, chapter-ready structure, retention focus.'
-    }[platform] || ''
+    }
+    const platformNotes = platformNotesMap[platform as string] || ''
 
     const userPrompt = `Write a viral video script about: "${topic}"
 
