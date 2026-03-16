@@ -47,13 +47,14 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, platform, style, includeHashtags, includeEmojis, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Write the caption in fluent, native Turkish. It should sound like a Turkish influencer wrote it, not a translation.',
       'en': 'Write in English.',
       'ru': 'Write in fluent, native Russian. Should sound authentically Russian.',
       'de': 'Write in fluent, native German. Should sound authentically German.',
       'fr': 'Write in fluent, native French. Should sound authentically French.'
-    }[language] || 'Write in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const styleGuide = {
       'storytelling': 'Use narrative arc - setup, tension, resolution. Make it feel like a mini-movie.',

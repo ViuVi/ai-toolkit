@@ -45,13 +45,14 @@ export async function POST(request: NextRequest) {
   try {
     const { niche, platforms, duration, postsPerWeek, goals, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Provide the entire content calendar with all titles, hooks, and descriptions in fluent Turkish.',
       'en': 'Provide in English.',
       'ru': 'Provide all content in fluent Russian.',
       'de': 'Provide all content in fluent German.',
       'fr': 'Provide all content in fluent French.'
-    }[language] || 'Provide in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Create a comprehensive content calendar:
 

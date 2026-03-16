@@ -60,13 +60,14 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, threadLength, style, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Write the entire thread in fluent, native Turkish. Should sound like a Turkish thought leader.',
       'en': 'Write in English.',
       'ru': 'Write in fluent Russian. Should sound native and authoritative.',
       'de': 'Write in fluent German. Should sound native and authoritative.',
       'fr': 'Write in fluent French. Should sound native and authoritative.'
-    }[language] || 'Write in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Create a viral Twitter/X thread about:
 

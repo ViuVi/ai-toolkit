@@ -33,13 +33,14 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, platform, tone, count, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Respond entirely in Turkish. Make hooks sound natural in Turkish, not translated.',
       'en': 'Respond in English.',
       'ru': 'Respond entirely in Russian. Make hooks sound natural in Russian.',
       'de': 'Respond entirely in German. Make hooks sound natural in German.',
       'fr': 'Respond entirely in French. Make hooks sound natural in French.'
-    }[language] || 'Respond in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const platformContext = {
       'tiktok': 'TikTok hooks must be punchy, trendy, and work with fast-paced editing. Use current TikTok speech patterns.',

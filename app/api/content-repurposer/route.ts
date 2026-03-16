@@ -52,13 +52,14 @@ export async function POST(request: NextRequest) {
   try {
     const { originalContent, contentType, targetPlatforms, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Provide all repurposed content variations in fluent Turkish.',
       'en': 'Provide in English.',
       'ru': 'Provide all content in fluent Russian.',
       'de': 'Provide all content in fluent German.',
       'fr': 'Provide all content in fluent French.'
-    }[language] || 'Provide in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Repurpose this content into multiple formats:
 

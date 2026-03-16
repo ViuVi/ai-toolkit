@@ -51,13 +51,14 @@ export async function POST(request: NextRequest) {
   try {
     const { videoDescription, creatorNiche, platform, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Provide all analysis and adapted content ideas in fluent Turkish. Scripts and hooks should sound native.',
       'en': 'Provide in English.',
       'ru': 'Provide all analysis and adapted content in fluent Russian.',
       'de': 'Provide all analysis and adapted content in fluent German.',
       'fr': 'Provide all analysis and adapted content in fluent French.'
-    }[language] || 'Provide in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `REVERSE ENGINEER THIS VIRAL CONTENT:
 

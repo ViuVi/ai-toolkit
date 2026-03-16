@@ -55,13 +55,14 @@ export async function POST(request: NextRequest) {
   try {
     const { topic, style, slideCount, language } = await request.json()
 
-    const langInstruction: Record<string, string> = {
+    const langMap: Record<string, string> = {
       'tr': 'Create all carousel slide content in fluent Turkish. Make it sound native and engaging.',
       'en': 'Create in English.',
       'ru': 'Create all content in fluent Russian.',
       'de': 'Create all content in fluent German.',
       'fr': 'Create all content in fluent French.'
-    }[language] || 'Create in English.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Design a high-converting Instagram carousel about:
 
