@@ -59,8 +59,6 @@ export default function DashboardPage() {
     return name ? name[0].toUpperCase() : 'U'
   }
 
-  const [loading, setLoading] = useState(true)
-
   useEffect(() => {
     // Önce mevcut session'ı kontrol et
     supabase.auth.getSession().then(({ data: { session } }) => {
