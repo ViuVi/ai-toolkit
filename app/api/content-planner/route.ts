@@ -1,65 +1,193 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "ContentArchitect" - a strategic content planner who has built content calendars for creators generating $10M+/year. You understand how to balance consistency, variety, and strategic timing for maximum growth.
+
+YOUR CONTENT PLANNING PHILOSOPHY:
+
+1. THE CONTENT PILLAR SYSTEM
+   - 3-5 core pillars that define your brand
+   - Each pillar serves a purpose: educate, entertain, inspire, sell
+   - Rotation prevents fatigue while building recognition
+
+2. THE 4-1-1 POSTING FRAMEWORK
+   - 4 Value posts (educate, entertain, inspire)
+   - 1 Personal/behind-the-scenes
+   - 1 Promotional/CTA
+   - Ratio keeps audience engaged without feeling sold to
+
+3. STRATEGIC TIMING
+   - Platform-specific peak times
+   - Content type timing (educational AM, entertainment PM)
+   - Trend-jacking windows
+   - Launch and campaign timing
+
+4. CONTENT BATCHING
+   - Batch similar content types
+   - Create content clusters around themes
+   - Repurposing strategy built-in
+
+5. THE MOMENTUM FORMULA
+   - Consistent posting builds algorithm trust
+   - Quality > quantity, but consistency is non-negotiable
+   - Rest days planned, not random
+
+6. CONTENT CALENDAR ARCHITECTURE
+   - Weekly themes for focus
+   - Daily content type rotation
+   - Flex slots for trending content
+   - Buffer content for emergencies
+
+Think strategically in English, deliver comprehensive calendars in user's language.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { niche, goals, platform, language = 'tr' } = await request.json()
-    if (!niche?.trim()) return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
+    const { niche, platforms, duration, postsPerWeek, goals, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Provide the entire content calendar with all titles, hooks, and descriptions in fluent Turkish.',
+      'en': 'Provide in English.',
+      'ru': 'Provide all content in fluent Russian.',
+      'de': 'Provide all content in fluent German.',
+      'fr': 'Provide all content in fluent French.'
+    }[language] || 'Provide in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const userPrompt = `Create a comprehensive content calendar:
 
-    const systemPrompt = `Sen içerik stratejistisin. ${niche} nişi için 30 günlük detaylı içerik planı oluştur. Yanıt dili: ${lang}
+Niche: ${niche}
+Platforms: ${platforms}
+Duration: ${duration || '2 weeks'}
+Posts per week: ${postsPerWeek || '5'}
+Goals: ${goals || 'Grow audience and engagement'}
 
-JSON formatında yanıt ver:
+${langInstruction}
+
+BUILD A STRATEGIC CONTENT CALENDAR:
+
+Return as JSON:
 {
-  "strategy_overview": "Genel strateji özeti",
-  "weekly_themes": [
-    { "week": 1, "theme": "Hafta teması", "focus": "Odak" },
-    { "week": 2, "theme": "Tema", "focus": "Odak" },
-    { "week": 3, "theme": "Tema", "focus": "Odak" },
-    { "week": 4, "theme": "Tema", "focus": "Odak" },
-    { "week": 5, "theme": "Tema", "focus": "Odak" }
-  ],
-  "days": [
+  "content_strategy": {
+    "pillars": [
+      {
+        "name": "Pillar name",
+        "purpose": "What it achieves",
+        "content_types": ["Type 1", "Type 2"],
+        "frequency": "How often"
+      }
+    ],
+    "posting_schedule": {
+      "optimal_times": {"monday": "time", "tuesday": "time"},
+      "rationale": "Why these times"
+    },
+    "content_mix": {
+      "educational": "30%",
+      "entertaining": "30%",
+      "personal": "20%",
+      "promotional": "20%"
+    }
+  },
+  "calendar": [
     {
-      "day": 1,
-      "weekday": "Pazartesi",
-      "content_type": "Carousel/Reel/Post/Story/Live",
-      "topic": "Spesifik konu",
-      "hook": "Dikkat çekici açılış",
-      "description": "İçerik açıklaması",
-      "cta": "Call-to-action",
-      "hashtags": ["#hashtag1", "#hashtag2"],
-      "best_time": "09:00",
-      "engagement_tip": "Etkileşim ipucu"
+      "week": 1,
+      "theme": "Weekly theme",
+      "days": [
+        {
+          "day": "Monday",
+          "date": "Example date",
+          "platform": "Platform",
+          "content_type": "Type",
+          "pillar": "Which pillar",
+          "topic": "Content topic",
+          "title": "Video/post title",
+          "hook": "Opening hook",
+          "key_points": ["Point 1", "Point 2"],
+          "cta": "Call to action",
+          "hashtags": ["#tag1", "#tag2"],
+          "best_time": "Posting time",
+          "content_status": "To create",
+          "notes": "Additional notes"
+        }
+      ]
     }
   ],
-  "bonus_ideas": ["Bonus fikir 1", "Bonus fikir 2", "Bonus fikir 3"],
-  "content_tips": ["İpucu 1", "İpucu 2"]
+  "content_batching_plan": {
+    "batch_1": {
+      "theme": "Batch theme",
+      "contents": ["Content 1", "Content 2"],
+      "filming_time": "Estimated time",
+      "batch_day": "Recommended day"
+    }
+  },
+  "trending_slots": [
+    {
+      "day": "Day",
+      "purpose": "React to trends",
+      "guidelines": "How to use this slot"
+    }
+  ],
+  "repurposing_strategy": [
+    {
+      "original": "Original content",
+      "repurpose_to": ["Format 1", "Format 2"],
+      "platforms": ["Platform 1", "Platform 2"]
+    }
+  ],
+  "kpis_to_track": [
+    {
+      "metric": "Metric name",
+      "target": "Target value",
+      "why": "Why this matters"
+    }
+  ],
+  "monthly_review_questions": [
+    "Question 1 to ask yourself",
+    "Question 2"
+  ],
+  "emergency_content_bank": [
+    {
+      "type": "Evergreen content type",
+      "ideas": ["Idea 1", "Idea 2"],
+      "when_to_use": "Low engagement days"
+    }
+  ]
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Niş: ${niche}\nPlatform: ${platform || 'Instagram'}\nHedefler: ${goals || 'Organik büyüme'}\n\n30 günlük plan oluştur, her gün için detaylı içerik fikirleri sun.` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 8000,
-        response_format: { type: 'json_object' }
-      })
+        max_tokens: 4000,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Content Planner Error:', error)
+    return NextResponse.json({ error: 'Failed to create content plan' }, { status: 500 })
   }
 }

@@ -1,81 +1,197 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "SplitTestPro" - a conversion optimization expert who has run 10,000+ A/B tests for content creators and generated millions in additional revenue through optimization. You understand the psychology behind what makes people click, watch, and engage.
+
+YOUR A/B TESTING METHODOLOGY:
+
+1. VARIABLE ISOLATION
+   - Test ONE variable at a time
+   - Clear hypothesis for each test
+   - Measurable success metrics
+
+2. HIGH-IMPACT TEST AREAS
+   - Hooks: First 3 words, opening frame
+   - Thumbnails: Colors, faces, text
+   - Titles: Curiosity, specificity, emotion
+   - CTAs: Placement, wording, urgency
+   - Posting times: Day and hour
+
+3. PSYCHOLOGICAL LEVERS TO TEST
+   - Curiosity vs. Clarity
+   - Fear vs. Desire
+   - Social proof vs. Exclusivity
+   - Urgency vs. Timelessness
+   - Questions vs. Statements
+
+4. TESTING BEST PRACTICES
+   - Significant difference (not subtle)
+   - Adequate sample size
+   - Same audience segment
+   - Same posting conditions
+
+5. WINNER ANALYSIS
+   - Why did the winner work?
+   - What can be applied elsewhere?
+   - How to iterate further?
+
+Always provide contrasting variations that test a specific hypothesis.
+Think analytically in English, deliver test variations in user's language.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { captionA, captionB, platform, goal, language = 'tr' } = await request.json()
-    if (!captionA?.trim() || !captionB?.trim()) return NextResponse.json({ error: 'İki caption gerekli' }, { status: 400 })
+    const { content, elementToTest, platform, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Provide all A/B test variations in fluent Turkish.',
+      'en': 'Provide in English.',
+      'ru': 'Provide all content in fluent Russian.',
+      'de': 'Provide all content in fluent German.',
+      'fr': 'Provide all content in fluent French.'
+    }[language] || 'Provide in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const userPrompt = `Create A/B test variations for:
 
-    const systemPrompt = `Sen A/B test uzmanı ve copywriting analistsin. İki caption'ı karşılaştırıp kazananı belirle. Yanıt dili: ${lang}
+ORIGINAL CONTENT:
+"""
+${content}
+"""
 
-JSON formatında yanıt ver:
+Element to Test: ${elementToTest || 'hooks and titles'}
+Platform: ${platform}
+
+${langInstruction}
+
+GENERATE STRATEGIC A/B TESTS:
+
+Return as JSON:
 {
-  "winner": "A veya B",
-  "confidence": "75%",
-  "score_a": 72,
-  "score_b": 68,
-  "verdict": "Samimi ve yapıcı genel değerlendirme",
-  "analysis_a": {
-    "overall_impression": "Genel izlenim",
-    "hook_score": 75,
-    "hook_analysis": "Hook analizi",
-    "emotional_score": 70,
-    "emotional_analysis": "Duygusal etki",
-    "readability_score": 80,
-    "readability_analysis": "Okunabilirlik",
-    "cta_score": 65,
-    "cta_analysis": "CTA analizi",
-    "strengths": ["Güçlü yön 1", "Güçlü yön 2"],
-    "weaknesses": ["Zayıf yön 1"],
-    "predicted_engagement": "Orta-Yüksek"
+  "content_analysis": {
+    "current_approach": "What the original is doing",
+    "potential_weaknesses": ["Weakness 1", "Weakness 2"],
+    "test_opportunities": ["Opportunity 1", "Opportunity 2"]
   },
-  "analysis_b": {
-    "overall_impression": "Genel izlenim",
-    "hook_score": 70,
-    "hook_analysis": "Hook analizi",
-    "emotional_score": 65,
-    "emotional_analysis": "Duygusal etki",
-    "readability_score": 75,
-    "readability_analysis": "Okunabilirlik",
-    "cta_score": 70,
-    "cta_analysis": "CTA analizi",
-    "strengths": ["Güçlü yön 1"],
-    "weaknesses": ["Zayıf yön 1", "Zayıf yön 2"],
-    "predicted_engagement": "Orta"
+  "hook_tests": [
+    {
+      "test_name": "Curiosity vs Direct",
+      "hypothesis": "What we're testing and why",
+      "variation_a": {
+        "hook": "Hook text A",
+        "approach": "The psychological approach",
+        "expected_result": "What we expect"
+      },
+      "variation_b": {
+        "hook": "Hook text B",
+        "approach": "The contrasting approach",
+        "expected_result": "What we expect"
+      },
+      "winner_indicator": "How to know which won"
+    }
+  ],
+  "title_tests": [
+    {
+      "test_name": "Test name",
+      "hypothesis": "What we're testing",
+      "variation_a": {
+        "title": "Title A",
+        "psychology": "Why this might work"
+      },
+      "variation_b": {
+        "title": "Title B",
+        "psychology": "Why this might work"
+      },
+      "metric_to_track": "CTR, watch time, etc."
+    }
+  ],
+  "thumbnail_concepts": [
+    {
+      "test_name": "Visual test",
+      "variation_a": {
+        "concept": "Description of thumbnail A",
+        "elements": ["Element 1", "Element 2"],
+        "psychology": "Why this might work"
+      },
+      "variation_b": {
+        "concept": "Description of thumbnail B",
+        "elements": ["Element 1", "Element 2"],
+        "psychology": "Why this might work"
+      }
+    }
+  ],
+  "cta_tests": [
+    {
+      "test_name": "CTA test",
+      "variation_a": "CTA text A",
+      "variation_b": "CTA text B",
+      "placement_test": "Different placement options"
+    }
+  ],
+  "caption_tests": [
+    {
+      "test_name": "Caption approach",
+      "variation_a": "Short caption approach",
+      "variation_b": "Long caption approach",
+      "what_to_measure": "Metric"
+    }
+  ],
+  "testing_protocol": {
+    "test_order": ["Which test to run first", "Second", "Third"],
+    "sample_size": "How many views before deciding",
+    "success_threshold": "What constitutes a winner",
+    "timeline": "Recommended testing timeline"
   },
-  "head_to_head": {
-    "hook": { "winner": "A", "margin": "Fark açıklaması" },
-    "emotional": { "winner": "A", "margin": "Fark" },
-    "cta": { "winner": "B", "margin": "Fark" }
-  },
-  "hybrid_suggestion": "İki caption'ın en iyi özelliklerini birleştiren yeni versiyon",
-  "improvement_tips": ["İyileştirme önerisi 1", "Öneri 2"]
+  "quick_wins": [
+    {
+      "change": "Small change to make now",
+      "expected_impact": "Potential improvement",
+      "risk_level": "Low/Medium/High"
+    }
+  ],
+  "advanced_tests": [
+    {
+      "test": "More complex test idea",
+      "when_to_run": "After basics are optimized",
+      "setup_required": "What's needed"
+    }
+  ]
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `CAPTION A:\n${captionA}\n\nCAPTION B:\n${captionB}\n\nPlatform: ${platform || 'Instagram'}\nHedef: ${goal || 'Engagement'}` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.6,
-        max_tokens: 4000,
-        response_format: { type: 'json_object' }
-      })
+        temperature: 0.8,
+        max_tokens: 3500,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content_response = data.choices?.[0]?.message?.content
+
+    if (!content_response) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content_response.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content_response }
+    } catch {
+      result = { raw: content_response }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('A/B Tester Error:', error)
+    return NextResponse.json({ error: 'Failed to generate tests' }, { status: 500 })
   }
 }

@@ -1,81 +1,165 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "TrendOracle" - a cultural analyst who predicts viral trends before they explode. You've accurately predicted 85% of major social media trends over the past 3 years. Brands pay you $50,000/month for your insights.
+
+YOUR TREND ANALYSIS FRAMEWORK:
+
+1. TREND LIFECYCLE MAPPING
+   - Innovation (0-5%): Only early adopters know
+   - Early Adoption (5-15%): Starting to spread
+   - Early Majority (15-50%): Prime time to jump in
+   - Late Majority (50-85%): Still viable but crowded
+   - Decline (85%+): Oversaturated, move on
+
+2. TREND CATEGORIES
+   - Audio Trends: Songs, sounds, voiceovers
+   - Format Trends: Video styles, editing techniques
+   - Topic Trends: Conversations, debates, news
+   - Challenge Trends: Participatory content
+   - Aesthetic Trends: Visual styles, filters
+
+3. TREND VELOCITY INDICATORS
+   - Speed of spread
+   - Cross-platform migration
+   - Brand adoption (usually signals peak)
+   - Parody/meta content appearing
+
+4. TREND OPPORTUNITY SCORING
+   - Relevance to niche
+   - Ease of participation
+   - Time remaining in cycle
+   - Differentiation potential
+
+YOUR UNIQUE INSIGHTS:
+- Spot patterns across platforms
+- Identify micro-trends before mainstream
+- Predict what's next based on cultural signals
+- Connect seemingly unrelated trends
+
+Be specific with examples. Generic trend advice is worthless.
+Analyze in English, deliver insights in user's language.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platform, region, language = 'tr' } = await request.json()
-    if (!niche?.trim()) return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
+    const { niche, platform, timeframe, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Provide all trend analysis and recommendations in fluent Turkish.',
+      'en': 'Provide in English.',
+      'ru': 'Provide all content in fluent Russian.',
+      'de': 'Provide all content in fluent German.',
+      'fr': 'Provide all content in fluent French.'
+    }[language] || 'Provide in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const userPrompt = `Analyze current and emerging trends for:
 
-    const systemPrompt = `Sen sosyal medya trend analistsin. Global ve lokal trendleri takip edip içerik fırsatlarını belirliyorsun. Yanıt dili: ${lang}
+Niche: ${niche}
+Platform: ${platform}
+Timeframe Focus: ${timeframe || 'Next 2 weeks'}
 
-JSON formatında yanıt ver:
+${langInstruction}
+
+DELIVER COMPREHENSIVE TREND INTELLIGENCE:
+
+Return as JSON:
 {
-  "trend_overview": "Genel trend analizi özeti",
-  "niche_insights": "Niş özelinde içgörüler",
-  "hot_trends": [
+  "hot_right_now": [
     {
-      "trend": "Trend adı",
-      "category": "Format/Ses/Konu/Görsel",
-      "status": "hot",
-      "description": "Trend açıklaması",
-      "why_trending": "Neden trend?",
-      "content_ideas": ["Fikir 1", "Fikir 2", "Fikir 3"],
-      "how_to_use": "Nasıl kullanılır",
-      "lifespan": "Tahmini trend ömrü",
-      "viral_potential": 90
+      "trend": "Trend name/description",
+      "category": "Audio/Format/Topic/Challenge/Aesthetic",
+      "lifecycle_stage": "Innovation/Early Adoption/Early Majority/Late Majority",
+      "time_remaining": "Estimated time before oversaturation",
+      "how_to_use": "Specific way to incorporate this trend",
+      "example_concept": "Concrete video idea using this trend",
+      "niche_relevance": "How it applies to ${niche}"
     }
   ],
   "rising_trends": [
     {
-      "trend": "Trend adı",
-      "category": "Kategori",
-      "status": "rising",
-      "description": "Açıklama",
-      "early_adopter_advantage": "Erken katılım avantajı",
-      "content_ideas": ["Fikir 1", "Fikir 2"],
-      "predicted_peak": "Tahmini zirve zamanı"
+      "trend": "Emerging trend",
+      "current_stage": "Where it is now",
+      "prediction": "Where it's headed",
+      "early_mover_advantage": "What you can do NOW",
+      "risk_level": "Low/Medium/High"
     }
   ],
-  "emerging_trends": [
+  "dying_trends": [
     {
-      "trend": "Trend adı",
-      "category": "Kategori",
-      "description": "Açıklama",
-      "why_watch": "Neden takip edilmeli",
-      "preparation_tips": "Hazırlık önerileri"
+      "trend": "Declining trend",
+      "why_dying": "Explanation",
+      "avoid_because": "Why to skip this"
     }
   ],
-  "seasonal_opportunities": [
-    { "event": "Etkinlik", "dates": "Tarihler", "content_angles": ["Açı 1", "Açı 2"], "hashtags": ["#hashtag"] }
+  "audio_trends": [
+    {
+      "sound": "Sound/song name",
+      "usage": "How creators are using it",
+      "your_angle": "Unique way to use for ${niche}"
+    }
   ],
-  "avoid_list": ["Düşüşte olan trend 1"],
-  "pro_tips": ["Trend yakalama ipucu 1", "İpucu 2"]
+  "format_trends": [
+    {
+      "format": "Format description",
+      "why_working": "Psychology behind it",
+      "template": "How to replicate"
+    }
+  ],
+  "predictions_next_month": [
+    {
+      "prediction": "What's coming",
+      "confidence": "High/Medium/Low",
+      "prepare_by": "How to get ready"
+    }
+  ],
+  "niche_specific_opportunities": {
+    "untapped": "What no one in ${niche} is doing yet",
+    "cross_pollination": "Trends from other niches to adapt",
+    "first_mover_ideas": ["Idea 1", "Idea 2"]
+  },
+  "action_plan": {
+    "this_week": "What to post this week",
+    "next_week": "What to prepare for next week",
+    "this_month": "Monthly trend strategy"
+  }
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Niş: ${niche}\nPlatform: ${platform || 'Instagram & TikTok'}\nBölge: ${region || 'Global + Türkiye'}` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
-        max_tokens: 5000,
-        response_format: { type: 'json_object' }
-      })
+        temperature: 0.85,
+        max_tokens: 3500,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Trend Radar Error:', error)
+    return NextResponse.json({ error: 'Failed to analyze trends' }, { status: 500 })
   }
 }

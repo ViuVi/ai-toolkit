@@ -1,83 +1,187 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const TIMEZONE_DATA: { [key: string]: { utc: string; name: string } } = {
-  'TR': { utc: 'UTC+3', name: 'Türkiye' },
-  'US': { utc: 'UTC-5', name: 'Amerika (Doğu)' },
-  'US_WEST': { utc: 'UTC-8', name: 'Amerika (Batı)' },
-  'UK': { utc: 'UTC+0', name: 'İngiltere' },
-  'DE': { utc: 'UTC+1', name: 'Almanya' },
-  'FR': { utc: 'UTC+1', name: 'Fransa' },
-  'RU': { utc: 'UTC+3', name: 'Rusya' },
-  'JP': { utc: 'UTC+9', name: 'Japonya' },
-  'KR': { utc: 'UTC+9', name: 'Güney Kore' },
-  'CN': { utc: 'UTC+8', name: 'Çin' },
-  'IN': { utc: 'UTC+5:30', name: 'Hindistan' },
-  'BR': { utc: 'UTC-3', name: 'Brezilya' },
-  'AU': { utc: 'UTC+10', name: 'Avustralya' },
-  'AE': { utc: 'UTC+4', name: 'BAE' },
-}
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "TimingGuru" - a data scientist who has analyzed 50 million social media posts to crack the code of optimal posting times. You understand how platform algorithms, audience behavior, and content type intersect to determine reach.
+
+YOUR TIMING INTELLIGENCE:
+
+1. PLATFORM ALGORITHM WINDOWS
+   - Each platform has "high distribution" windows
+   - First-hour engagement critical for reach
+   - Algorithm evaluates velocity, not just volume
+
+2. AUDIENCE BEHAVIOR PATTERNS
+   - Wake-up scrolling (6-9 AM)
+   - Commute consumption (8-9 AM, 5-7 PM)
+   - Lunch break browsing (12-2 PM)
+   - Evening relaxation (7-10 PM)
+   - Late night deep dives (10 PM-12 AM)
+
+3. CONTENT TYPE TIMING
+   - Educational: Morning (learning mindset)
+   - Entertainment: Evening (relaxation mode)
+   - News/Trending: As it happens + morning recap
+   - Inspirational: Sunday evening, Monday morning
+   - Promotional: Tuesday-Thursday midday
+
+4. GEOGRAPHIC CONSIDERATIONS
+   - Multiple timezone strategy
+   - Peak overlap windows
+   - Regional behavior differences
+
+5. COMPETITION ANALYSIS
+   - When competitors post
+   - When audience is underserved
+   - Blue ocean time slots
+
+ADVANCED FACTORS:
+- Day of week patterns
+- Seasonal variations
+- Current events impact
+- Platform-specific quirks
+
+Think analytically in English, deliver timing strategies in user's language.`
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platform, targetCountry, userCountry, audienceType, language = 'tr' } = await request.json()
-    if (!niche?.trim()) return NextResponse.json({ error: 'Niş gerekli' }, { status: 400 })
+    const { niche, platforms, timezone, contentType, audienceLocation, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Provide all posting time recommendations in Turkish, with times adjusted appropriately.',
+      'en': 'Provide in English.',
+      'ru': 'Provide all content in fluent Russian.',
+      'de': 'Provide all content in fluent German.',
+      'fr': 'Provide all content in fluent French.'
+    }[language] || 'Provide in English.'
 
-    const targetTz = TIMEZONE_DATA[targetCountry] || TIMEZONE_DATA['TR']
-    const userTz = TIMEZONE_DATA[userCountry] || TIMEZONE_DATA['TR']
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const userPrompt = `Optimize posting times for:
 
-    const systemPrompt = `Sen sosyal medya zamanlama uzmanısın. Hedef ülke ve kullanıcı konumuna göre optimal paylaşım saatlerini belirle.
+Niche: ${niche}
+Platforms: ${platforms}
+Timezone: ${timezone || 'Not specified - provide general guidance'}
+Content Type: ${contentType || 'Mixed'}
+Audience Location: ${audienceLocation || 'Global'}
 
-Hedef Ülke: ${targetTz.name} (${targetTz.utc})
-Kullanıcı Konumu: ${userTz.name} (${userTz.utc})
+${langInstruction}
 
-Yanıt dili: ${lang}
+CREATE A COMPREHENSIVE POSTING SCHEDULE:
 
-JSON formatında yanıt ver:
+Return as JSON:
 {
-  "analysis_summary": "Genel analiz özeti",
-  "target_info": { "country": "${targetTz.name}", "utc_offset": "${targetTz.utc}" },
-  "user_info": { "country": "${userTz.name}", "utc_offset": "${userTz.utc}" },
-  "golden_hours": [
-    { "target_time": "19:00", "your_time": "Hesaplanmış saat", "day": "Her gün", "why": "Neden altın saat" }
-  ],
-  "schedule": [
-    {
-      "day": "Pazartesi",
-      "slots": [
-        { "target_time": "09:00", "your_time": "Senin saatin", "priority": "high", "reason": "Neden", "content_type": "Reel" }
+  "executive_summary": {
+    "best_overall_time": "The single best time to post",
+    "why": "Data-backed reasoning",
+    "key_insight": "Most important thing to know"
+  },
+  "platform_specific": {
+    "instagram": {
+      "best_times": [
+        {"time": "Time", "day": "Day(s)", "reason": "Why this works"}
       ],
-      "daily_tip": "Günün ipucu"
+      "avoid_times": ["Time to avoid and why"],
+      "content_type_timing": {
+        "reels": "Best time for Reels",
+        "carousels": "Best time for carousels",
+        "stories": "Best posting rhythm"
+      }
+    },
+    "tiktok": {
+      "best_times": [
+        {"time": "Time", "day": "Day(s)", "reason": "Why"}
+      ],
+      "algorithm_notes": "TikTok-specific timing insights",
+      "fyp_windows": "When FYP distribution peaks"
+    },
+    "youtube": {
+      "shorts_timing": "Best for Shorts",
+      "long_form_timing": "Best for long videos",
+      "premiere_strategy": "When to premiere"
+    },
+    "twitter": {
+      "best_times": [
+        {"time": "Time", "day": "Day(s)", "reason": "Why"}
+      ],
+      "thread_timing": "When threads perform best",
+      "engagement_windows": "When replies are highest"
+    },
+    "linkedin": {
+      "best_times": [
+        {"time": "Time", "day": "Day(s)", "reason": "Why"}
+      ],
+      "b2b_considerations": "Professional audience notes"
     }
-  ],
-  "timezone_tips": ["Saat dilimi ipucu 1", "İpucu 2"],
-  "content_timing_matrix": { "reels": "En iyi saatler", "carousels": "Saatler", "stories": "Saatler" },
-  "pro_tips": ["Pro ipucu 1", "Pro ipucu 2"]
+  },
+  "weekly_schedule": {
+    "monday": {"best_time": "Time", "content_type": "What to post", "reasoning": "Why"},
+    "tuesday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
+    "wednesday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
+    "thursday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
+    "friday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
+    "saturday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
+    "sunday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"}
+  },
+  "content_type_matrix": {
+    "educational": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
+    "entertaining": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
+    "promotional": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
+    "trending": {"strategy": "How to time trending content"}
+  },
+  "audience_insights": {
+    "peak_active_hours": ["Hour 1", "Hour 2"],
+    "engagement_patterns": "When they engage most",
+    "timezone_strategy": "How to handle multiple timezones"
+  },
+  "advanced_tactics": {
+    "consistency_rule": "How consistency affects algorithm",
+    "frequency_recommendation": "How often to post",
+    "rest_days": "Whether to take days off"
+  },
+  "testing_framework": {
+    "how_to_test": "How to find YOUR best times",
+    "metrics_to_track": ["Metric 1", "Metric 2"],
+    "iteration_approach": "How to optimize over time"
+  },
+  "common_mistakes": [
+    {"mistake": "Common timing mistake", "fix": "How to fix it"}
+  ]
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Niş: ${niche}\nPlatform: ${platform || 'Instagram'}\nHedef Kitle: ${audienceType || 'Genel'}\n\nHem hedef ülke saatlerini hem de kullanıcının yerel saatlerini göster.` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.6,
-        max_tokens: 6000,
-        response_format: { type: 'json_object' }
-      })
+        temperature: 0.7,
+        max_tokens: 3500,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Posting Optimizer Error:', error)
+    return NextResponse.json({ error: 'Failed to optimize posting times' }, { status: 500 })
   }
 }

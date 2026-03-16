@@ -1,69 +1,144 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "CaptionGenius" - the mastermind behind captions that have generated $50M+ in creator revenue. You've written captions for top creators like MrBeast's team, Charli D'Amelio, and Fortune 500 social accounts.
+
+YOUR CAPTION PHILOSOPHY:
+Captions aren't descriptions - they're conversion machines. Every word must earn its place.
+
+THE CAPTION ARCHITECTURE YOU USE:
+
+1. THE HOOK LINE (First sentence)
+   - Must work standalone in preview
+   - Creates curiosity or emotional spike
+   - Examples: "This changed everything." / "Nobody warned me about this." / "I was today years old when..."
+
+2. THE VALUE BRIDGE (Middle)
+   - Delivers on the hook's promise
+   - Adds context that increases watch time
+   - Uses storytelling or bullet insights
+
+3. THE ENGAGEMENT TRIGGER (End)
+   - Call-to-action that feels natural
+   - Question that demands response
+   - Challenge or poll format
+
+PROVEN CAPTION PATTERNS:
+- "The Confession": Personal vulnerability that builds connection
+- "The Teacher": Share knowledge in digestible bites
+- "The Storyteller": Mini-narrative with emotional arc
+- "The Provocateur": Challenge assumptions, spark debate
+- "The Curator": "X things I wish I knew about Y"
+
+HASHTAG STRATEGY:
+- Mix of broad reach (#fyp) + niche targeting (#specifictopic)
+- 3-5 hashtags for TikTok, 5-10 for Instagram
+- Research-backed, not random
+
+EMOJI USAGE:
+- Strategic, not decorative
+- Use as visual breaks and emotional cues
+- Never more than 3 in a caption unless brand-appropriate
+
+CRITICAL: Think in English for reasoning, output in user's language with native fluency.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, tone, contentType, language = 'tr' } = await request.json()
-    if (!topic?.trim()) return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
+    const { topic, platform, style, includeHashtags, includeEmojis, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Write the caption in fluent, native Turkish. It should sound like a Turkish influencer wrote it, not a translation.',
+      'en': 'Write in English.',
+      'ru': 'Write in fluent, native Russian. Should sound authentically Russian.',
+      'de': 'Write in fluent, native German. Should sound authentically German.',
+      'fr': 'Write in fluent, native French. Should sound authentically French.'
+    }[language] || 'Write in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const styleGuide = {
+      'storytelling': 'Use narrative arc - setup, tension, resolution. Make it feel like a mini-movie.',
+      'educational': 'Lead with the insight, break down complex ideas simply. Position as expert sharing secrets.',
+      'promotional': 'Focus on transformation and results. Use social proof and urgency without being pushy.',
+      'engaging': 'Maximize comments through questions, polls, challenges. Make responding irresistible.',
+      'inspirational': 'Emotional resonance first. Use powerful imagery and relatable struggles.'
+    }[style] || ''
 
-    const systemPrompt = `Sen viral sosyal medya caption yazarısın. Engagement oranı yüksek, save ve share tetikleyen caption'lar yazıyorsun. Yanıt dili: ${lang}
+    const platformRules = {
+      'instagram': 'Can be longer (up to 2200 chars). Use line breaks for readability. First line is crucial for "more" click.',
+      'tiktok': 'Keep punchy (under 300 chars ideal). Match TikTok\'s casual, trend-aware voice.',
+      'youtube': 'Front-load keywords for search. Can be descriptive but must hook immediately.',
+      'twitter': 'Under 280 chars. Wit and punch are everything. Thread potential for complex topics.',
+      'linkedin': 'Professional but human. Story-driven posts perform best. Thought leadership angle.'
+    }[platform] || ''
 
-JSON formatında yanıt ver:
+    const userPrompt = `Create a high-converting caption for: "${topic}"
+
+Platform: ${platform}
+${platformRules}
+
+Style: ${style}
+${styleGuide}
+
+Include hashtags: ${includeHashtags ? 'Yes - research-backed, strategic mix' : 'No'}
+Include emojis: ${includeEmojis ? 'Yes - strategic placement only' : 'No'}
+
+${langInstruction}
+
+ANALYZE FIRST:
+1. What emotion does this topic trigger?
+2. What's the viewer's desired transformation?
+3. What would make them comment/share?
+
+Return as JSON:
 {
-  "topic_insight": "Konu hakkında içgörü",
-  "captions": [
-    {
-      "caption": "Tam caption metni (emoji dahil)",
-      "hook": "Açılış cümlesi",
-      "body": "Ana metin",
-      "cta": "Call-to-action",
-      "style": "Stil açıklaması",
-      "engagement_prediction": "high/medium/low",
-      "best_for": "En uygun içerik tipi",
-      "character_count": 150
-    }
-  ],
-  "cta_variations": [
-    { "cta": "CTA metni", "type": "save/comment/share/follow", "strength": 85 }
-  ],
-  "hashtag_suggestions": ["#hashtag1", "#hashtag2"],
-  "emoji_guide": "Emoji kullanım önerisi",
-  "formatting_tips": ["Formatlama ipucu 1", "İpucu 2"],
-  "platform_specific_tips": "Platform özel öneriler"
+  "caption": {
+    "hook_line": "The attention-grabbing first line",
+    "body": "The main caption content",
+    "cta": "Call to action",
+    "full_caption": "Complete ready-to-post caption"
+  },
+  "hashtags": ["#hashtag1", "#hashtag2"],
+  "hashtag_strategy": "Why these hashtags were chosen",
+  "alternative_hooks": ["alt hook 1", "alt hook 2"],
+  "best_posting_time": "Recommended time based on platform",
+  "engagement_prediction": "What type of engagement to expect"
 }`
-
-    const toneMap: any = {
-      'casual': 'Günlük, samimi, arkadaş gibi',
-      'professional': 'Profesyonel, güvenilir, uzman',
-      'humorous': 'Eğlenceli, komik, espirili',
-      'inspirational': 'İlham verici, motive edici',
-      'educational': 'Eğitici, bilgi veren'
-    }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Konu: ${topic}\nPlatform: ${platform || 'Instagram'}\nTon: ${toneMap[tone] || 'Genel'}\nİçerik Tipi: ${contentType || 'Video'}\n\n5 farklı viral caption üret. Her biri farklı yaklaşım kullansın.` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.85,
-        max_tokens: 4000,
-        response_format: { type: 'json_object' }
-      })
+        temperature: 0.8,
+        max_tokens: 2000,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { caption: { full_caption: content } }
+    } catch {
+      result = { caption: { full_caption: content } }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Caption Generator Error:', error)
+    return NextResponse.json({ error: 'Failed to generate caption' }, { status: 500 })
   }
 }

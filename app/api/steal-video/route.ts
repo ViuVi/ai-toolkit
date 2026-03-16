@@ -1,69 +1,157 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "ContentAlchemist" - a creative strategist who specializes in ethical content transformation. You've helped 1000+ creators build unique brands by studying what works and making it their own.
+
+YOUR PHILOSOPHY:
+"Good artists copy, great artists steal" - but stealing means TRANSFORMING, not copying. You extract the DNA of viral content and help creators inject it into their unique voice.
+
+THE REVERSE ENGINEERING FRAMEWORK:
+
+1. STRUCTURAL ANALYSIS
+   - What's the content architecture?
+   - How is tension built and released?
+   - What's the rhythm and pacing?
+   - Where are the "dopamine hits"?
+
+2. PSYCHOLOGICAL HOOKS
+   - What emotional buttons does it push?
+   - What curiosity gaps are created?
+   - What identity does it appeal to?
+   - What fear or desire does it tap into?
+
+3. FORMULA EXTRACTION
+   - Strip away the topic, what's the underlying formula?
+   - "This is really a [FORMULA TYPE] video disguised as [TOPIC]"
+   - Identify the repeatable framework
+
+4. TRANSFORMATION STRATEGY
+   - How can this formula apply to completely different niches?
+   - What's your creator's unique angle?
+   - How to make it feel original while using proven structure?
+
+5. ETHICAL BOUNDARIES
+   - Transform, don't copy
+   - Add unique value
+   - Credit inspiration when appropriate
+   - Make it unmistakably yours
+
+THE TRANSFORMATION LEVELS:
+- Level 1: Same topic, different angle (weakest)
+- Level 2: Same format, different topic (good)
+- Level 3: Same psychology, different execution (great)
+- Level 4: Same deep formula, completely unique surface (mastery)
+
+Always aim for Level 3-4 transformations.
+
+Think strategically in English, deliver actionable frameworks in user's language.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { videoDescription, platform, yourNiche, language = 'tr' } = await request.json()
-    if (!videoDescription?.trim()) return NextResponse.json({ error: 'Video açıklaması gerekli' }, { status: 400 })
+    const { videoDescription, creatorNiche, platform, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Provide all analysis and adapted content ideas in fluent Turkish. Scripts and hooks should sound native.',
+      'en': 'Provide in English.',
+      'ru': 'Provide all analysis and adapted content in fluent Russian.',
+      'de': 'Provide all analysis and adapted content in fluent German.',
+      'fr': 'Provide all analysis and adapted content in fluent French.'
+    }[language] || 'Provide in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
+    const userPrompt = `REVERSE ENGINEER THIS VIRAL CONTENT:
 
-    const systemPrompt = `Sen viral video reverse engineering uzmanısın. Viral videoları analiz edip, kullanıcının kendi nişine uyarlayabileceği yeni içerikler oluşturuyorsun. Yanıt dili: ${lang}
+Video/Content Description:
+"""
+${videoDescription}
+"""
 
-JSON formatında yanıt ver:
+Creator's Niche: ${creatorNiche || 'Not specified'}
+Target Platform: ${platform}
+
+${langInstruction}
+
+PERFORM DEEP EXTRACTION:
+
+1. What makes this content work at its CORE?
+2. What's the formula beneath the surface?
+3. How can someone in "${creatorNiche}" use this same formula?
+4. What would a Level 4 transformation look like?
+
+Return as JSON:
 {
-  "original_analysis": {
-    "why_viral": "Neden viral oldu - detaylı analiz",
-    "hook_type": "Hook tipi",
-    "content_structure": "İçerik yapısı",
-    "emotional_triggers": ["Tetikleyici 1", "Tetikleyici 2"],
-    "retention_tactics": ["Taktik 1", "Taktik 2"],
-    "virality_score": 85
+  "content_dna": {
+    "core_formula": "The underlying framework (e.g., 'Problem → Wrong Solution → Real Solution → CTA')",
+    "psychological_triggers": ["Trigger 1", "Trigger 2", "Trigger 3"],
+    "structure_breakdown": [
+      {"section": "Hook", "duration": "0-3s", "purpose": "What it does", "technique": "How it does it"},
+      {"section": "Setup", "duration": "3-10s", "purpose": "...", "technique": "..."}
+    ],
+    "why_it_went_viral": "The key insight",
+    "repeatable_elements": ["Element 1", "Element 2"]
   },
-  "rewritten_hooks": [
-    { "hook": "Yeni hook", "style": "Stil", "why_works": "Neden işe yarar" }
-  ],
-  "new_script": {
-    "hook": { "text": "Hook (0-3sn)", "visual": "Görsel", "delivery": "Söyleyiş" },
-    "problem": { "text": "Problem (3-10sn)", "visual": "Görsel" },
-    "buildup": { "text": "Build-up (10-20sn)", "visual": "Görsel" },
-    "solution": { "text": "Çözüm (20-25sn)", "visual": "Görsel" },
-    "cta": { "text": "CTA (son 5sn)", "visual": "Görsel" },
-    "full_script": "Tam script"
+  "transformation_blueprint": {
+    "your_niche_angle": "How to apply this to ${creatorNiche}",
+    "unique_twist": "What makes your version different",
+    "adaptation_strategy": "Step-by-step transformation guide"
   },
-  "caption": { "main": "Caption", "hook_line": "Hook", "cta": "CTA" },
-  "hashtags": { "primary": ["#tag1"], "secondary": ["#tag2"], "trending": ["#trend"] },
-  "shot_list": [
-    { "shot_number": 1, "duration": "0-3sn", "description": "Açıklama", "camera_angle": "Açı", "text_overlay": "Yazı", "audio_note": "Ses" }
-  ],
-  "filming_tips": ["Çekim ipucu"],
-  "editing_tips": ["Kurgu ipucu"],
-  "sound_suggestions": ["Ses önerisi"],
-  "posting_strategy": { "best_time": "Zaman", "first_comment": "Yorum", "engagement_hook": "Engagement" }
+  "ready_to_use_content": {
+    "adapted_hook": "Your version of their hook for your niche",
+    "content_outline": [
+      "Beat 1: Your adapted version",
+      "Beat 2: Your adapted version"
+    ],
+    "full_script_draft": "A complete adapted script ready to film",
+    "alternative_angles": [
+      "Different way to use same formula 1",
+      "Different way to use same formula 2"
+    ]
+  },
+  "thumbnail_strategy": {
+    "original_approach": "What made their thumbnail work",
+    "your_version": "How to apply this to your content"
+  },
+  "caption_template": "Adapted caption structure for your version",
+  "hashtag_strategy": ["Relevant hashtags for your adapted content"],
+  "ethical_notes": "How to credit inspiration appropriately",
+  "viral_probability": "Based on formula strength + your niche fit"
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `VİRAL VİDEO:\n${videoDescription}\n\nPlatform: ${platform || 'TikTok'}\nBenim Nişim: ${yourNiche || 'Genel'}\n\nAnaliz et ve benim nişime uygun yeni versiyon oluştur.` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 6000,
-        response_format: { type: 'json_object' }
-      })
+        max_tokens: 3500,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw_analysis: content }
+    } catch {
+      result = { raw_analysis: content }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Steal Video Error:', error)
+    return NextResponse.json({ error: 'Failed to analyze video' }, { status: 500 })
   }
 }

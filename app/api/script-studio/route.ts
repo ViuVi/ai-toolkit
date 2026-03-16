@@ -1,111 +1,174 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+
+const SYSTEM_PROMPT = `You are "ScriptMaster Pro" - a veteran video script writer who has crafted scripts for videos totaling 2 billion+ views. You've worked with Netflix documentary teams, top YouTubers, and viral TikTok creators.
+
+YOUR SCRIPT PHILOSOPHY:
+Every second of a script must EARN the viewer's next second. Attention is the currency - spend it wisely.
+
+THE VIRAL SCRIPT ARCHITECTURE:
+
+1. THE HOOK (0-3 seconds)
+   - Pattern interrupt: Say something unexpected
+   - Curiosity injection: Open a loop that MUST be closed
+   - Emotional spike: Trigger immediate feeling
+   - Identity call-out: "If you're someone who..."
+
+2. THE SETUP (3-15 seconds)
+   - Context that raises stakes
+   - "Why should I care?" answered immediately
+   - Tease the transformation coming
+
+3. THE MEAT (15-45 seconds)
+   - Deliver value in digestible chunks
+   - Use "bucket brigades": transitional phrases that keep momentum
+   - "Here's the thing...", "But wait...", "Now this is where it gets interesting..."
+   - Each point should feel like a mini-revelation
+
+4. THE CLIMAX (final 10%)
+   - Biggest insight or emotional peak
+   - The "aha moment" they'll remember
+   - Shareable soundbite potential
+
+5. THE CTA (last 3-5 seconds)
+   - Clear, specific action
+   - Urgency without desperation
+   - Loop back to hook for retention
+
+PROVEN SCRIPT FORMULAS:
+- "Problem-Agitate-Solve": Name pain → Make it worse → Deliver relief
+- "Story-Lesson-Application": Tell story → Extract insight → Show how to apply
+- "Myth-Bust": Common belief → Why it's wrong → Better alternative
+- "Behind the Scenes": Exclusive access feel → Insider knowledge → Action step
+
+PACING RULES:
+- New visual/beat every 2-3 seconds for short-form
+- Vary sentence length: short punches mixed with flowing explanations
+- Strategic pauses noted as [BEAT]
+- B-roll suggestions for visual variety
+
+LANGUAGE MASTERY:
+- Power words: "Secret", "Discover", "Unlock", "Transform", "Proven"
+- Avoid: "Very", "Really", "Just", "Thing", "Stuff"
+- Active voice always
+- Second person "you" for connection
+
+Think in English for structure, deliver in user's language with native fluency.`
+
 export async function POST(request: NextRequest) {
   try {
-    const { topic, duration, platform, style, targetAudience, language = 'tr' } = await request.json()
-    if (!topic?.trim()) return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
+    const { topic, platform, duration, style, language } = await request.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API yapılandırma hatası' }, { status: 500 })
+    const langInstruction = {
+      'tr': 'Write the entire script in fluent, conversational Turkish. It should sound like a native Turkish creator speaking naturally, not a translation. Use Turkish idioms and speech patterns.',
+      'en': 'Write in conversational English.',
+      'ru': 'Write in fluent, conversational Russian with native speech patterns.',
+      'de': 'Write in fluent, conversational German with native speech patterns.',
+      'fr': 'Write in fluent, conversational French with native speech patterns.'
+    }[language] || 'Write in English.'
 
-    const lang = language === 'tr' ? 'Türkçe' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'ru' ? 'Русский' : 'English'
-    const dur = duration || '30'
+    const durationGuide = {
+      '15': '15 seconds: Ultra-tight. One powerful idea, maximum impact. ~40 words.',
+      '30': '30 seconds: Hook + one key point + CTA. ~80 words.',
+      '60': '60 seconds: Full mini-story arc. Hook + 2-3 points + strong close. ~160 words.',
+      '180': '3 minutes: Deep dive format. Multiple sections, story weaving, comprehensive value. ~450 words.'
+    }[duration] || '60 seconds format'
 
-    const systemPrompt = `Sen viral video scripti yazma uzmanısın. TikTok, Reels ve Shorts için retention odaklı scriptler yazıyorsun. Yanıt dili: ${lang}
+    const styleGuide = {
+      'educational': 'Teacher energy - confident expertise delivered accessibly. "Let me show you..." vibe.',
+      'entertaining': 'Entertainment first, value embedded. Personality-driven, reactions welcome.',
+      'storytelling': 'Narrative arc essential. Character, conflict, resolution. Emotional journey.',
+      'tutorial': 'Clear step-by-step. Visual cues noted. "First... Then... Finally..." structure.'
+    }[style] || ''
 
-Script yapısı (zorunlu):
-1. HOOK (ilk 3 saniye - scroll durdurucu)
-2. PROBLEM (izleyicinin ağrı noktası)
-3. BUILD-UP (gerilim/merak artırma)
-4. SOLUTION (değer/çözüm)
-5. CTA (aksiyon çağrısı)
+    const platformNotes = {
+      'tiktok': 'TikTok energy: Fast cuts implied, trend-aware language, hook in first 1 second.',
+      'reels': 'Reels: Slightly more polished than TikTok, but same urgency. Visual-first scripting.',
+      'shorts': 'YouTube Shorts: Can be slightly more substantive. Searchability matters.',
+      'youtube': 'Long-form YouTube: Deeper storytelling, chapter-ready structure, retention focus.'
+    }[platform] || ''
 
-JSON formatında yanıt ver:
+    const userPrompt = `Write a viral video script about: "${topic}"
+
+Duration: ${duration} seconds
+${durationGuide}
+
+Platform: ${platform}
+${platformNotes}
+
+Style: ${style}
+${styleGuide}
+
+${langInstruction}
+
+BEFORE WRITING, ANALYZE:
+1. What's the ONE core message?
+2. What emotion should viewers feel at the end?
+3. What would make them watch again or share?
+
+Return as JSON:
 {
-  "title": "Video başlığı önerisi",
-  "duration": "${dur} saniye",
-  "hook_options": [
-    { "type": "Pattern Interrupt", "script": "Hook scripti", "visual": "Görsel öneri", "why_works": "Neden etkili" },
-    { "type": "Curiosity Gap", "script": "Alternatif hook", "visual": "Görsel", "why_works": "Neden etkili" },
-    { "type": "Shock Statement", "script": "Başka hook", "visual": "Görsel", "why_works": "Neden etkili" }
-  ],
-  "main_script": {
+  "script": {
     "hook": {
-      "text": "HOOK metni - scroll durdurucu",
-      "duration": "0-3 saniye",
-      "delivery_tip": "Söyleyiş: hızlı, enerjik, kameraya direkt bak",
-      "visual": "Görsel önerisi",
-      "text_overlay": "Ekran yazısı"
+      "text": "Opening hook text (first 3 seconds)",
+      "visual_note": "What should be on screen",
+      "duration": "X seconds"
     },
-    "problem": {
-      "text": "PROBLEM - izleyicinin ağrı noktası",
-      "duration": "3-8 saniye",
-      "visual": "Görsel",
-      "emotional_hook": "Duygusal bağ kurma"
-    },
-    "buildup": {
-      "text": "BUILD-UP - gerilim artırma, merak",
-      "duration": "8-20 saniye",
-      "visual": "Görsel",
-      "retention_tactic": "Retention taktiği"
-    },
-    "solution": {
-      "text": "SOLUTION - değer/çözüm",
-      "duration": "20-${parseInt(dur)-5} saniye",
-      "visual": "Görsel",
-      "value_delivery": "Değer nasıl sunuluyor"
-    },
-    "cta": {
-      "text": "CTA metni",
-      "duration": "Son 3-5 saniye",
-      "visual": "Görsel",
-      "cta_type": "Follow/Save/Comment/Share"
-    }
+    "sections": [
+      {
+        "type": "setup/main_point/climax/cta",
+        "text": "Script text for this section",
+        "visual_note": "B-roll or visual suggestion",
+        "duration": "X seconds"
+      }
+    ],
+    "full_script": "Complete script ready to read"
   },
-  "scene_breakdown": [
-    {
-      "scene": 1,
-      "timestamp": "0:00-0:03",
-      "script_line": "Söylenecek metin",
-      "visual_action": "Görsel aksiyon",
-      "text_overlay": "Ekran yazısı",
-      "camera": "Kamera açısı",
-      "energy_level": "Yüksek/Orta"
-    }
-  ],
-  "full_script": "HOOK: ...\n\nPROBLEM: ...\n\nBUILD-UP: ...\n\nSOLUTION: ...\n\nCTA: ...",
-  "production_notes": {
-    "camera_angles": ["Close-up yüz", "B-roll"],
-    "transitions": ["Jump cut", "Zoom"],
-    "text_overlays": ["Anahtar kelimeler bold"],
-    "sound_suggestions": ["Trending ses / Voiceover"],
-    "pacing": "Hızlı kesimler, 2-3 sn/sahne"
-  },
-  "hashtags": ["#hashtag1", "#hashtag2"],
-  "caption": "Video açıklaması",
-  "viral_checklist": ["✓ İlk 1 sn dikkat çekiyor", "✓ Problem net tanımlandı", "✓ Değer sağlandı", "✓ CTA var"]
+  "total_duration": "Estimated total",
+  "word_count": 123,
+  "key_moments": ["Timestamp: key moment description"],
+  "thumbnail_ideas": ["Idea 1", "Idea 2"],
+  "title_options": ["Title 1", "Title 2", "Title 3"],
+  "viral_potential_score": "8/10",
+  "why_this_works": "Brief explanation of psychological hooks used"
 }`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Konu: ${topic}\nPlatform: ${platform || 'TikTok'}\nSüre: ${dur} saniye\nStil: ${style || 'Eğitici'}\nHedef Kitle: ${targetAudience || 'Genel'}` }
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.85,
-        max_tokens: 5000,
-        response_format: { type: 'json_object' }
-      })
+        temperature: 0.8,
+        max_tokens: 3000,
+      }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI servisi hatası' }, { status: 500 })
     const data = await response.json()
-    const result = JSON.parse(data.choices?.[0]?.message?.content || '{}')
-    return NextResponse.json({ success: true, result })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
+
+    let result
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { script: { full_script: content } }
+    } catch {
+      result = { script: { full_script: content } }
+    }
+
+    return NextResponse.json({ result })
+  } catch (error) {
+    console.error('Script Studio Error:', error)
+    return NextResponse.json({ error: 'Failed to generate script' }, { status: 500 })
   }
 }
