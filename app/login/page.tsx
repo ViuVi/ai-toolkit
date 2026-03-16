@@ -5,42 +5,32 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setMessage('')
 
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        router.push('/dashboard')
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password })
-        if (error) throw error
-        setMessage('Check your email for confirmation link!')
-      }
-    } catch (err: any) {
-      setError(err.message)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else {
+      router.push('/dashboard')
     }
-    setLoading(false)
   }
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/dashboard` }
     })
-    if (error) setError(error.message)
   }
 
   return (
@@ -55,8 +45,8 @@ export default function LoginPage() {
           </Link>
 
           {/* Header */}
-          <h1 className="text-3xl font-bold mb-2">{isLogin ? 'Welcome back' : 'Create account'}</h1>
-          <p className="text-gray-400 mb-8">{isLogin ? 'Sign in to continue creating viral content' : 'Start your journey to viral content'}</p>
+          <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+          <p className="text-gray-400 mb-8">Sign in to continue creating viral content</p>
 
           {/* Google Button */}
           <button onClick={handleGoogleLogin} className="w-full py-3 px-4 bg-white/5 border border-white/10 rounded-xl font-medium hover:bg-white/10 transition flex items-center justify-center gap-3 mb-6">
@@ -83,18 +73,17 @@ export default function LoginPage() {
             </div>
 
             {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">{error}</div>}
-            {message && <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">{message}</div>}
 
             <button type="submit" disabled={loading} className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : null}
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {loading && <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>}
+              Sign In
             </button>
           </form>
 
-          {/* Toggle */}
+          {/* Register Link */}
           <p className="text-center text-gray-400 mt-6">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
-            <button onClick={() => setIsLogin(!isLogin)} className="text-purple-400 hover:text-purple-300 ml-2 font-medium">{isLogin ? 'Sign up' : 'Sign in'}</button>
+            Don't have an account?
+            <Link href="/register" className="text-purple-400 hover:text-purple-300 ml-2 font-medium">Sign up</Link>
           </p>
         </div>
       </div>
@@ -105,34 +94,10 @@ export default function LoginPage() {
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-[100px]"></div>
           <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-pink-500/20 rounded-full blur-[100px]"></div>
         </div>
-        
         <div className="relative text-center max-w-md">
           <div className="text-6xl mb-6">🚀</div>
           <h2 className="text-3xl font-bold mb-4">Create Viral Content</h2>
-          <p className="text-gray-400 text-lg mb-8">Join 10,000+ creators using AI to grow faster</p>
-          
-          <div className="grid grid-cols-2 gap-4 text-left">
-            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-2xl mb-2">🎣</div>
-              <div className="font-medium">Hook Generator</div>
-              <div className="text-gray-500 text-sm">Stop the scroll</div>
-            </div>
-            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-2xl mb-2">🎬</div>
-              <div className="font-medium">Script Studio</div>
-              <div className="text-gray-500 text-sm">Write viral scripts</div>
-            </div>
-            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-2xl mb-2">📡</div>
-              <div className="font-medium">Trend Radar</div>
-              <div className="text-gray-500 text-sm">Catch trends early</div>
-            </div>
-            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-2xl mb-2">📅</div>
-              <div className="font-medium">Content Calendar</div>
-              <div className="text-gray-500 text-sm">Plan 30 days ahead</div>
-            </div>
-          </div>
+          <p className="text-gray-400 text-lg">Join 10,000+ creators using AI to grow faster</p>
         </div>
       </div>
     </div>

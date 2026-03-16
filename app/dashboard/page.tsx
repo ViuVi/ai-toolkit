@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const texts: Record<string, Record<string, string>> = {
-  tr: { welcome: 'Hoş Geldin', credits: 'Kredi', logout: 'Çıkış Yap', create: 'Oluşturma', analyze: 'Analiz', optimize: 'Optimizasyon', allTools: 'Tüm Araçlar', changePhoto: 'Fotoğraf Değiştir', uploadPhoto: 'Fotoğraf Yükle', uploading: 'Yükleniyor...', removePhoto: 'Fotoğrafı Kaldır' },
-  en: { welcome: 'Welcome', credits: 'Credits', logout: 'Log Out', create: 'Create', analyze: 'Analyze', optimize: 'Optimize', allTools: 'All Tools', changePhoto: 'Change Photo', uploadPhoto: 'Upload Photo', uploading: 'Uploading...', removePhoto: 'Remove Photo' },
-  ru: { welcome: 'Добро пожаловать', credits: 'Кредиты', logout: 'Выйти', create: 'Создать', analyze: 'Анализ', optimize: 'Оптимизация', allTools: 'Все инструменты', changePhoto: 'Изменить фото', uploadPhoto: 'Загрузить', uploading: 'Загрузка...', removePhoto: 'Удалить фото' },
-  de: { welcome: 'Willkommen', credits: 'Credits', logout: 'Abmelden', create: 'Erstellen', analyze: 'Analysieren', optimize: 'Optimieren', allTools: 'Alle Tools', changePhoto: 'Foto ändern', uploadPhoto: 'Hochladen', uploading: 'Lädt...', removePhoto: 'Foto entfernen' },
-  fr: { welcome: 'Bienvenue', credits: 'Crédits', logout: 'Déconnexion', create: 'Créer', analyze: 'Analyser', optimize: 'Optimiser', allTools: 'Tous les outils', changePhoto: 'Changer la photo', uploadPhoto: 'Télécharger', uploading: 'Téléchargement...', removePhoto: 'Supprimer' }
+  tr: { welcome: 'Hoş Geldin', credits: 'Kredi', logout: 'Çıkış Yap', create: 'Oluşturma', analyze: 'Analiz', optimize: 'Optimizasyon', allTools: 'Tüm Araçlar', changePhoto: 'Fotoğraf Değiştir', uploadPhoto: 'Fotoğraf Yükle', uploading: 'Yükleniyor...', removePhoto: 'Fotoğrafı Kaldır', uploadError: 'Yükleme hatası', uploadSuccess: 'Fotoğraf güncellendi' },
+  en: { welcome: 'Welcome', credits: 'Credits', logout: 'Log Out', create: 'Create', analyze: 'Analyze', optimize: 'Optimize', allTools: 'All Tools', changePhoto: 'Change Photo', uploadPhoto: 'Upload Photo', uploading: 'Uploading...', removePhoto: 'Remove Photo', uploadError: 'Upload failed', uploadSuccess: 'Photo updated' },
+  ru: { welcome: 'Добро пожаловать', credits: 'Кредиты', logout: 'Выйти', create: 'Создать', analyze: 'Анализ', optimize: 'Оптимизация', allTools: 'Все инструменты', changePhoto: 'Изменить фото', uploadPhoto: 'Загрузить', uploading: 'Загрузка...', removePhoto: 'Удалить фото', uploadError: 'Ошибка загрузки', uploadSuccess: 'Фото обновлено' },
+  de: { welcome: 'Willkommen', credits: 'Credits', logout: 'Abmelden', create: 'Erstellen', analyze: 'Analysieren', optimize: 'Optimieren', allTools: 'Alle Tools', changePhoto: 'Foto ändern', uploadPhoto: 'Hochladen', uploading: 'Lädt...', removePhoto: 'Foto entfernen', uploadError: 'Upload fehlgeschlagen', uploadSuccess: 'Foto aktualisiert' },
+  fr: { welcome: 'Bienvenue', credits: 'Crédits', logout: 'Déconnexion', create: 'Créer', analyze: 'Analyser', optimize: 'Optimiser', allTools: 'Tous les outils', changePhoto: 'Changer la photo', uploadPhoto: 'Télécharger', uploading: 'Téléchargement...', removePhoto: 'Supprimer', uploadError: 'Échec du téléchargement', uploadSuccess: 'Photo mise à jour' }
 }
 
 const tools = [
@@ -33,28 +33,27 @@ const tools = [
 ]
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string; name?: string } } | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [filter, setFilter] = useState('all')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  // Kullanıcı adını al
-  const getUserName = () => {
+  const getUserName = (): string => {
     if (!user) return ''
-    const meta = user.user_metadata
-    if (meta?.full_name) return meta.full_name
-    if (meta?.name) return meta.name
+    if (user.user_metadata?.full_name) return user.user_metadata.full_name
+    if (user.user_metadata?.name) return user.user_metadata.name
     if (user.email) return user.email.split('@')[0]
     return ''
   }
 
-  const getInitial = () => {
+  const getInitial = (): string => {
     const name = getUserName()
     return name ? name[0].toUpperCase() : 'U'
   }
@@ -85,18 +84,36 @@ export default function DashboardPage() {
     if (!file || !user) return
 
     setUploading(true)
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    setUploadMessage(null)
 
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true })
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user.id)
 
-    if (!uploadError) {
-      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
-      await supabase.from('credits').update({ avatar_url: data.publicUrl }).eq('user_id', user.id)
-      setAvatarUrl(data.publicUrl)
-      setShowAvatarModal(false)
+      const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        setAvatarUrl(data.url)
+        setUploadMessage({ type: 'success', text: t.uploadSuccess })
+        setTimeout(() => {
+          setShowAvatarModal(false)
+          setUploadMessage(null)
+        }, 1500)
+      } else {
+        setUploadMessage({ type: 'error', text: data.error || t.uploadError })
+      }
+    } catch (error) {
+      setUploadMessage({ type: 'error', text: t.uploadError })
     }
+
     setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const removeAvatar = async () => {
@@ -220,14 +237,40 @@ export default function DashboardPage() {
 
             {/* Current Avatar */}
             <div className="flex justify-center mb-6">
-              {renderAvatar('w-24 h-24', 'text-4xl')}
+              {renderAvatar('w-28 h-28', 'text-5xl')}
             </div>
 
+            {/* Message */}
+            {uploadMessage && (
+              <div className={`mb-4 p-3 rounded-lg text-sm text-center ${uploadMessage.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                {uploadMessage.text}
+              </div>
+            )}
+
             {/* Upload Button */}
-            <input type="file" ref={fileInputRef} onChange={uploadAvatar} accept="image/*" className="hidden" />
-            <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 mb-3">
-              {uploading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.uploading}</> : t.uploadPhoto}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={uploadAvatar} 
+              accept="image/jpeg,image/png,image/gif,image/webp" 
+              className="hidden" 
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              disabled={uploading} 
+              className="w-full py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 mb-3"
+            >
+              {uploading ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  {t.uploading}
+                </>
+              ) : (
+                t.uploadPhoto
+              )}
             </button>
+
+            <p className="text-center text-gray-500 text-xs mb-4">JPG, PNG, GIF, WebP • Max 5MB</p>
 
             {/* Remove Button */}
             {avatarUrl && (
