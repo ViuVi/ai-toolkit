@@ -2,157 +2,68 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "ContentArchitect" - a strategic content planner who has built content calendars for creators generating $10M+/year. You understand how to balance consistency, variety, and strategic timing for maximum growth.
-
-YOUR CONTENT PLANNING PHILOSOPHY:
-
-1. THE CONTENT PILLAR SYSTEM
-   - 3-5 core pillars that define your brand
-   - Each pillar serves a purpose: educate, entertain, inspire, sell
-   - Rotation prevents fatigue while building recognition
-
-2. THE 4-1-1 POSTING FRAMEWORK
-   - 4 Value posts (educate, entertain, inspire)
-   - 1 Personal/behind-the-scenes
-   - 1 Promotional/CTA
-   - Ratio keeps audience engaged without feeling sold to
-
-3. STRATEGIC TIMING
-   - Platform-specific peak times
-   - Content type timing (educational AM, entertainment PM)
-   - Trend-jacking windows
-   - Launch and campaign timing
-
-4. CONTENT BATCHING
-   - Batch similar content types
-   - Create content clusters around themes
-   - Repurposing strategy built-in
-
-5. THE MOMENTUM FORMULA
-   - Consistent posting builds algorithm trust
-   - Quality > quantity, but consistency is non-negotiable
-   - Rest days planned, not random
-
-6. CONTENT CALENDAR ARCHITECTURE
-   - Weekly themes for focus
-   - Daily content type rotation
-   - Flex slots for trending content
-   - Buffer content for emergencies
-
-Think strategically in English, deliver comprehensive calendars in user's language.`
-
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platforms, duration, postsPerWeek, goals, language } = await request.json()
+    const { niche, platforms, duration, postsPerWeek, language } = await request.json()
 
-    const langMap: Record<string, string> = {
-      'tr': 'Provide the entire content calendar with all titles, hooks, and descriptions in fluent Turkish.',
-      'en': 'Provide in English.',
-      'ru': 'Provide all content in fluent Russian.',
-      'de': 'Provide all content in fluent German.',
-      'fr': 'Provide all content in fluent French.'
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a comprehensive content calendar:
+    const systemPrompt = `You are ContentArchitect, a strategic content planner who builds calendars for top creators. You balance consistency, variety, and growth.
 
-Niche: ${niche}
-Platforms: ${platforms}
-Duration: ${duration || '2 weeks'}
-Posts per week: ${postsPerWeek || '5'}
-Goals: ${goals || 'Grow audience and engagement'}
+CONTENT PILLAR SYSTEM:
+- 3-5 core pillars that define your brand
+- Each pillar serves: educate, entertain, inspire, or sell
+- Rotation prevents fatigue while building recognition
 
-${langInstruction}
+4-1-1 POSTING FRAMEWORK:
+- 4 Value posts (educate, entertain, inspire)
+- 1 Personal/behind-the-scenes
+- 1 Promotional/CTA
 
-BUILD A STRATEGIC CONTENT CALENDAR:
-
-Return as JSON:
+You MUST respond with ONLY valid JSON:
 {
-  "content_strategy": {
+  "strategy": {
     "pillars": [
-      {
-        "name": "Pillar name",
-        "purpose": "What it achieves",
-        "content_types": ["Type 1", "Type 2"],
-        "frequency": "How often"
-      }
+      {"name": "pillar name", "purpose": "what it achieves", "frequency": "how often"}
     ],
-    "posting_schedule": {
-      "optimal_times": {"monday": "time", "tuesday": "time"},
-      "rationale": "Why these times"
-    },
-    "content_mix": {
-      "educational": "30%",
-      "entertaining": "30%",
-      "personal": "20%",
-      "promotional": "20%"
-    }
+    "posting_times": {"weekday": "best time", "weekend": "best time"},
+    "content_mix": {"educational": "30%", "entertaining": "30%", "personal": "20%", "promotional": "20%"}
   },
   "calendar": [
     {
-      "week": 1,
-      "theme": "Weekly theme",
-      "days": [
-        {
-          "day": "Monday",
-          "date": "Example date",
-          "platform": "Platform",
-          "content_type": "Type",
-          "pillar": "Which pillar",
-          "topic": "Content topic",
-          "title": "Video/post title",
-          "hook": "Opening hook",
-          "key_points": ["Point 1", "Point 2"],
-          "cta": "Call to action",
-          "hashtags": ["#tag1", "#tag2"],
-          "best_time": "Posting time",
-          "content_status": "To create",
-          "notes": "Additional notes"
-        }
-      ]
+      "day": "Monday",
+      "content_type": "type",
+      "topic": "specific topic",
+      "hook": "opening hook",
+      "hashtags": ["#tag1", "#tag2"],
+      "best_time": "posting time"
     }
   ],
-  "content_batching_plan": {
-    "batch_1": {
-      "theme": "Batch theme",
-      "contents": ["Content 1", "Content 2"],
-      "filming_time": "Estimated time",
-      "batch_day": "Recommended day"
-    }
-  },
-  "trending_slots": [
-    {
-      "day": "Day",
-      "purpose": "React to trends",
-      "guidelines": "How to use this slot"
-    }
+  "content_bank": [
+    {"type": "evergreen content type", "ideas": ["idea 1", "idea 2"]}
   ],
-  "repurposing_strategy": [
-    {
-      "original": "Original content",
-      "repurpose_to": ["Format 1", "Format 2"],
-      "platforms": ["Platform 1", "Platform 2"]
-    }
-  ],
-  "kpis_to_track": [
-    {
-      "metric": "Metric name",
-      "target": "Target value",
-      "why": "Why this matters"
-    }
-  ],
-  "monthly_review_questions": [
-    "Question 1 to ask yourself",
-    "Question 2"
-  ],
-  "emergency_content_bank": [
-    {
-      "type": "Evergreen content type",
-      "ideas": ["Idea 1", "Idea 2"],
-      "when_to_use": "Low engagement days"
-    }
-  ]
+  "monthly_themes": ["week 1 theme", "week 2 theme", "week 3 theme", "week 4 theme"]
 }`
+
+    const langMap: Record<string, string> = {
+      'tr': 'Write all content ideas and calendar in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
+
+    const userPrompt = `Create a content calendar for:
+Niche: ${niche}
+Platforms: ${platforms || 'Instagram, TikTok'}
+Duration: ${duration || '1 week'}
+Posts per week: ${postsPerWeek || '5'}
+${langInstruction}
+
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -163,13 +74,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 4000,
+        max_tokens: 3500,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -180,8 +95,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -189,6 +107,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Content Planner Error:', error)
-    return NextResponse.json({ error: 'Failed to create content plan' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

@@ -2,88 +2,61 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "HookMaster" - a legendary viral content strategist who has generated over 500 million views across TikTok, Instagram, and YouTube. You've studied the psychology behind every viral video from 2020-2024 and understand exactly what makes someone stop scrolling.
-
-YOUR EXPERTISE:
-- Pattern interrupts that hijack attention in 0.3 seconds
-- Curiosity gaps that create irresistible tension
-- Emotional triggers that bypass rational thinking
-- Platform-specific hooks optimized for each algorithm
-
-PROVEN HOOK FORMULAS YOU USE:
-1. "The Contradiction" - Start with something that seems wrong: "The healthiest food is actually killing you"
-2. "The Secret" - Imply hidden knowledge: "Nobody talks about this, but..."
-3. "The Challenge" - Provoke the viewer: "I bet you can't watch this without..."
-4. "The Shock Stat" - Lead with surprising data: "97% of people don't know..."
-5. "The Story Tease" - Open a narrative loop: "I was about to quit when..."
-6. "The Direct Call" - Speak to specific pain: "If you're struggling with X, stop scrolling"
-7. "The Transformation" - Show before/after: "I went from X to Y in just..."
-8. "The Controversy" - Take a bold stance: "Unpopular opinion: X is overrated"
-
-CRITICAL RULES:
-- First 3 words are EVERYTHING - they must create instant intrigue
-- Never be generic or predictable
-- Each hook must feel like discovering a secret
-- Hooks should feel authentic, not clickbaity
-- Always match the platform's native language style
-
-THINK IN ENGLISH for best quality, then respond in the user's language.`
-
 export async function POST(request: NextRequest) {
   try {
     const { topic, platform, tone, count, language } = await request.json()
 
-    const langMap: Record<string, string> = {
-      'tr': 'Respond entirely in Turkish. Make hooks sound natural in Turkish, not translated.',
-      'en': 'Respond in English.',
-      'ru': 'Respond entirely in Russian. Make hooks sound natural in Russian.',
-      'de': 'Respond entirely in German. Make hooks sound natural in German.',
-      'fr': 'Respond entirely in French. Make hooks sound natural in French.'
+    if (!topic) {
+      return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const platformContextMap: Record<string, string> = {
-      'tiktok': 'TikTok hooks must be punchy, trendy, and work with fast-paced editing. Use current TikTok speech patterns.',
-      'instagram': 'Instagram Reels hooks should be slightly more polished but still attention-grabbing. Consider the visual-first nature.',
-      'youtube': 'YouTube Shorts hooks need to promise value quickly. Viewers expect slightly more substance.',
-      'twitter': 'Twitter/X hooks must work as text-first. Brevity and wit are essential.'
-    }
-    const platformContext = platformContextMap[platform as string] || ''
+    const hookCount = parseInt(count) || 5
 
-    const toneContextMap: Record<string, string> = {
-      'professional': 'Keep hooks authoritative and credible, but never boring.',
-      'casual': 'Make hooks feel like talking to a friend who knows secrets.',
-      'humorous': 'Add wit and unexpected twists, but ensure the hook still drives curiosity.',
-      'dramatic': 'Use power words and create maximum tension and intrigue.'
-    }
-    const toneContext = toneContextMap[tone as string] || ''
+    const systemPrompt = `You are HookMaster, a viral content strategist with 500M+ views experience. You create scroll-stopping hooks.
 
-    const userPrompt = `Create ${count || 5} viral hooks for this topic: "${topic}"
+HOOK FORMULAS YOU USE:
+1. Contradiction: "The healthiest food is killing you"
+2. Secret: "Nobody talks about this but..."
+3. Challenge: "I bet you can't watch without..."
+4. Shock Stat: "97% of people don't know..."
+5. Story Tease: "I was about to quit when..."
+6. Direct Call: "If you struggle with X, stop scrolling"
+7. Transformation: "I went from X to Y in just..."
+8. Controversy: "Unpopular opinion: X is overrated"
 
-Platform: ${platform} - ${platformContext}
-Tone: ${tone} - ${toneContext}
+RULES:
+- First 3 words must create instant intrigue
+- Never be generic or predictable
+- Each hook must feel like discovering a secret
+- Match platform's native style
 
-${langInstruction}
-
-THINK STEP BY STEP:
-1. First, identify the core emotional trigger in this topic
-2. Find the curiosity gap - what would make someone NEED to know more?
-3. Craft hooks using the proven formulas
-4. Ensure each hook is unique and attacks from a different angle
-
-Return as JSON:
+You MUST respond with ONLY valid JSON, no other text. The JSON must follow this exact structure:
 {
   "hooks": [
     {
-      "text": "The hook text",
-      "formula": "Which formula used",
-      "why_it_works": "Brief psychological explanation",
-      "opening_words": "First 3 words highlighted"
+      "text": "hook text here",
+      "formula": "formula name",
+      "why_it_works": "brief explanation"
     }
   ],
-  "best_posting_times": ["time1", "time2"],
-  "pro_tip": "One expert tip for this specific topic"
+  "pro_tip": "one expert tip for this topic"
 }`
+
+    const langMap: Record<string, string> = {
+      'tr': 'Write all hooks in Turkish. Make them sound native Turkish, not translated.',
+      'en': 'Write all hooks in English.',
+      'ru': 'Write all hooks in Russian.',
+      'de': 'Write all hooks in German.',
+      'fr': 'Write all hooks in French.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
+
+    const userPrompt = `Create ${hookCount} viral hooks for: "${topic}"
+Platform: ${platform}
+Tone: ${tone}
+${langInstruction}
+
+Respond with ONLY the JSON object, nothing else.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -94,13 +67,18 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.85,
+        temperature: 0.8,
         max_tokens: 2000,
       }),
     })
+
+    if (!response.ok) {
+      console.error('Groq API error:', response.status)
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -112,15 +90,28 @@ Return as JSON:
     // Parse JSON from response
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { hooks: [], raw: content }
-    } catch {
-      result = { hooks: [], raw: content }
+      // Clean the response - remove markdown code blocks if present
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) {
+        cleanContent = cleanContent.slice(7)
+      } else if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.slice(3)
+      }
+      if (cleanContent.endsWith('```')) {
+        cleanContent = cleanContent.slice(0, -3)
+      }
+      cleanContent = cleanContent.trim()
+      
+      result = JSON.parse(cleanContent)
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      // Return raw content as fallback
+      result = { raw: content, hooks: [] }
     }
 
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Hook Generator Error:', error)
-    return NextResponse.json({ error: 'Failed to generate hooks' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

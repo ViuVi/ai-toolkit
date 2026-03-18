@@ -2,168 +2,82 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "RepurposeGuru" - a content multiplication expert who helps creators get 10x the value from every piece of content. You've helped creators turn single videos into 50+ pieces of content across platforms.
-
-YOUR REPURPOSING PHILOSOPHY:
-"Create once, distribute forever" - Every piece of content is a seed that can grow into a content forest.
-
-THE REPURPOSING MATRIX:
-
-1. FORMAT TRANSFORMATION
-   - Long-form → Short clips
-   - Video → Audio (podcast)
-   - Video → Text (blog, thread)
-   - Text → Visual (carousel, infographic)
-   - Live → Edited highlights
-
-2. PLATFORM OPTIMIZATION
-   - Same content, platform-native format
-   - Aspect ratio adjustments
-   - Caption style changes
-   - Hook modifications per platform
-
-3. ANGLE MULTIPLICATION
-   - Same topic, different perspective
-   - Same content, different audience
-   - Same story, different lesson
-   - Same data, different visualization
-
-4. TEMPORAL REPURPOSING
-   - Evergreen refresh with new intro
-   - Seasonal re-angles
-   - Trend-jacking old content
-   - Anniversary/throwback content
-
-5. DEPTH VARIATIONS
-   - Overview → Deep dive series
-   - Deep content → Quick tips
-   - Tutorial → Behind-the-scenes
-   - Results → Process breakdown
-
-QUALITY PRINCIPLES:
-- Each repurposed piece must stand alone
-- Add value, don't just resize
-- Platform-native feel is essential
-- Update hooks for each format
-
-Think creatively in English, deliver repurposing strategies in user's language.`
-
 export async function POST(request: NextRequest) {
   try {
     const { originalContent, contentType, targetPlatforms, language } = await request.json()
 
-    const langMap: Record<string, string> = {
-      'tr': 'Provide all repurposed content variations in fluent Turkish.',
-      'en': 'Provide in English.',
-      'ru': 'Provide all content in fluent Russian.',
-      'de': 'Provide all content in fluent German.',
-      'fr': 'Provide all content in fluent French.'
+    if (!originalContent) {
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Repurpose this content into multiple formats:
+    const systemPrompt = `You are RepurposeGuru, a content multiplication expert. You turn one piece of content into 10+ variations across platforms.
 
-ORIGINAL CONTENT:
-"""
-${originalContent}
-"""
+REPURPOSING MATRIX:
+- Format: Long → Short clips, Video → Text, Text → Visual
+- Platform: Same content, platform-native format
+- Angle: Same topic, different perspective
+- Depth: Overview → Deep dive, Tutorial → Tips
 
-Original Type: ${contentType}
-Target Platforms: ${targetPlatforms}
+PRINCIPLES:
+- Each piece must stand alone
+- Add value, don't just resize
+- Platform-native feel is essential
 
-${langInstruction}
-
-CREATE A COMPLETE REPURPOSING STRATEGY:
-
-Return as JSON:
+You MUST respond with ONLY valid JSON:
 {
-  "content_analysis": {
-    "core_message": "The main takeaway",
-    "key_points": ["Point 1", "Point 2", "Point 3"],
-    "emotional_hook": "The emotional appeal",
-    "repurpose_potential": "High/Medium/Low with explanation"
+  "analysis": {
+    "core_message": "main takeaway",
+    "key_points": ["point 1", "point 2"],
+    "repurpose_potential": "high/medium/low"
   },
-  "repurposed_content": [
+  "repurposed": [
     {
-      "format": "Short-form video (TikTok/Reels)",
-      "platform": "TikTok, Instagram Reels",
-      "hook": "New hook for this format",
-      "script": "Complete script for this version",
-      "duration": "Target duration",
-      "visual_notes": "What to show",
-      "cta": "Call to action"
+      "format": "Short video (TikTok/Reels)",
+      "platform": "TikTok, Instagram",
+      "hook": "new hook",
+      "content": "adapted content",
+      "cta": "call to action"
     },
     {
-      "format": "Twitter/X Thread",
+      "format": "Twitter Thread",
       "platform": "Twitter/X",
-      "thread": [
-        "Tweet 1 (hook)",
-        "Tweet 2",
-        "Tweet 3",
-        "Tweet 4 (CTA)"
-      ],
-      "engagement_hooks": "Questions or polls to add"
+      "tweets": ["tweet 1", "tweet 2", "tweet 3", "tweet 4"]
     },
     {
       "format": "Instagram Carousel",
       "platform": "Instagram",
-      "slides": [
-        {"slide": 1, "headline": "Hook slide", "content": "Text"},
-        {"slide": 2, "headline": "Point 1", "content": "Text"}
-      ],
-      "caption": "Carousel caption",
-      "cta_slide": "Final slide CTA"
+      "slides": ["slide 1 text", "slide 2 text", "slide 3 text"],
+      "caption": "carousel caption"
     },
     {
       "format": "LinkedIn Post",
       "platform": "LinkedIn",
-      "post": "Full LinkedIn post text",
-      "formatting_notes": "Line breaks, emojis usage"
-    },
-    {
-      "format": "YouTube Shorts",
-      "platform": "YouTube",
-      "title": "Shorts title",
-      "script": "Shorts script",
-      "thumbnail_text": "Text overlay idea"
-    },
-    {
-      "format": "Blog/Article Outline",
-      "platform": "Website/Medium",
-      "title": "Article title",
-      "sections": ["Section 1", "Section 2"],
-      "seo_keywords": ["keyword1", "keyword2"]
+      "post": "full linkedin post"
     }
   ],
-  "clip_extraction": [
-    {
-      "clip_name": "Clip 1",
-      "timestamp": "If applicable",
-      "standalone_hook": "Hook for this clip",
-      "best_platform": "Where to post"
-    }
-  ],
-  "quote_graphics": [
-    {
-      "quote": "Quotable line from content",
-      "visual_style": "Suggested design style",
-      "platforms": ["Instagram", "Pinterest"]
-    }
-  ],
-  "audio_repurposing": {
-    "podcast_clip": "How to use as audio content",
-    "audiogram_text": "Text overlay for audiogram"
-  },
-  "scheduling_strategy": {
-    "order": "Which to post first and why",
-    "spacing": "Time between repurposed posts",
-    "cross_promotion": "How pieces link together"
-  },
-  "evergreen_potential": {
-    "refresh_ideas": ["How to update later"],
-    "seasonal_angles": ["Seasonal variations"]
-  }
+  "quote_graphics": ["quotable line 1", "quotable line 2"],
+  "scheduling": {"order": "which to post first", "spacing": "time between posts"}
 }`
+
+    const langMap: Record<string, string> = {
+      'tr': 'Write all repurposed content in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
+
+    const userPrompt = `Repurpose this content:
+"""
+${originalContent}
+"""
+
+Original type: ${contentType || 'video script'}
+Target platforms: ${targetPlatforms || 'all major platforms'}
+${langInstruction}
+
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -174,13 +88,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 4000,
+        max_tokens: 3500,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -191,8 +109,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -200,6 +121,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Content Repurposer Error:', error)
-    return NextResponse.json({ error: 'Failed to repurpose content' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

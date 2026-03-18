@@ -2,128 +2,71 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "CompetitorIntel" - a strategic analyst who has helped 500+ creators dominate their niche by understanding their competition. You've worked with talent agencies managing creators with 100M+ combined followers.
+export async function POST(request: NextRequest) {
+  try {
+    const { competitorInfo, yourNiche, platform, language } = await request.json()
 
-YOUR COMPETITIVE ANALYSIS FRAMEWORK:
+    if (!competitorInfo) {
+      return NextResponse.json({ error: 'Competitor info is required' }, { status: 400 })
+    }
 
-1. CONTENT STRATEGY DECODING
-   - Content pillars: What themes do they repeat?
-   - Posting patterns: Frequency, timing, rhythm
-   - Format mix: What types perform best for them?
-   - Evolution: How has their content changed?
+    const systemPrompt = `You are CompetitorIntel, a strategic analyst who decodes competitor strategies. You find weaknesses to exploit and gaps to fill.
 
-2. AUDIENCE PSYCHOLOGY
-   - Who engages most? Demographics, psychographics
-   - What triggers comments vs shares vs saves?
-   - Community culture: Inside jokes, recurring themes
-   - Pain points being addressed
+ANALYSIS FRAMEWORK:
+1. Content Strategy: Pillars, posting patterns, format mix
+2. Audience Psychology: Who engages, what triggers comments
+3. Growth Mechanics: What drove spikes, collaboration strategy
+4. Weakness Identification: Gaps, complaints, missing formats
 
-3. GROWTH MECHANICS
-   - What drove their biggest spikes?
-   - Collaboration strategy
-   - Cross-platform approach
-   - Monetization signals
-
-4. WEAKNESS IDENTIFICATION
-   - Content gaps they're missing
-   - Audience complaints in comments
-   - Formats they haven't tried
-   - Topics they avoid (opportunity?)
-
-5. DIFFERENTIATION STRATEGY
-   - What can you do that they can't/won't?
-   - Underserved audience segments
-   - Unique angle opportunities
-   - Blue ocean possibilities
-
-COMPETITIVE POSITIONING:
+DIFFERENTIATION PRINCIPLES:
 - Don't copy, counter-position
 - Find the gap between competitors
 - Be the alternative, not the imitation
 
-Analyze strategically in English, deliver actionable intelligence in user's language.`
-
-export async function POST(request: NextRequest) {
-  try {
-    const { competitorDescription, yourNiche, platform, language } = await request.json()
+You MUST respond with ONLY valid JSON:
+{
+  "competitor_profile": {
+    "content_pillars": ["pillar 1", "pillar 2"],
+    "posting_frequency": "how often",
+    "signature_style": "what makes them recognizable",
+    "audience_type": "who follows them"
+  },
+  "what_works": [
+    {"element": "successful element", "why": "reason", "can_adapt": true}
+  ],
+  "weaknesses": [
+    {"weakness": "gap or weakness", "your_opportunity": "how to exploit"}
+  ],
+  "differentiation": {
+    "positioning": "how to position differently",
+    "unique_angles": ["angle 1", "angle 2"],
+    "blue_ocean": "untapped opportunity"
+  },
+  "content_ideas": [
+    {"concept": "content idea", "why_beats_them": "competitive advantage", "hook": "opening hook"}
+  ],
+  "action_items": ["immediate action 1", "action 2", "action 3"]
+}`
 
     const langMap: Record<string, string> = {
-      'tr': 'Provide all competitive analysis and strategies in fluent Turkish.',
-      'en': 'Provide in English.',
-      'ru': 'Provide all content in fluent Russian.',
-      'de': 'Provide all content in fluent German.',
-      'fr': 'Provide all content in fluent French.'
+      'tr': 'Write all analysis in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Analyze this competitor and develop counter-strategy:
-
-COMPETITOR INFO:
+    const userPrompt = `Analyze this competitor:
 """
-${competitorDescription}
+${competitorInfo}
 """
 
-Your Niche: ${yourNiche}
+My niche: ${yourNiche || 'same niche'}
 Platform: ${platform}
-
 ${langInstruction}
 
-CONDUCT DEEP COMPETITIVE INTELLIGENCE:
-
-Return as JSON:
-{
-  "competitor_profile": {
-    "content_pillars": ["Pillar 1", "Pillar 2", "Pillar 3"],
-    "posting_strategy": {
-      "frequency": "How often they post",
-      "best_times": "When their content performs best",
-      "content_mix": "Ratio of content types"
-    },
-    "signature_style": "What makes them recognizable",
-    "audience_profile": "Who follows them and why",
-    "growth_trajectory": "Assessment of their growth"
-  },
-  "what_works_for_them": [
-    {
-      "element": "Successful element",
-      "why_it_works": "Psychological reason",
-      "can_you_adapt": "Yes/No and how"
-    }
-  ],
-  "their_weaknesses": [
-    {
-      "weakness": "Gap or weakness",
-      "opportunity_for_you": "How to exploit this",
-      "content_idea": "Specific content to fill this gap"
-    }
-  ],
-  "differentiation_strategy": {
-    "positioning": "How to position yourself differently",
-    "unique_angles": ["Angle 1", "Angle 2", "Angle 3"],
-    "audience_segment": "Underserved audience you can own",
-    "content_blue_ocean": "Content type they don't do well"
-  },
-  "content_to_create": [
-    {
-      "concept": "Content idea",
-      "why_it_beats_them": "Competitive advantage",
-      "hook": "Opening hook",
-      "differentiation": "What makes yours unique"
-    }
-  ],
-  "collaboration_opportunities": "How to potentially collaborate or cross-promote",
-  "long_term_strategy": {
-    "3_month_goal": "Position to achieve",
-    "key_moves": ["Move 1", "Move 2", "Move 3"],
-    "success_metrics": "How to measure winning"
-  },
-  "warning_signs": "What to watch out for",
-  "action_items": [
-    "Immediate action 1",
-    "Immediate action 2",
-    "This week priority"
-  ]
-}`
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -134,13 +77,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 3500,
+        max_tokens: 3000,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -151,8 +98,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -160,6 +110,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Competitor Spy Error:', error)
-    return NextResponse.json({ error: 'Failed to analyze competitor' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

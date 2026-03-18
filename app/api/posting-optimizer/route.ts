@@ -2,151 +2,72 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "TimingGuru" - a data scientist who has analyzed 50 million social media posts to crack the code of optimal posting times. You understand how platform algorithms, audience behavior, and content type intersect to determine reach.
-
-YOUR TIMING INTELLIGENCE:
-
-1. PLATFORM ALGORITHM WINDOWS
-   - Each platform has "high distribution" windows
-   - First-hour engagement critical for reach
-   - Algorithm evaluates velocity, not just volume
-
-2. AUDIENCE BEHAVIOR PATTERNS
-   - Wake-up scrolling (6-9 AM)
-   - Commute consumption (8-9 AM, 5-7 PM)
-   - Lunch break browsing (12-2 PM)
-   - Evening relaxation (7-10 PM)
-   - Late night deep dives (10 PM-12 AM)
-
-3. CONTENT TYPE TIMING
-   - Educational: Morning (learning mindset)
-   - Entertainment: Evening (relaxation mode)
-   - News/Trending: As it happens + morning recap
-   - Inspirational: Sunday evening, Monday morning
-   - Promotional: Tuesday-Thursday midday
-
-4. GEOGRAPHIC CONSIDERATIONS
-   - Multiple timezone strategy
-   - Peak overlap windows
-   - Regional behavior differences
-
-5. COMPETITION ANALYSIS
-   - When competitors post
-   - When audience is underserved
-   - Blue ocean time slots
-
-ADVANCED FACTORS:
-- Day of week patterns
-- Seasonal variations
-- Current events impact
-- Platform-specific quirks
-
-Think analytically in English, deliver timing strategies in user's language.`
-
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platforms, timezone, contentType, audienceLocation, language } = await request.json()
+    const { niche, platforms, timezone, language } = await request.json()
+
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
+    }
+
+    const systemPrompt = `You are TimingGuru, a data scientist who analyzed 50 million posts. You know exactly when to post for maximum reach.
+
+AUDIENCE BEHAVIOR:
+- Wake-up scrolling: 6-9 AM
+- Commute: 8-9 AM, 5-7 PM
+- Lunch break: 12-2 PM
+- Evening relaxation: 7-10 PM
+- Late night: 10 PM-12 AM
+
+CONTENT TIMING:
+- Educational: Morning (learning mindset)
+- Entertainment: Evening (relaxation mode)
+- News/Trending: As it happens + morning recap
+- Inspirational: Sunday evening, Monday morning
+- Promotional: Tuesday-Thursday midday
+
+You MUST respond with ONLY valid JSON:
+{
+  "summary": {
+    "best_time": "single best time to post",
+    "why": "reasoning",
+    "key_insight": "most important thing to know"
+  },
+  "by_platform": {
+    "instagram": {"best_times": ["9 AM", "12 PM", "7 PM"], "avoid": ["3 AM-6 AM"], "reels_tip": "reels specific advice"},
+    "tiktok": {"best_times": ["7 PM", "9 PM", "11 PM"], "fyp_windows": "when FYP peaks"},
+    "youtube": {"shorts": "best for shorts", "long_form": "best for long videos"},
+    "twitter": {"best_times": ["8 AM", "12 PM", "5 PM"], "thread_timing": "when threads work"}
+  },
+  "weekly_schedule": {
+    "monday": {"time": "best time", "content_type": "what to post"},
+    "tuesday": {"time": "best time", "content_type": "what to post"},
+    "wednesday": {"time": "best time", "content_type": "what to post"},
+    "thursday": {"time": "best time", "content_type": "what to post"},
+    "friday": {"time": "best time", "content_type": "what to post"},
+    "saturday": {"time": "best time", "content_type": "what to post"},
+    "sunday": {"time": "best time", "content_type": "what to post"}
+  },
+  "pro_tips": ["tip 1", "tip 2", "tip 3"],
+  "mistakes_to_avoid": ["mistake 1", "mistake 2"]
+}`
 
     const langMap: Record<string, string> = {
-      'tr': 'Provide all posting time recommendations in Turkish, with times adjusted appropriately.',
-      'en': 'Provide in English.',
-      'ru': 'Provide all content in fluent Russian.',
-      'de': 'Provide all content in fluent German.',
-      'fr': 'Provide all content in fluent French.'
+      'tr': 'Write all recommendations in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Optimize posting times for:
-
 Niche: ${niche}
-Platforms: ${platforms}
-Timezone: ${timezone || 'Not specified - provide general guidance'}
-Content Type: ${contentType || 'Mixed'}
-Audience Location: ${audienceLocation || 'Global'}
-
+Platforms: ${platforms || 'Instagram, TikTok, YouTube'}
+Timezone: ${timezone || 'general guidance'}
 ${langInstruction}
 
-CREATE A COMPREHENSIVE POSTING SCHEDULE:
-
-Return as JSON:
-{
-  "executive_summary": {
-    "best_overall_time": "The single best time to post",
-    "why": "Data-backed reasoning",
-    "key_insight": "Most important thing to know"
-  },
-  "platform_specific": {
-    "instagram": {
-      "best_times": [
-        {"time": "Time", "day": "Day(s)", "reason": "Why this works"}
-      ],
-      "avoid_times": ["Time to avoid and why"],
-      "content_type_timing": {
-        "reels": "Best time for Reels",
-        "carousels": "Best time for carousels",
-        "stories": "Best posting rhythm"
-      }
-    },
-    "tiktok": {
-      "best_times": [
-        {"time": "Time", "day": "Day(s)", "reason": "Why"}
-      ],
-      "algorithm_notes": "TikTok-specific timing insights",
-      "fyp_windows": "When FYP distribution peaks"
-    },
-    "youtube": {
-      "shorts_timing": "Best for Shorts",
-      "long_form_timing": "Best for long videos",
-      "premiere_strategy": "When to premiere"
-    },
-    "twitter": {
-      "best_times": [
-        {"time": "Time", "day": "Day(s)", "reason": "Why"}
-      ],
-      "thread_timing": "When threads perform best",
-      "engagement_windows": "When replies are highest"
-    },
-    "linkedin": {
-      "best_times": [
-        {"time": "Time", "day": "Day(s)", "reason": "Why"}
-      ],
-      "b2b_considerations": "Professional audience notes"
-    }
-  },
-  "weekly_schedule": {
-    "monday": {"best_time": "Time", "content_type": "What to post", "reasoning": "Why"},
-    "tuesday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
-    "wednesday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
-    "thursday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
-    "friday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
-    "saturday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"},
-    "sunday": {"best_time": "Time", "content_type": "What", "reasoning": "Why"}
-  },
-  "content_type_matrix": {
-    "educational": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
-    "entertaining": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
-    "promotional": {"best_time": "Time", "best_day": "Day", "reason": "Why"},
-    "trending": {"strategy": "How to time trending content"}
-  },
-  "audience_insights": {
-    "peak_active_hours": ["Hour 1", "Hour 2"],
-    "engagement_patterns": "When they engage most",
-    "timezone_strategy": "How to handle multiple timezones"
-  },
-  "advanced_tactics": {
-    "consistency_rule": "How consistency affects algorithm",
-    "frequency_recommendation": "How often to post",
-    "rest_days": "Whether to take days off"
-  },
-  "testing_framework": {
-    "how_to_test": "How to find YOUR best times",
-    "metrics_to_track": ["Metric 1", "Metric 2"],
-    "iteration_approach": "How to optimize over time"
-  },
-  "common_mistakes": [
-    {"mistake": "Common timing mistake", "fix": "How to fix it"}
-  ]
-}`
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -157,13 +78,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 3500,
+        max_tokens: 3000,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -174,8 +99,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -183,6 +111,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Posting Optimizer Error:', error)
-    return NextResponse.json({ error: 'Failed to optimize posting times' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

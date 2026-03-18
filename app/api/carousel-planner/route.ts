@@ -2,45 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "CarouselMaster" - the designer behind Instagram carousels that have generated 100M+ impressions. You understand the psychology of swipe behavior and how to create carousels that get saved, shared, and drive followers.
+export async function POST(request: NextRequest) {
+  try {
+    const { topic, style, slideCount, language } = await request.json()
 
-YOUR CAROUSEL ARCHITECTURE:
+    if (!topic) {
+      return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
+    }
 
-1. THE HOOK SLIDE (Slide 1)
-   - This is your thumbnail - it must STOP the scroll
-   - Bold statement, intriguing question, or pattern interrupt
-   - Minimal text, maximum impact
-   - Promise value that requires swiping
+    const systemPrompt = `You are CarouselMaster, designer of Instagram carousels with 100M+ impressions. You create carousels that get saved and shared.
 
-2. THE VALUE SLIDES (Slides 2-8)
-   - One clear point per slide
-   - Consistent visual rhythm
-   - Each slide earns the next swipe
-   - Mix of text and visual breathing room
-
-3. THE PAYOFF SLIDE (Second-to-last)
-   - Deliver the promised value
-   - The "aha moment"
-   - Shareable insight
-
-4. THE CTA SLIDE (Final)
-   - Clear action to take
-   - Save prompt (increases algorithm favor)
-   - Follow prompt
-   - Engagement question
-
-CAROUSEL PSYCHOLOGY:
-- Swipe = micro-commitment = invested reader
-- Saved carousels = algorithm gold
-- Educational carousels outperform inspirational
-- Numbered lists create completion desire
-- "Swipe for more" is implicit, don't overuse
-
-VISUAL PRINCIPLES:
-- Consistent color palette
-- Readable fonts (even on mobile)
-- White space is your friend
-- Brand elements subtle but present
+CAROUSEL ARCHITECTURE:
+1. Hook Slide: Stop the scroll, bold statement, minimal text
+2. Value Slides: One point per slide, consistent rhythm
+3. Payoff Slide: Deliver the promise, aha moment
+4. CTA Slide: Clear action, save prompt, follow prompt
 
 HIGH-PERFORMING FORMATS:
 - "X Things You Need to Know"
@@ -49,94 +25,46 @@ HIGH-PERFORMING FORMATS:
 - "Mistakes I Made So You Don't Have To"
 - "Save This For Later"
 
-Think strategically in English, deliver carousel content in user's language.`
-
-export async function POST(request: NextRequest) {
-  try {
-    const { topic, style, slideCount, language } = await request.json()
+You MUST respond with ONLY valid JSON:
+{
+  "concept": {
+    "hook_angle": "main promise",
+    "target_audience": "who this is for",
+    "save_worthiness": "why someone would save"
+  },
+  "slides": [
+    {"number": 1, "type": "Hook", "headline": "big bold text", "subtext": "supporting text if any"},
+    {"number": 2, "type": "Value", "headline": "point 1", "body": "explanation"},
+    {"number": 3, "type": "Value", "headline": "point 2", "body": "explanation"},
+    {"number": 4, "type": "Value", "headline": "point 3", "body": "explanation"},
+    {"number": 5, "type": "CTA", "headline": "call to action", "body": "save & follow prompt"}
+  ],
+  "caption": {
+    "hook": "caption opening",
+    "body": "main caption",
+    "cta": "engagement prompt",
+    "full": "complete caption"
+  },
+  "hashtags": ["#tag1", "#tag2", "#tag3"],
+  "design_tips": ["tip 1", "tip 2"],
+  "alternative_hooks": ["alt hook 1", "alt hook 2"]
+}`
 
     const langMap: Record<string, string> = {
-      'tr': 'Create all carousel slide content in fluent Turkish. Make it sound native and engaging.',
-      'en': 'Create in English.',
-      'ru': 'Create all content in fluent Russian.',
-      'de': 'Create all content in fluent German.',
-      'fr': 'Create all content in fluent French.'
+      'tr': 'Write all carousel content in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Design a high-converting Instagram carousel about:
-
-Topic: ${topic}
-Style: ${style || 'Educational'}
-Number of Slides: ${slideCount || '8'}
-
+    const userPrompt = `Create a viral carousel about: "${topic}"
+Style: ${style || 'educational'}
+Number of slides: ${slideCount || '6'}
 ${langInstruction}
 
-CREATE A COMPLETE CAROUSEL:
-
-Return as JSON:
-{
-  "carousel_concept": {
-    "hook_angle": "The main angle/promise",
-    "target_audience": "Who this is for",
-    "desired_action": "What viewers should do after",
-    "save_worthiness": "Why someone would save this"
-  },
-  "slides": [
-    {
-      "slide_number": 1,
-      "type": "Hook",
-      "headline": "Main text (big, bold)",
-      "subtext": "Supporting text if any",
-      "visual_direction": "Design notes",
-      "psychology": "Why this works as hook"
-    },
-    {
-      "slide_number": 2,
-      "type": "Value",
-      "headline": "Point 1 headline",
-      "body_text": "Explanation text",
-      "visual_direction": "Design notes",
-      "swipe_motivation": "Why they'll swipe to next"
-    }
-  ],
-  "caption": {
-    "hook_line": "Caption opening that complements carousel",
-    "body": "Caption body text",
-    "cta": "Call to action",
-    "full_caption": "Complete ready-to-paste caption"
-  },
-  "hashtags": ["#hashtag1", "#hashtag2"],
-  "design_specs": {
-    "recommended_dimensions": "1080x1350 or 1080x1080",
-    "color_palette": ["#color1", "#color2"],
-    "font_recommendations": {
-      "headlines": "Font style for headlines",
-      "body": "Font style for body"
-    },
-    "visual_style": "Overall aesthetic direction"
-  },
-  "alternative_hooks": [
-    {
-      "hook": "Alternative hook slide",
-      "angle": "Different approach"
-    }
-  ],
-  "engagement_boosters": {
-    "save_prompt": "Text to encourage saves",
-    "share_prompt": "Text to encourage shares",
-    "comment_prompt": "Question to drive comments"
-  },
-  "posting_strategy": {
-    "best_time": "Recommended posting time",
-    "story_support": "Story to post alongside",
-    "engagement_window": "When to engage with comments"
-  },
-  "series_potential": {
-    "follow_up_ideas": ["Related carousel 1", "Related carousel 2"],
-    "series_name": "If this becomes a series"
-  }
-}`
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -147,13 +75,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3500,
+        max_tokens: 3000,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -164,8 +96,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -173,6 +108,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Carousel Planner Error:', error)
-    return NextResponse.json({ error: 'Failed to create carousel' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

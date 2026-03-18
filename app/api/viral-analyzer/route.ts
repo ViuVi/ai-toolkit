@@ -2,91 +2,33 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "ViralDNA Analyst" - a data scientist who has reverse-engineered 100,000+ viral videos to crack the code of what makes content spread. You've consulted for TikTok's creator program and Instagram's algorithm team (hypothetically, for training purposes).
-
-YOUR ANALYTICAL FRAMEWORK:
-
-1. THE HOOK ANALYSIS
-   - First frame appeal: Would this stop a fast scroll?
-   - Curiosity coefficient: How strong is the "need to know"?
-   - Pattern interrupt score: Does it break expectations?
-
-2. THE CONTENT STRUCTURE
-   - Retention curve prediction: Where would viewers drop off?
-   - Value density: Information per second ratio
-   - Emotional arc: Does it build to a peak?
-
-3. THE ENGAGEMENT MECHANICS
-   - Comment bait: What would viewers say?
-   - Share trigger: Why would someone send this to a friend?
-   - Save motivation: Is this reference-worthy?
-
-4. THE ALGORITHM SIGNALS
-   - Watch time optimization: Replay potential?
-   - Completion rate prediction
-   - Engagement velocity factors
-
-5. THE VIRAL COEFFICIENTS (Your proprietary scoring)
-   - Relatability Factor (RF): 1-10
-   - Emotional Intensity (EI): 1-10
-   - Shareability Quotient (SQ): 1-10
-   - Trend Alignment (TA): 1-10
-   - Execution Quality (EQ): 1-10
-   - VIRAL SCORE = (RF + EI + SQ + TA + EQ) / 5
-
-CRITICAL ANALYSIS POINTS:
-- What's the "screenshot moment"?
-- What's the quotable line?
-- What controversy or discussion could this spark?
-- How does this compare to top performers in niche?
-
-Be brutally honest in analysis - creators need truth, not flattery.
-Think analytically in English, deliver insights in user's language.`
-
 export async function POST(request: NextRequest) {
   try {
-    const { content, contentType, platform, niche, language } = await request.json()
+    const { content, contentType, platform, language } = await request.json()
 
-    const langMap: Record<string, string> = {
-      'tr': 'Provide all analysis and recommendations in clear, professional Turkish.',
-      'en': 'Provide analysis in English.',
-      'ru': 'Provide all analysis in clear, professional Russian.',
-      'de': 'Provide all analysis in clear, professional German.',
-      'fr': 'Provide all analysis in clear, professional French.'
+    if (!content) {
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const contentTypeContextMap: Record<string, string> = {
-      'video_idea': 'Analyze this as a concept/idea before production.',
-      'script': 'Analyze this script for viral potential.',
-      'caption': 'Analyze this caption for engagement potential.',
-      'hook': 'Analyze this hook for stopping power.',
-      'full_content': 'Analyze this complete piece of content.'
-    }
-    const contentTypeContext = contentTypeContextMap[contentType as string] || ''
+    const systemPrompt = `You are ViralDNA Analyst, a data scientist who has analyzed 100,000+ viral videos. You identify what makes content spread.
 
-    const userPrompt = `Perform a comprehensive viral potential analysis:
+ANALYSIS FRAMEWORK:
+1. Hook Analysis: Stopping power, curiosity gap, first 3 words
+2. Content Structure: Retention curve, value density, emotional arc
+3. Engagement Mechanics: Comment bait, share triggers, save motivation
+4. Algorithm Signals: Watch time, completion rate, engagement velocity
 
-CONTENT TO ANALYZE:
-"""
-${content}
-"""
+SCORING (1-10):
+- Relatability Factor (RF)
+- Emotional Intensity (EI)
+- Shareability Quotient (SQ)
+- Trend Alignment (TA)
+- Execution Quality (EQ)
+- VIRAL SCORE = Average of all
 
-Content Type: ${contentType} - ${contentTypeContext}
-Platform: ${platform}
-Niche: ${niche || 'General'}
+Be brutally honest - creators need truth, not flattery.
 
-${langInstruction}
-
-CONDUCT DEEP ANALYSIS:
-
-1. First, identify every strength this content has
-2. Then, find every weakness or missed opportunity
-3. Compare mentally to viral content in this niche
-4. Calculate viral coefficients
-5. Provide specific, actionable improvements
-
-Return as JSON:
+You MUST respond with ONLY valid JSON:
 {
   "viral_score": {
     "overall": 7.5,
@@ -94,39 +36,37 @@ Return as JSON:
     "emotional_intensity": 7,
     "shareability": 7,
     "trend_alignment": 8,
-    "execution_quality": 7,
-    "verdict": "High potential with specific fixes"
+    "execution": 7
   },
-  "hook_analysis": {
-    "stopping_power": "Score and explanation",
-    "curiosity_gap": "Score and explanation",
-    "first_3_words_impact": "Analysis"
-  },
-  "strengths": [
-    "Specific strength 1 with why it works",
-    "Specific strength 2 with why it works"
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "improvements": [
+    {"issue": "problem", "fix": "solution", "impact": "high/medium/low"}
   ],
-  "weaknesses": [
-    "Specific weakness 1 with why it hurts",
-    "Specific weakness 2 with why it hurts"  
-  ],
-  "critical_improvements": [
-    {
-      "issue": "What's wrong",
-      "fix": "Exactly how to fix it",
-      "impact": "Expected improvement"
-    }
-  ],
-  "rewritten_hook": "If the hook is weak, provide a stronger version",
-  "engagement_prediction": {
-    "expected_comments": "Type of comments this will get",
-    "share_likelihood": "Low/Medium/High with reason",
-    "save_likelihood": "Low/Medium/High with reason"
-  },
-  "competitor_comparison": "How this stacks up against top content in niche",
-  "algorithm_notes": "Platform-specific algorithm considerations",
-  "final_verdict": "Honest, actionable summary in 2-3 sentences"
+  "rewritten_hook": "improved hook if original is weak",
+  "verdict": "honest 2-3 sentence summary"
 }`
+
+    const langMap: Record<string, string> = {
+      'tr': 'Provide all analysis in Turkish.',
+      'en': 'Provide all analysis in English.',
+      'ru': 'Provide all analysis in Russian.',
+      'de': 'Provide all analysis in German.',
+      'fr': 'Provide all analysis in French.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
+
+    const userPrompt = `Analyze this content for viral potential:
+
+"""
+${content}
+"""
+
+Content type: ${contentType || 'general'}
+Platform: ${platform}
+${langInstruction}
+
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -137,7 +77,7 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
@@ -145,24 +85,31 @@ Return as JSON:
       }),
     })
 
-    const data = await response.json()
-    const content_response = data.choices?.[0]?.message?.content
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
-    if (!content_response) {
+    const data = await response.json()
+    const responseContent = data.choices?.[0]?.message?.content
+
+    if (!responseContent) {
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
     }
 
     let result
     try {
-      const jsonMatch = content_response.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw_analysis: content_response }
+      let cleanContent = responseContent.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
-      result = { raw_analysis: content_response }
+      result = { raw: responseContent }
     }
 
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Viral Analyzer Error:', error)
-    return NextResponse.json({ error: 'Failed to analyze content' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

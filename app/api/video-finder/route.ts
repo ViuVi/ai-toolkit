@@ -2,117 +2,70 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-const SYSTEM_PROMPT = `You are "TrendScout Pro" - an elite content researcher who has helped creators find trending content opportunities worth millions of views. You have deep knowledge of what's currently performing across all major platforms.
-
-YOUR RESEARCH METHODOLOGY:
-
-1. TREND IDENTIFICATION
-   - Rising topics before they peak
-   - Evergreen topics with consistent demand
-   - Seasonal opportunities coming up
-   - News-jacking potential
-
-2. CONTENT GAP ANALYSIS
-   - What's being searched but underserved?
-   - What questions aren't being answered well?
-   - What formats are missing in this niche?
-
-3. VIRAL PATTERN RECOGNITION
-   - What's the common thread in top performers?
-   - Which formats are dominating right now?
-   - What audience emotions are trending?
-
-4. COMPETITIVE LANDSCAPE
-   - Who's winning in this space?
-   - What can be done better?
-   - Where's the whitespace?
-
-PLATFORM-SPECIFIC INSIGHTS:
-- TikTok: Sound trends, challenges, duet opportunities, trending effects
-- Instagram: Reel trends, carousel opportunities, story formats
-- YouTube: Search trends, suggested video patterns, shorts vs long-form
-- Twitter/X: Conversation trends, viral tweet formats, thread opportunities
-
-Always provide ACTIONABLE video ideas, not just observations.
-Think strategically in English, deliver in user's language with native fluency.`
-
 export async function POST(request: NextRequest) {
   try {
     const { niche, platform, contentType, language } = await request.json()
 
-    const langMap: Record<string, string> = {
-      'tr': 'Provide all video ideas, titles, and descriptions in fluent Turkish. Make them sound native and trending.',
-      'en': 'Provide in English.',
-      'ru': 'Provide all content in fluent Russian.',
-      'de': 'Provide all content in fluent German.',
-      'fr': 'Provide all content in fluent French.'
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Find viral video opportunities for:
+    const systemPrompt = `You are TrendScout Pro, an elite content researcher who finds viral content opportunities. You know what's trending and what will perform.
 
-Niche: ${niche}
-Platform: ${platform}
-Content Type Preference: ${contentType || 'Any'}
+RESEARCH METHODOLOGY:
+1. Trend Identification: Rising topics, evergreen demand, seasonal opportunities
+2. Content Gap Analysis: What's underserved, unanswered questions
+3. Viral Pattern Recognition: Common threads in top performers
+4. Competitive Landscape: Who's winning, what can be better
 
-${langInstruction}
-
-RESEARCH AND DELIVER:
-
-1. What's currently trending in this niche?
-2. What evergreen topics consistently perform?
-3. What gaps exist that can be filled?
-4. What would YOU make if you were in this niche?
-
-Return as JSON:
+You MUST respond with ONLY valid JSON:
 {
   "trending_now": [
     {
-      "topic": "Trending topic",
-      "why_trending": "Explanation",
-      "urgency": "High/Medium - how time-sensitive",
-      "video_idea": "Specific video concept",
-      "hook_suggestion": "Opening hook for this video",
-      "estimated_potential": "View potential estimate"
+      "topic": "trending topic",
+      "why_trending": "explanation",
+      "video_idea": "specific video concept",
+      "hook": "opening hook",
+      "urgency": "high/medium/low"
     }
   ],
-  "evergreen_opportunities": [
+  "evergreen_ideas": [
     {
-      "topic": "Evergreen topic",
-      "search_demand": "High/Medium/Low",
-      "competition_level": "High/Medium/Low",
-      "video_idea": "Specific video concept",
-      "title_options": ["Title 1", "Title 2"],
-      "why_it_works": "Explanation"
+      "topic": "evergreen topic",
+      "video_idea": "specific concept",
+      "title": "suggested title",
+      "why_works": "explanation"
     }
   ],
   "content_gaps": [
     {
-      "gap": "What's missing",
-      "opportunity": "How to fill it",
-      "video_concept": "Specific idea",
-      "differentiation": "How to stand out"
+      "gap": "what's missing",
+      "opportunity": "how to fill it",
+      "video_concept": "specific idea"
     }
   ],
-  "top_performer_analysis": {
-    "what_works": "Common patterns in top content",
-    "formats_winning": ["Format 1", "Format 2"],
-    "avoid": "What's oversaturated or dying"
-  },
-  "your_content_calendar": [
-    {
-      "day": "Day 1",
-      "content_type": "Type",
-      "topic": "Topic",
-      "hook": "Hook",
-      "reasoning": "Why this day/order"
-    }
+  "weekly_calendar": [
+    {"day": "Monday", "topic": "topic", "hook": "hook"}
   ],
-  "pro_tips": [
-    "Insider tip 1 for this niche",
-    "Insider tip 2 for this niche"
-  ]
+  "pro_tips": ["tip 1", "tip 2"]
 }`
+
+    const langMap: Record<string, string> = {
+      'tr': 'Write all video ideas and content in Turkish.',
+      'en': 'Write all content in English.',
+      'ru': 'Write all content in Russian.',
+      'de': 'Write all content in German.',
+      'fr': 'Write all content in French.'
+    }
+    const langInstruction = langMap[language as string] || langMap['en']
+
+    const userPrompt = `Find viral video opportunities for:
+Niche: ${niche}
+Platform: ${platform}
+Content type preference: ${contentType || 'any'}
+${langInstruction}
+
+Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -123,13 +76,17 @@ Return as JSON:
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
         max_tokens: 3000,
       }),
     })
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
@@ -140,8 +97,11 @@ Return as JSON:
 
     let result
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content }
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
     } catch {
       result = { raw: content }
     }
@@ -149,6 +109,6 @@ Return as JSON:
     return NextResponse.json({ result })
   } catch (error) {
     console.error('Video Finder Error:', error)
-    return NextResponse.json({ error: 'Failed to find videos' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
