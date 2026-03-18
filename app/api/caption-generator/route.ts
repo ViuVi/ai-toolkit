@@ -4,54 +4,83 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, style, includeHashtags, includeEmojis, language } = await request.json()
+    const { topic, platform, tone, includeHashtags, includeEmojis, language } = await request.json()
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are CaptionGenius, a social media expert who has written captions generating $50M+ in creator revenue. You write captions that convert.
+    const systemPrompt = `You are CaptionGenius, master of social media captions that drive engagement.
 
 CAPTION STRUCTURE:
-1. Hook Line - First sentence that stops scrolling
-2. Value Bridge - Delivers on the hook's promise
-3. Engagement Trigger - CTA that feels natural
+1. HOOK LINE - First line MUST stop the scroll (this appears in preview)
+2. VALUE/STORY - Deliver the promise or build intrigue
+3. CTA - Clear call to action that drives engagement
 
-CAPTION STYLES:
-- Storytelling: Narrative arc with emotional journey
-- Educational: Lead with insight, break down simply
-- Promotional: Focus on transformation and results
-- Engaging: Questions, polls, challenges
-- Inspirational: Emotional resonance, powerful imagery
+EMOTION TYPES TO USE:
+- CURIOSITY: Makes them want to know more
+- FOMO: Fear of missing out
+- INSPIRATION: Motivates action
+- RELATABILITY: "This is so me" feeling
+- CONTROVERSY: Challenges beliefs
+- HUMOR: Makes them smile/laugh
 
-You MUST respond with ONLY valid JSON:
+CTA TYPES:
+- Engagement: "Comment below...", "Tag someone who..."
+- Save: "Save this for later"
+- Share: "Share with someone who needs this"
+- Follow: "Follow for more..."
+- Action: "Try this today", "Link in bio"
+
+RULES:
+- First line is EVERYTHING (it shows in preview)
+- Must include a clear CTA
+- Must trigger an emotion
+- Platform-native language
+
+Return ONLY valid JSON:
 {
-  "caption": {
-    "hook": "attention-grabbing first line",
-    "body": "main caption content",
-    "cta": "call to action",
-    "full_caption": "complete caption ready to post"
-  },
+  "captions": [
+    {
+      "caption": "full caption text",
+      "hook_line": "first line only",
+      "cta": "call to action used",
+      "cta_type": "Engagement/Save/Share/Follow/Action",
+      "emotion": "CURIOSITY/FOMO/INSPIRATION/RELATABILITY/CONTROVERSY/HUMOR",
+      "engagement_prediction": "high/medium/low"
+    }
+  ],
   "hashtags": ["#tag1", "#tag2"],
-  "alternative_hooks": ["alt hook 1", "alt hook 2"],
-  "engagement_tip": "tip to boost engagement"
+  "best_caption": {
+    "index": 0,
+    "reason": "why this is the best"
+  },
+  "posting_tip": "one tip for this content"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write the caption in fluent Turkish like a native Turkish influencer.',
-      'en': 'Write the caption in English.',
-      'ru': 'Write the caption in fluent Russian.',
-      'de': 'Write the caption in fluent German.',
-      'fr': 'Write the caption in fluent French.'
+      'tr': 'Write ALL captions in fluent Turkish. Must sound like a native Turkish influencer.',
+      'en': 'Write all captions in English.',
+      'ru': 'Write all captions in Russian.',
+      'de': 'Write all captions in German.',
+      'fr': 'Write all captions in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a viral caption for: "${topic}"
+    const userPrompt = `Generate 5 viral captions for: "${topic}"
+
 Platform: ${platform}
-Style: ${style || 'engaging'}
-Include hashtags: ${includeHashtags ? 'Yes, add 5-10 relevant hashtags' : 'No'}
-Include emojis: ${includeEmojis ? 'Yes, use strategic emojis' : 'No'}
+Tone: ${tone || 'engaging'}
+Include hashtags: ${includeHashtags ? 'Yes, add 8-10 strategic hashtags' : 'No'}
+Include emojis: ${includeEmojis ? 'Yes, use emojis strategically' : 'Minimal emojis'}
 ${langInstruction}
+
+REQUIREMENTS:
+- Generate exactly 5 different captions
+- Each must have a scroll-stopping first line
+- Each must include a clear CTA
+- Use different emotion types
+- Make them ready to post
 
 Respond with ONLY the JSON object.`
 
@@ -67,8 +96,8 @@ Respond with ONLY the JSON object.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
-        max_tokens: 2000,
+        temperature: 0.85,
+        max_tokens: 3000,
       }),
     })
 

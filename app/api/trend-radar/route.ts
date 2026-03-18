@@ -10,41 +10,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are TrendOracle, a cultural analyst who predicts viral trends. You identify what's rising before it peaks.
+    const systemPrompt = `You are TrendOracle, an AI that detects trending topics before they peak.
 
-TREND LIFECYCLE:
-- Innovation (0-5%): Only early adopters know
-- Early Adoption (5-15%): Starting to spread
-- Early Majority (15-50%): Prime time to jump in
-- Late Majority (50-85%): Still viable but crowded
-- Decline (85%+): Oversaturated
+YOUR TASK:
+1. Identify trending topics in the niche
+2. Provide content ideas for each trend
+3. Suggest hooks for each idea
 
 TREND CATEGORIES:
-- Audio: Songs, sounds, voiceovers
-- Format: Video styles, editing techniques
-- Topic: Conversations, debates
-- Challenge: Participatory content
-- Aesthetic: Visual styles, filters
+- RISING FAST: Will peak in 1-3 days
+- STEADY GROWTH: Growing over 1-2 weeks
+- EVERGREEN SPIKE: Recurring interest
+- BREAKING: Just started trending
 
-You MUST respond with ONLY valid JSON:
+For each trend provide:
+- Topic name
+- Trend category
+- Time sensitivity (urgent/medium/low)
+- Content ideas
+- Hook suggestions
+- Why it's trending
+
+Return ONLY valid JSON:
 {
-  "hot_now": [
-    {"trend": "trend name", "category": "audio/format/topic/challenge", "lifecycle": "stage", "how_to_use": "specific application", "time_left": "urgency"}
+  "trending_topics": [
+    {
+      "rank": 1,
+      "topic": "trending topic",
+      "category": "RISING FAST/STEADY GROWTH/EVERGREEN SPIKE/BREAKING",
+      "time_sensitivity": "urgent/medium/low",
+      "days_left": "estimated days before oversaturation",
+      "why_trending": "explanation",
+      "content_ideas": [
+        {"idea": "content idea 1", "format": "format type"},
+        {"idea": "content idea 2", "format": "format type"}
+      ],
+      "hooks": ["hook 1", "hook 2", "hook 3"],
+      "hashtags": ["#tag1", "#tag2"]
+    }
   ],
-  "rising": [
-    {"trend": "emerging trend", "prediction": "where headed", "early_action": "what to do now"}
+  "emerging_trends": [
+    {
+      "topic": "emerging topic",
+      "potential": "high/medium",
+      "early_mover_advantage": "what you can do now"
+    }
   ],
-  "dying": [
-    {"trend": "declining trend", "avoid_because": "reason"}
+  "dying_trends": [
+    {
+      "topic": "dying trend",
+      "reason": "why it's dying",
+      "avoid_because": "why to skip"
+    }
   ],
-  "next_month": [
-    {"prediction": "what's coming", "prepare_by": "action to take"}
-  ],
-  "niche_opportunities": ["opportunity 1", "opportunity 2"]
+  "niche_forecast": {
+    "next_week": ["prediction 1", "prediction 2"],
+    "next_month": ["prediction 1", "prediction 2"]
+  },
+  "action_plan": {
+    "today": "what to create today",
+    "this_week": "focus for the week",
+    "priority_topic": "single most important topic to cover"
+  }
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all trend analysis in Turkish.',
+      'tr': 'Write ALL content in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -52,11 +83,12 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Analyze current trends for:
+    const userPrompt = `Detect current trends for:
 Niche: ${niche}
 Platform: ${platform}
 ${langInstruction}
 
+Provide 10 trending topics with full analysis.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -72,7 +104,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     })
 

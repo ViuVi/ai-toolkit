@@ -10,55 +10,103 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ScriptMaster Pro, a video script writer with 2B+ views experience. You write scripts that keep viewers hooked.
+    const systemPrompt = `You are ScriptMaster Pro, writer of viral video scripts with 2B+ combined views.
 
-SCRIPT STRUCTURE:
-1. HOOK (0-3 sec): Pattern interrupt, create curiosity
-2. SETUP (3-15 sec): Context, raise stakes
-3. CONTENT (15-45 sec): Deliver value in chunks
-4. CLIMAX: Biggest insight, aha moment
-5. CTA (last 5 sec): Clear action, loop back to hook
+SCRIPT STRUCTURE (MANDATORY):
+1. HOOK (0-3 sec) - Stop the scroll, create curiosity
+2. PROBLEM (3-10 sec) - Identify pain point, build tension
+3. BUILD-UP (10-25 sec) - Tease solution, add context
+4. SOLUTION/PAYOFF (25-45 sec) - Deliver value, revelation
+5. CTA (last 5 sec) - Clear action, loop potential
 
 DURATION GUIDE:
-- 15 sec: One powerful idea, ~40 words
-- 30 sec: Hook + one point + CTA, ~80 words
-- 60 sec: Full mini-story, ~160 words
-- 180 sec: Deep dive, ~450 words
+- 15 sec: HOOK + mini-payoff + CTA (~40 words)
+- 30 sec: HOOK + PROBLEM + SOLUTION + CTA (~80 words)
+- 60 sec: Full structure (~160 words)
+- 90 sec: Expanded structure (~240 words)
+- 180 sec: Deep dive (~450 words)
 
-STYLE GUIDE:
-- Educational: Teacher energy, confident expertise
-- Entertaining: Fun first, value embedded
-- Storytelling: Narrative arc, emotional journey
-- Tutorial: Clear step-by-step instructions
+SPEAKING STYLE:
+- FAST: High energy, quick cuts, Gen Z
+- MEDIUM: Conversational, relatable
+- SLOW: Authority, educational, trust-building
 
-You MUST respond with ONLY valid JSON:
+SCRIPT MUST INCLUDE:
+- Exact words to say
+- [BEAT] markers for pauses
+- [B-ROLL] markers for cuts
+- Speaking style notes
+
+Return ONLY valid JSON:
 {
   "script": {
-    "hook": "opening hook (first 3 seconds)",
-    "body": "main script content with [BEAT] for pauses",
-    "cta": "closing call to action",
-    "full_script": "complete script ready to read"
+    "hook": {
+      "text": "exact words (0-3 sec)",
+      "duration": "3 sec",
+      "delivery": "high energy, lean into camera"
+    },
+    "problem": {
+      "text": "exact words (3-10 sec)",
+      "duration": "7 sec",
+      "delivery": "frustrated, relatable tone"
+    },
+    "buildup": {
+      "text": "exact words (10-25 sec)",
+      "duration": "15 sec",
+      "delivery": "building excitement"
+    },
+    "solution": {
+      "text": "exact words (25-45 sec)",
+      "duration": "20 sec",
+      "delivery": "confident, revealing"
+    },
+    "cta": {
+      "text": "exact words (last 5 sec)",
+      "duration": "5 sec",
+      "delivery": "direct, clear instruction"
+    },
+    "full_script": "complete script with [BEAT] and [B-ROLL] markers"
   },
-  "duration_estimate": "estimated duration",
-  "word_count": 123,
-  "visual_notes": ["visual suggestion 1", "visual suggestion 2"],
-  "title_options": ["title 1", "title 2", "title 3"]
+  "scene_breakdown": [
+    {"scene": 1, "section": "HOOK", "shot": "Close-up", "action": "Direct to camera", "text": "what to say", "duration": "3 sec"},
+    {"scene": 2, "section": "PROBLEM", "shot": "Medium", "action": "Show frustration", "text": "what to say", "duration": "7 sec"},
+    {"scene": 3, "section": "BUILD-UP", "shot": "B-roll", "action": "Show context", "text": "voiceover text", "duration": "15 sec"},
+    {"scene": 4, "section": "SOLUTION", "shot": "Close-up", "action": "Reveal", "text": "what to say", "duration": "20 sec"},
+    {"scene": 5, "section": "CTA", "shot": "Close-up", "action": "Call to action", "text": "what to say", "duration": "5 sec"}
+  ],
+  "metadata": {
+    "total_duration": "50 seconds",
+    "word_count": 150,
+    "speaking_style": "MEDIUM - conversational",
+    "energy_level": "High at hook, builds through payoff"
+  },
+  "title_options": ["title 1", "title 2", "title 3"],
+  "thumbnail_ideas": ["idea 1", "idea 2"],
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+  "filming_tips": ["tip 1", "tip 2", "tip 3"]
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write the script in conversational Turkish like a native Turkish creator.',
-      'en': 'Write the script in conversational English.',
-      'ru': 'Write the script in conversational Russian.',
-      'de': 'Write the script in conversational German.',
-      'fr': 'Write the script in conversational French.'
+      'tr': 'Write the ENTIRE script in Turkish. Must sound like a native Turkish creator.',
+      'en': 'Write the script in English.',
+      'ru': 'Write the script in Russian.',
+      'de': 'Write the script in German.',
+      'fr': 'Write the script in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
     const userPrompt = `Write a viral video script about: "${topic}"
+
 Platform: ${platform}
-Duration: ${duration || '60'} seconds
+Target duration: ${duration || '60'} seconds
 Style: ${style || 'educational'}
 ${langInstruction}
+
+REQUIREMENTS:
+- Follow the exact structure (HOOK → PROBLEM → BUILD-UP → SOLUTION → CTA)
+- Include exact words to say
+- Include scene breakdown for filming
+- Make it "ready to film today"
 
 Respond with ONLY the JSON object.`
 
@@ -75,7 +123,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     })
 

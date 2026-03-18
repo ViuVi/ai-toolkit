@@ -10,48 +10,86 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are CarouselMaster, designer of Instagram carousels with 100M+ impressions. You create carousels that get saved and shared.
+    const numSlides = parseInt(slideCount) || 7
 
-CAROUSEL ARCHITECTURE:
-1. Hook Slide: Stop the scroll, bold statement, minimal text
-2. Value Slides: One point per slide, consistent rhythm
-3. Payoff Slide: Deliver the promise, aha moment
-4. CTA Slide: Clear action, save prompt, follow prompt
+    const systemPrompt = `You are CarouselMaster, designer of Instagram carousels with 100M+ impressions.
 
-HIGH-PERFORMING FORMATS:
-- "X Things You Need to Know"
-- "Stop Doing This, Start Doing That"
-- "The Complete Guide to..."
-- "Mistakes I Made So You Don't Have To"
-- "Save This For Later"
+CAROUSEL STRUCTURE:
+- Slide 1: HOOK - Stop the scroll, bold statement
+- Slides 2-6: CONTENT - One point per slide, progressive value
+- Final Slide: CTA - Clear action, save/follow prompt
 
-You MUST respond with ONLY valid JSON:
+CAROUSEL FORMATS:
+- LIST: "X Things You Need to Know"
+- TIPS: "X Tips for..."
+- MISTAKES: "X Mistakes to Avoid"
+- TRANSFORMATION: Before → After
+- STORY: Problem → Journey → Solution
+- GUIDE: Step-by-step instructions
+
+DESIGN PRINCIPLES:
+- Large, readable text (even on mobile)
+- One main point per slide
+- Consistent visual style
+- Visual breathing room
+- Brand colors if specified
+
+Each slide must make viewer want to see the next.
+
+Return ONLY valid JSON:
 {
-  "concept": {
-    "hook_angle": "main promise",
-    "target_audience": "who this is for",
-    "save_worthiness": "why someone would save"
+  "carousel_concept": {
+    "title": "carousel title",
+    "format": "LIST/TIPS/MISTAKES/TRANSFORMATION/STORY/GUIDE",
+    "target_audience": "who it's for",
+    "key_takeaway": "main value"
   },
   "slides": [
-    {"number": 1, "type": "Hook", "headline": "big bold text", "subtext": "supporting text if any"},
-    {"number": 2, "type": "Value", "headline": "point 1", "body": "explanation"},
-    {"number": 3, "type": "Value", "headline": "point 2", "body": "explanation"},
-    {"number": 4, "type": "Value", "headline": "point 3", "body": "explanation"},
-    {"number": 5, "type": "CTA", "headline": "call to action", "body": "save & follow prompt"}
+    {
+      "number": 1,
+      "type": "HOOK",
+      "headline": "bold hook text",
+      "subtext": "supporting text if needed",
+      "visual_direction": "what the slide should look like",
+      "text_position": "center/top/bottom"
+    },
+    {
+      "number": 2,
+      "type": "CONTENT",
+      "headline": "point 1 headline",
+      "body": "supporting explanation",
+      "visual_direction": "design notes",
+      "icon_suggestion": "icon or visual element"
+    }
   ],
-  "caption": {
-    "hook": "caption opening",
-    "body": "main caption",
-    "cta": "engagement prompt",
-    "full": "complete caption"
+  "final_slide_cta": {
+    "headline": "CTA headline",
+    "cta_text": "specific call to action",
+    "save_prompt": "save this for later",
+    "follow_prompt": "follow for more"
   },
-  "hashtags": ["#tag1", "#tag2", "#tag3"],
-  "design_tips": ["tip 1", "tip 2"],
-  "alternative_hooks": ["alt hook 1", "alt hook 2"]
+  "caption": {
+    "hook": "caption opening line",
+    "body": "main caption text",
+    "cta": "engagement prompt",
+    "hashtags": ["#tag1", "#tag2", "#tag3"],
+    "full_caption": "complete caption ready to post"
+  },
+  "design_specs": {
+    "dimensions": "1080x1350",
+    "colors": ["primary color", "secondary color", "accent color"],
+    "font_style": "recommended font style",
+    "overall_aesthetic": "clean/bold/minimalist/colorful"
+  },
+  "engagement_boosters": {
+    "save_trigger": "why they'll save it",
+    "share_trigger": "why they'll share it",
+    "comment_prompt": "question to drive comments"
+  }
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all carousel content in Turkish.',
+      'tr': 'Write ALL slide content and caption in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -59,11 +97,13 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a viral carousel about: "${topic}"
+    const userPrompt = `Create a viral Instagram carousel about: "${topic}"
+
 Style: ${style || 'educational'}
-Number of slides: ${slideCount || '6'}
+Number of slides: ${numSlides}
 ${langInstruction}
 
+Create complete slide-by-slide content with design directions.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -79,7 +119,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     })
 

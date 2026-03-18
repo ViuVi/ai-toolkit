@@ -4,51 +4,80 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platforms, duration, postsPerWeek, language } = await request.json()
+    const { niche, platforms, postsPerWeek, language } = await request.json()
 
     if (!niche) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ContentArchitect, a strategic content planner who builds calendars for top creators. You balance consistency, variety, and growth.
+    const systemPrompt = `You are ContentArchitect, expert at creating content calendars that drive consistent growth.
 
-CONTENT PILLAR SYSTEM:
-- 3-5 core pillars that define your brand
-- Each pillar serves: educate, entertain, inspire, or sell
-- Rotation prevents fatigue while building recognition
+CALENDAR RULES:
+1. Never repeat same format consecutively
+2. Mix content types for variety
+3. Include trending + evergreen content
+4. Plan for engagement peaks
 
-4-1-1 POSTING FRAMEWORK:
-- 4 Value posts (educate, entertain, inspire)
-- 1 Personal/behind-the-scenes
-- 1 Promotional/CTA
+CONTENT TYPES TO ROTATE:
+- Educational (how-to, tips)
+- Entertaining (humor, relatable)
+- Storytelling (personal, journey)
+- Trending (current topics)
+- Behind-the-scenes
+- User-generated/Interactive
 
-You MUST respond with ONLY valid JSON:
+For each day provide:
+- Topic
+- Hook
+- Format type
+- Best posting time
+
+Return ONLY valid JSON:
 {
   "strategy": {
-    "pillars": [
-      {"name": "pillar name", "purpose": "what it achieves", "frequency": "how often"}
-    ],
-    "posting_times": {"weekday": "best time", "weekend": "best time"},
-    "content_mix": {"educational": "30%", "entertaining": "30%", "personal": "20%", "promotional": "20%"}
+    "posting_frequency": "X times per week",
+    "content_pillars": ["pillar 1", "pillar 2", "pillar 3"],
+    "format_rotation": ["format 1", "format 2", "format 3"]
   },
   "calendar": [
     {
-      "day": "Monday",
-      "content_type": "type",
-      "topic": "specific topic",
-      "hook": "opening hook",
-      "hashtags": ["#tag1", "#tag2"],
-      "best_time": "posting time"
+      "day": 1,
+      "date": "Day 1",
+      "topic": "content topic",
+      "hook": "scroll-stopping hook",
+      "format": "EDUCATIONAL/ENTERTAINING/STORYTELLING/TRENDING/BTS/INTERACTIVE",
+      "content_pillar": "which pillar",
+      "best_time": "optimal posting time",
+      "hashtags": ["#tag1", "#tag2", "#tag3"],
+      "notes": "additional tips"
     }
   ],
-  "content_bank": [
-    {"type": "evergreen content type", "ideas": ["idea 1", "idea 2"]}
+  "weekly_themes": [
+    {"week": 1, "theme": "theme name", "focus": "what to focus on"},
+    {"week": 2, "theme": "theme name", "focus": "what to focus on"},
+    {"week": 3, "theme": "theme name", "focus": "what to focus on"},
+    {"week": 4, "theme": "theme name", "focus": "what to focus on"}
   ],
-  "monthly_themes": ["week 1 theme", "week 2 theme", "week 3 theme", "week 4 theme"]
+  "content_batching": {
+    "batch_day": "best day to batch create",
+    "batch_groups": [
+      {"type": "content type", "quantity": 5, "time_needed": "2 hours"}
+    ]
+  },
+  "engagement_strategy": {
+    "respond_within": "time to respond to comments",
+    "engagement_times": ["time 1", "time 2"],
+    "community_building": "strategy for community"
+  },
+  "monthly_goals": {
+    "content_goal": "how many posts",
+    "engagement_goal": "target engagement",
+    "growth_goal": "follower target"
+  }
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all content ideas and calendar in Turkish.',
+      'tr': 'Write ALL content topics and hooks in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -56,13 +85,13 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a content calendar for:
+    const userPrompt = `Create a 30-day content calendar for:
 Niche: ${niche}
 Platforms: ${platforms || 'Instagram, TikTok'}
-Duration: ${duration || '1 week'}
 Posts per week: ${postsPerWeek || '5'}
 ${langInstruction}
 
+Create a complete 30-day calendar with topics, hooks, and formats.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -78,7 +107,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 3500,
+        max_tokens: 6000,
       }),
     })
 

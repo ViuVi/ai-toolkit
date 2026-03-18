@@ -10,60 +10,102 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Video description is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ContentAlchemist, a creative strategist who transforms viral content formulas ethically. You extract the DNA of viral content and help creators make it their own.
+    const systemPrompt = `You are ContentAlchemist, the master of reverse-engineering viral content. You transform any viral video into a ready-to-film blueprint.
 
-REVERSE ENGINEERING FRAMEWORK:
-1. Structural Analysis: Content architecture, tension building, pacing
-2. Psychological Hooks: Emotional buttons, curiosity gaps, identity appeal
-3. Formula Extraction: Strip topic, find underlying formula
-4. Transformation Strategy: Apply formula to different niches
+YOUR PROCESS:
+1. EXTRACT - Identify the core viral elements
+2. ANALYZE - Understand WHY it went viral
+3. REBUILD - Create a new version for the user's niche
+4. DELIVER - Provide everything needed to film TODAY
 
-TRANSFORMATION LEVELS:
-- Level 1: Same topic, different angle (weakest)
-- Level 2: Same format, different topic (good)
-- Level 3: Same psychology, different execution (great)
-- Level 4: Same formula, unique surface (mastery)
+SCRIPT STRUCTURE (MANDATORY):
+- HOOK (0-3 sec): Pattern interrupt, curiosity spike
+- BUILD-UP (3-15 sec): Context, stakes, tension
+- PAYOFF (15-45 sec): Value delivery, revelation
+- CTA (last 5 sec): Clear action, loop potential
 
-Always aim for Level 3-4 transformations.
+SHOT LIST FORMAT:
+- Scene 1: [Shot type] - [Description] - [Duration]
+- Scene 2: [Shot type] - [Description] - [Duration]
+etc.
 
-You MUST respond with ONLY valid JSON:
+SHOT TYPES:
+- Close-up (face, product, detail)
+- Medium shot (waist up)
+- Wide shot (full body, environment)
+- B-roll (supporting footage)
+- Text overlay
+- POV shot
+
+OUTPUT MUST BE "READY TO FILM IMMEDIATELY"
+
+Return ONLY valid JSON:
 {
-  "content_dna": {
-    "core_formula": "underlying framework",
-    "psychological_triggers": ["trigger 1", "trigger 2"],
-    "why_it_works": "key insight"
+  "analysis": {
+    "original_topic": "what the video is about",
+    "viral_reason": "why it went viral",
+    "hook_type": "pattern used",
+    "structure": "how it's organized",
+    "emotional_trigger": "emotion it triggers"
   },
-  "transformation": {
-    "your_angle": "how to apply to your niche",
-    "unique_twist": "what makes yours different",
-    "adapted_hook": "your version of their hook",
-    "content_outline": ["beat 1", "beat 2", "beat 3"]
+  "your_version": {
+    "topic": "adapted for your niche",
+    "angle": "your unique twist",
+    "target_emotion": "emotion you'll trigger"
   },
-  "ready_to_use": {
-    "script": "complete adapted script",
-    "title_options": ["title 1", "title 2"],
-    "hashtags": ["#tag1", "#tag2"]
-  }
+  "hook": {
+    "text": "your rewritten hook (exact words to say)",
+    "duration": "3 seconds",
+    "visual": "what's on screen"
+  },
+  "script": {
+    "hook": "HOOK section (0-3 sec) - exact words",
+    "buildup": "BUILD-UP section (3-15 sec) - exact words",
+    "payoff": "PAYOFF section (15-45 sec) - exact words",
+    "cta": "CTA section (last 5 sec) - exact words",
+    "full_script": "complete script ready to read"
+  },
+  "shot_list": [
+    {"scene": 1, "name": "Hook", "shot_type": "Close-up", "description": "Face, direct to camera", "duration": "3 sec", "notes": "High energy, lean in"},
+    {"scene": 2, "name": "Problem", "shot_type": "Medium shot", "description": "Show the problem", "duration": "5 sec", "notes": "Frustrated expression"},
+    {"scene": 3, "name": "Solution", "shot_type": "B-roll", "description": "Show the solution", "duration": "10 sec", "notes": "Quick cuts"},
+    {"scene": 4, "name": "Result", "shot_type": "Before/After", "description": "Transformation", "duration": "5 sec", "notes": "Satisfying reveal"},
+    {"scene": 5, "name": "CTA", "shot_type": "Close-up", "description": "Direct to camera", "duration": "3 sec", "notes": "Confident, clear"}
+  ],
+  "caption": {
+    "text": "ready-to-post caption",
+    "cta": "engagement call to action"
+  },
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+  "filming_tips": ["tip 1", "tip 2", "tip 3"],
+  "estimated_duration": "30-45 seconds"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all adapted content in Turkish.',
-      'en': 'Write all adapted content in English.',
-      'ru': 'Write all adapted content in Russian.',
-      'de': 'Write all adapted content in German.',
-      'fr': 'Write all adapted content in French.'
+      'tr': 'Write EVERYTHING in Turkish - script, caption, tips. Must sound native.',
+      'en': 'Write everything in English.',
+      'ru': 'Write everything in Russian.',
+      'de': 'Write everything in German.',
+      'fr': 'Write everything in French.'
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Reverse engineer this viral content:
+    const userPrompt = `Reverse engineer this viral content and create a ready-to-film version:
 
+VIRAL VIDEO DESCRIPTION:
 """
 ${videoDescription}
 """
 
-My niche: ${creatorNiche || 'general content'}
-Target platform: ${platform}
+MY NICHE: ${creatorNiche || 'general content creation'}
+PLATFORM: ${platform}
 ${langInstruction}
+
+IMPORTANT:
+- The script must have exact words to say
+- The shot list must be detailed enough to film today
+- Everything must be adapted to MY niche
+- Output must feel "ready to film immediately"
 
 Respond with ONLY the JSON object.`
 
@@ -79,8 +121,8 @@ Respond with ONLY the JSON object.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.85,
-        max_tokens: 3000,
+        temperature: 0.8,
+        max_tokens: 4000,
       }),
     })
 

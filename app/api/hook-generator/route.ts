@@ -4,46 +4,58 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, tone, count, language } = await request.json()
+    const { topic, platform, tone, language } = await request.json()
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const hookCount = parseInt(count) || 5
+    const systemPrompt = `You are HookMaster, the world's best viral hook writer. You have written hooks for videos with 1B+ combined views.
 
-    const systemPrompt = `You are HookMaster, a viral content strategist with 500M+ views experience. You create scroll-stopping hooks.
-
-HOOK FORMULAS YOU USE:
-1. Contradiction: "The healthiest food is killing you"
-2. Secret: "Nobody talks about this but..."
-3. Challenge: "I bet you can't watch without..."
-4. Shock Stat: "97% of people don't know..."
-5. Story Tease: "I was about to quit when..."
-6. Direct Call: "If you struggle with X, stop scrolling"
-7. Transformation: "I went from X to Y in just..."
-8. Controversy: "Unpopular opinion: X is overrated"
+HOOK PATTERNS YOU MUST USE:
+1. CURIOSITY GAP - Creates "I need to know" feeling
+   Example: "Nobody talks about this but..."
+2. CONTROVERSIAL - Challenges common beliefs
+   Example: "Stop doing this immediately..."
+3. STORYTELLING - Opens a narrative loop
+   Example: "I was about to quit when..."
+4. AUTHORITY - Positions expertise
+   Example: "After 10 years I learned..."
+5. SHOCK VALUE - Unexpected statement
+   Example: "This is why you're failing..."
+6. DIRECT BENEFIT - Clear value proposition
+   Example: "How to get 10K followers in 30 days"
+7. QUESTION - Engages viewer's mind
+   Example: "Why does nobody talk about this?"
+8. FEAR OF MISSING OUT - Creates urgency
+   Example: "Everyone is doing this except you..."
 
 RULES:
-- First 3 words must create instant intrigue
-- Never be generic or predictable
-- Each hook must feel like discovering a secret
-- Match platform's native style
+- Each hook MUST be under 12 words
+- No fluff, no filler words
+- Must stop the scroll instantly
+- Score based on psychological impact
 
-You MUST respond with ONLY valid JSON, no other text. The JSON must follow this exact structure:
+You MUST return ONLY valid JSON with exactly this structure:
 {
   "hooks": [
     {
-      "text": "hook text here",
-      "formula": "formula name",
+      "text": "hook text here (max 12 words)",
+      "pattern": "CURIOSITY GAP/CONTROVERSIAL/STORYTELLING/AUTHORITY/SHOCK VALUE/DIRECT BENEFIT/QUESTION/FOMO",
+      "curiosity_score": 8,
+      "virality_score": 9,
       "why_it_works": "brief explanation"
     }
   ],
-  "pro_tip": "one expert tip for this topic"
+  "best_hook": {
+    "text": "the single best hook",
+    "reason": "why this is the winner"
+  },
+  "topic_insight": "key insight about this topic for hooks"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all hooks in Turkish. Make them sound native Turkish, not translated.',
+      'tr': 'Write ALL 20 hooks in Turkish. They must sound native, not translated.',
       'en': 'Write all hooks in English.',
       'ru': 'Write all hooks in Russian.',
       'de': 'Write all hooks in German.',
@@ -51,12 +63,27 @@ You MUST respond with ONLY valid JSON, no other text. The JSON must follow this 
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create ${hookCount} viral hooks for: "${topic}"
-Platform: ${platform}
-Tone: ${tone}
+    const platformContext: Record<string, string> = {
+      'tiktok': 'TikTok style: trendy, fast, casual',
+      'instagram': 'Instagram Reels: polished but punchy',
+      'youtube': 'YouTube Shorts: value-focused, curiosity-driven',
+      'twitter': 'Twitter/X: witty, provocative, shareable'
+    }
+
+    const userPrompt = `Generate exactly 20 viral hooks for: "${topic}"
+
+Platform: ${platform} - ${platformContext[platform] || ''}
+Tone: ${tone || 'engaging'}
 ${langInstruction}
 
-Respond with ONLY the JSON object, nothing else.`
+IMPORTANT:
+- Generate EXACTLY 20 different hooks
+- Use ALL 8 pattern types (at least 2 of each)
+- Score curiosity_score and virality_score from 1-10
+- Keep each hook under 12 words
+- Make them scroll-stopping
+
+Respond with ONLY the JSON object, no other text.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -70,13 +97,12 @@ Respond with ONLY the JSON object, nothing else.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
-        max_tokens: 2000,
+        temperature: 0.9,
+        max_tokens: 4000,
       }),
     })
 
     if (!response.ok) {
-      console.error('Groq API error:', response.status)
       return NextResponse.json({ error: 'AI service error' }, { status: 500 })
     }
 
@@ -87,25 +113,14 @@ Respond with ONLY the JSON object, nothing else.`
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
     }
 
-    // Parse JSON from response
     let result
     try {
-      // Clean the response - remove markdown code blocks if present
       let cleanContent = content.trim()
-      if (cleanContent.startsWith('```json')) {
-        cleanContent = cleanContent.slice(7)
-      } else if (cleanContent.startsWith('```')) {
-        cleanContent = cleanContent.slice(3)
-      }
-      if (cleanContent.endsWith('```')) {
-        cleanContent = cleanContent.slice(0, -3)
-      }
-      cleanContent = cleanContent.trim()
-      
-      result = JSON.parse(cleanContent)
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError)
-      // Return raw content as fallback
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
       result = { raw: content, hooks: [] }
     }
 

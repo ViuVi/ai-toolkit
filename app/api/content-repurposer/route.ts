@@ -4,63 +4,101 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { originalContent, contentType, targetPlatforms, language } = await request.json()
+    const { originalContent, contentType, language } = await request.json()
 
     if (!originalContent) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are RepurposeGuru, a content multiplication expert. You turn one piece of content into 10+ variations across platforms.
+    const systemPrompt = `You are RepurposeGuru, expert at multiplying content across platforms while keeping each version platform-native.
 
-REPURPOSING MATRIX:
-- Format: Long → Short clips, Video → Text, Text → Visual
-- Platform: Same content, platform-native format
-- Angle: Same topic, different perspective
-- Depth: Overview → Deep dive, Tutorial → Tips
+REPURPOSING RULES:
+1. Each platform version must feel NATIVE, not copied
+2. Adapt tone and format to platform culture
+3. Optimize length for each platform
+4. Keep core message but change delivery
 
-PRINCIPLES:
-- Each piece must stand alone
-- Add value, don't just resize
-- Platform-native feel is essential
+PLATFORM REQUIREMENTS:
+- TikTok: 15-60 sec, fast-paced, trendy hooks
+- Instagram Reels: Similar to TikTok but slightly more polished
+- YouTube Shorts: Can be slightly more educational
+- Twitter/X Threads: Text-based, punchy, quotable
+- LinkedIn: Professional, value-driven, longer form
+- Instagram Carousel: Visual, slide-by-slide breakdown
 
-You MUST respond with ONLY valid JSON:
+OUTPUT:
+For each platform, provide COMPLETE ready-to-use content.
+
+Return ONLY valid JSON:
 {
-  "analysis": {
+  "original_analysis": {
     "core_message": "main takeaway",
-    "key_points": ["point 1", "point 2"],
-    "repurpose_potential": "high/medium/low"
+    "key_points": ["point 1", "point 2", "point 3"],
+    "best_elements": ["element to keep", "element to keep"]
   },
-  "repurposed": [
+  "tiktok_scripts": [
     {
-      "format": "Short video (TikTok/Reels)",
-      "platform": "TikTok, Instagram",
-      "hook": "new hook",
-      "content": "adapted content",
-      "cta": "call to action"
+      "version": 1,
+      "hook": "tiktok-native hook",
+      "script": "full script for tiktok",
+      "duration": "30 sec",
+      "trend_suggestion": "trending sound/format to use"
     },
     {
-      "format": "Twitter Thread",
-      "platform": "Twitter/X",
-      "tweets": ["tweet 1", "tweet 2", "tweet 3", "tweet 4"]
-    },
-    {
-      "format": "Instagram Carousel",
-      "platform": "Instagram",
-      "slides": ["slide 1 text", "slide 2 text", "slide 3 text"],
-      "caption": "carousel caption"
-    },
-    {
-      "format": "LinkedIn Post",
-      "platform": "LinkedIn",
-      "post": "full linkedin post"
+      "version": 2,
+      "hook": "alternative hook",
+      "script": "alternative script",
+      "duration": "15 sec",
+      "trend_suggestion": "trend to use"
     }
   ],
-  "quote_graphics": ["quotable line 1", "quotable line 2"],
-  "scheduling": {"order": "which to post first", "spacing": "time between posts"}
+  "twitter_threads": [
+    {
+      "version": 1,
+      "tweets": [
+        {"number": 1, "text": "hook tweet (under 280 chars)"},
+        {"number": 2, "text": "point 1"},
+        {"number": 3, "text": "point 2"},
+        {"number": 4, "text": "point 3"},
+        {"number": 5, "text": "CTA tweet"}
+      ]
+    }
+  ],
+  "linkedin_posts": [
+    {
+      "version": 1,
+      "hook": "professional hook",
+      "post": "full linkedin post with line breaks",
+      "hashtags": ["#tag1", "#tag2"]
+    }
+  ],
+  "instagram_carousel": {
+    "slides": [
+      {"slide": 1, "type": "Hook", "text": "attention-grabbing headline"},
+      {"slide": 2, "type": "Point 1", "text": "key point"},
+      {"slide": 3, "type": "Point 2", "text": "key point"},
+      {"slide": 4, "type": "Point 3", "text": "key point"},
+      {"slide": 5, "type": "CTA", "text": "call to action"}
+    ],
+    "caption": "carousel caption"
+  },
+  "youtube_short": {
+    "hook": "youtube-optimized hook",
+    "script": "full script",
+    "title": "SEO-friendly title",
+    "description": "video description"
+  },
+  "content_calendar": {
+    "day_1": {"platform": "TikTok", "content": "version 1"},
+    "day_2": {"platform": "Instagram", "content": "carousel"},
+    "day_3": {"platform": "Twitter", "content": "thread"},
+    "day_4": {"platform": "LinkedIn", "content": "post"},
+    "day_5": {"platform": "YouTube", "content": "short"}
+  }
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all repurposed content in Turkish.',
+      'tr': 'Write ALL repurposed content in Turkish, native to each platform.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -68,15 +106,15 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Repurpose this content:
+    const userPrompt = `Repurpose this content for all major platforms:
 """
 ${originalContent}
 """
 
 Original type: ${contentType || 'video script'}
-Target platforms: ${targetPlatforms || 'all major platforms'}
 ${langInstruction}
 
+Create platform-native versions for: TikTok (2 versions), Twitter Thread, LinkedIn Post, Instagram Carousel, YouTube Short.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -92,7 +130,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3500,
+        max_tokens: 5000,
       }),
     })
 

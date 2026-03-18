@@ -10,52 +10,86 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ThreadWeaver, a Twitter strategist with 500M+ impressions. You write threads that go viral.
+    const numTweets = parseInt(threadLength) || 10
+
+    const systemPrompt = `You are ThreadWeaver, master of viral Twitter/X threads with 500M+ impressions.
 
 THREAD STRUCTURE:
-1. Hook Tweet: Bold claim, number, or question - determines 90% of success
-2. Setup: Context, raise stakes, credibility
-3. Value Tweets: One thought per tweet, quotable, varied structure
-4. Climax: Biggest insight, aha moment
-5. CTA: Clear action, engagement prompt, follow request
+1. HOOK TWEET - Stop the scroll, create FOMO, make them click
+2. SETUP - Context, stakes, credibility
+3. VALUE TWEETS - One insight per tweet, each quotable
+4. CLIMAX - Biggest reveal, aha moment
+5. CTA - Clear action, retweet request, follow prompt
 
 THREAD FORMULAS:
-- "Here's how..." (Tutorial)
-- "The X things I learned..." (Listicle)
-- "A thread on..." (Deep dive)
-- "Story time:" (Narrative)
-- "Unpopular opinion:" (Hot take)
+- "Here's how I..." (Case study)
+- "X lessons from..." (Listicle)
+- "The [topic] thread:" (Deep dive)
+- "I spent [time] studying [topic]. Here's what I learned:" (Research)
+- "Unpopular opinion:" (Controversial)
+- "Thread 🧵" (Simple opener)
 
-RULES:
+TWEET RULES:
 - Each tweet under 280 characters
-- No hashtags mid-thread
-- Each tweet should stand alone
+- Each tweet must stand alone (quotable)
+- No hashtags mid-thread (looks spammy)
+- Use numbers and specifics
+- Line breaks for readability
 
-You MUST respond with ONLY valid JSON:
+ENGAGEMENT TACTICS:
+- Ask for RT in final tweet
+- Self-reply with additional value
+- Pin best threads
+- Quote tweet your own thread with different angle
+
+Return ONLY valid JSON:
 {
-  "strategy": {
-    "hook_type": "type of hook",
-    "thread_arc": "narrative journey",
-    "target_emotion": "what readers should feel"
+  "thread_strategy": {
+    "format": "CASE STUDY/LISTICLE/DEEP DIVE/RESEARCH/CONTROVERSIAL",
+    "hook_type": "curiosity/controversy/story/authority/fomo",
+    "target_emotion": "emotion to evoke",
+    "retweet_potential": "high/medium/low"
   },
   "tweets": [
-    {"number": 1, "type": "Hook", "text": "tweet text under 280 chars", "purpose": "why this works"},
-    {"number": 2, "type": "Setup", "text": "tweet text"},
-    {"number": 3, "type": "Value", "text": "tweet text"},
-    {"number": 4, "type": "Value", "text": "tweet text"},
-    {"number": 5, "type": "Value", "text": "tweet text"},
-    {"number": 6, "type": "Climax", "text": "tweet text"},
-    {"number": 7, "type": "CTA", "text": "tweet text with follow prompt"}
+    {
+      "number": 1,
+      "type": "HOOK",
+      "text": "tweet text under 280 chars",
+      "char_count": 180,
+      "purpose": "what this tweet does"
+    },
+    {
+      "number": 2,
+      "type": "SETUP",
+      "text": "tweet text",
+      "char_count": 200,
+      "purpose": "establishes context"
+    }
   ],
-  "full_thread": "Tweet 1\n\nTweet 2\n\nTweet 3...",
-  "alternative_hooks": [
-    {"hook": "alternative opening", "angle": "different approach"}
+  "hook_alternatives": [
+    {"text": "alternative hook 1", "angle": "different approach"},
+    {"text": "alternative hook 2", "angle": "different approach"}
   ],
-  "posting_tips": ["tip 1", "tip 2"]
+  "cta_tweet": {
+    "text": "final CTA tweet with RT and follow request",
+    "char_count": 150
+  },
+  "self_replies": [
+    {"text": "bonus tweet to add as reply", "purpose": "additional value"}
+  ],
+  "full_thread": "Tweet 1:\n[text]\n\nTweet 2:\n[text]\n\nTweet 3:\n[text]...",
+  "posting_strategy": {
+    "best_time": "when to post",
+    "engagement_window": "when to engage with replies",
+    "self_rt_timing": "when to retweet own thread"
+  },
+  "repurpose_ideas": [
+    {"platform": "platform", "format": "how to repurpose"}
+  ]
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write the entire thread in Turkish.',
+      'tr': 'Write the ENTIRE thread in Turkish.',
       'en': 'Write the thread in English.',
       'ru': 'Write the thread in Russian.',
       'de': 'Write the thread in German.',
@@ -63,10 +97,17 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a viral Twitter thread about: "${topic}"
-Length: ${threadLength || '7-10'} tweets
-Style: ${style || 'educational'}
+    const userPrompt = `Create a viral Twitter/X thread about: "${topic}"
+
+Thread length: ${numTweets} tweets
+Style: ${style || 'educational with storytelling'}
 ${langInstruction}
+
+REQUIREMENTS:
+- Each tweet MUST be under 280 characters
+- Include character count for each tweet
+- Make each tweet quotable/standalone
+- Include hook alternatives and CTA
 
 Respond with ONLY the JSON object.`
 
@@ -83,7 +124,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3500,
+        max_tokens: 5000,
       }),
     })
 

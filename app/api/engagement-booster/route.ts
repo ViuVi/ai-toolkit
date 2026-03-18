@@ -4,56 +4,93 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, platform, language } = await request.json()
+    const { content, platform, niche, language } = await request.json()
 
-    if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    if (!content && !niche) {
+      return NextResponse.json({ error: 'Content or niche is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are EngagementAlchemist, a social media psychologist who boosts engagement by 300-500%. You engineer comments, shares, and saves.
+    const systemPrompt = `You are EngagementAlchemist, expert at creating content that drives comments, saves, and shares.
 
-ENGAGEMENT PYRAMID:
-1. Comments (Most valuable): Controversy, questions, fill-in-blank, hot takes
-2. Shares (Viral fuel): Tag prompts, useful info, emotional resonance
-3. Saves (Algorithm gold): Reference material, guides, lists, templates
-4. Likes (Baseline): Emotional resonance, quick entertainment
+ENGAGEMENT TYPES:
+1. COMMENTS - Questions that demand answers
+2. SAVES - Value that needs to be referenced later
+3. SHARES - Content that makes sharer look good
+4. LIKES - Quick emotional reactions
 
-ENGAGEMENT TRIGGERS:
-- Identity: "Only X people understand..."
-- Nostalgia: "Remember when..."
-- Debate: "Am I the only one who..."
-- Empathy: "This one's for everyone who..."
-- Curiosity: "I wasn't supposed to share this but..."
+QUESTION FORMULAS THAT WORK:
+- "What's your..." (personal)
+- "Am I the only one who..." (relatability)
+- "Which would you choose..." (binary choice)
+- "Rate this 1-10" (easy participation)
+- "Fill in the blank: ___" (creative)
+- "Unpopular opinion: ___ Agree or disagree?" (debate)
+- "What's your biggest struggle with..." (pain point)
+- "If you could only... what would you..." (hypothetical)
+- "Tag someone who..." (viral spread)
+- "Save this if you..." (save trigger)
 
-You MUST respond with ONLY valid JSON:
+CTA FORMULAS:
+- Direct: "Follow for more [value]"
+- Urgency: "Don't miss the next one - follow now"
+- Value: "Want more tips like this? Follow"
+- Social Proof: "Join 10K+ others who follow for daily tips"
+- Curiosity: "Tomorrow I'm sharing [tease] - follow to see it"
+
+Return ONLY valid JSON:
 {
-  "analysis": {
-    "current_hooks": ["what's working"],
-    "missing": ["what's missing"],
-    "potential": "high/medium/low"
+  "content_analysis": {
+    "engagement_potential": "high/medium/low",
+    "best_engagement_type": "comments/saves/shares",
+    "missing_elements": ["what's missing for engagement"]
   },
-  "comment_magnets": [
-    {"technique": "technique name", "example": "exact text to add", "expected_comments": "type of comments"}
+  "questions": [
+    {
+      "question": "engagement question",
+      "type": "personal/relatability/binary/rating/fill-blank/debate/pain-point/hypothetical/tag/save",
+      "placement": "caption/comments/video",
+      "expected_response_rate": "high/medium/low",
+      "why_it_works": "psychological reason"
+    }
+  ],
+  "cta_lines": [
+    {
+      "cta": "call to action text",
+      "type": "direct/urgency/value/social-proof/curiosity",
+      "best_for": "when to use this",
+      "placement": "end of video/caption/bio"
+    }
+  ],
+  "comment_starters": [
+    {
+      "your_comment": "first comment to post yourself",
+      "purpose": "why this drives engagement"
+    }
+  ],
+  "save_triggers": [
+    {
+      "trigger": "what makes them save",
+      "how_to_add": "how to incorporate this"
+    }
   ],
   "share_triggers": [
-    {"trigger": "what makes shareable", "prompt": "share prompt text"}
+    {
+      "trigger": "what makes them share",
+      "implementation": "how to add this"
+    }
   ],
-  "save_hooks": [
-    {"value": "why save", "prompt": "save prompt text"}
-  ],
-  "optimized_caption": {
-    "original_issue": "problem with current",
-    "improved": "rewritten caption with engagement hooks"
+  "caption_upgrade": {
+    "original_issue": "what's limiting engagement",
+    "improved_version": "caption with engagement elements added",
+    "changes_made": ["change 1", "change 2"]
   },
-  "questions_to_ask": ["question 1", "question 2", "question 3"],
-  "cta_options": ["cta 1", "cta 2", "cta 3"],
-  "quick_fixes": [
-    {"fix": "immediate change", "impact": "expected improvement"}
+  "engagement_checklist": [
+    {"item": "checklist item", "status": "add/present", "priority": "high/medium/low"}
   ]
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all engagement strategies in Turkish.',
+      'tr': 'Write ALL questions and CTAs in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -61,13 +98,17 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Boost engagement for this content:
-"""
-${content}
-"""
+    const userPrompt = `Create engagement boosters for:
+${content ? `Content: "${content}"` : `Niche: ${niche}`}
 
 Platform: ${platform}
 ${langInstruction}
+
+REQUIREMENTS:
+- Generate exactly 10 engagement questions (different types)
+- Generate exactly 5 CTA lines (different types)
+- Provide comment starters, save triggers, share triggers
+- Make everything ready to use
 
 Respond with ONLY the JSON object.`
 
@@ -84,7 +125,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.85,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     })
 

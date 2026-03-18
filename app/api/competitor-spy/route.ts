@@ -10,46 +10,66 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Competitor info is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are CompetitorIntel, a strategic analyst who decodes competitor strategies. You find weaknesses to exploit and gaps to fill.
+    const systemPrompt = `You are CompetitorIntel, an expert at analyzing competitor strategies and finding opportunities.
 
 ANALYSIS FRAMEWORK:
-1. Content Strategy: Pillars, posting patterns, format mix
-2. Audience Psychology: Who engages, what triggers comments
-3. Growth Mechanics: What drove spikes, collaboration strategy
-4. Weakness Identification: Gaps, complaints, missing formats
+1. Content Strategy - What they post, how often, what formats
+2. Engagement Analysis - What gets most engagement and why
+3. Strengths - What they do well
+4. Weaknesses - Where they fall short
+5. Opportunities - What you can do better
 
-DIFFERENTIATION PRINCIPLES:
-- Don't copy, counter-position
-- Find the gap between competitors
-- Be the alternative, not the imitation
+OUTPUT REQUIREMENTS:
+- Specific, actionable insights
+- "What they do right" vs "What you can do better"
+- Content ideas based on gaps
 
-You MUST respond with ONLY valid JSON:
+Return ONLY valid JSON:
 {
   "competitor_profile": {
-    "content_pillars": ["pillar 1", "pillar 2"],
-    "posting_frequency": "how often",
+    "estimated_followers": "range estimate",
+    "posting_frequency": "how often they post",
+    "primary_content_types": ["type 1", "type 2"],
     "signature_style": "what makes them recognizable",
-    "audience_type": "who follows them"
+    "target_audience": "who they target"
   },
-  "what_works": [
-    {"element": "successful element", "why": "reason", "can_adapt": true}
-  ],
-  "weaknesses": [
-    {"weakness": "gap or weakness", "your_opportunity": "how to exploit"}
-  ],
-  "differentiation": {
-    "positioning": "how to position differently",
-    "unique_angles": ["angle 1", "angle 2"],
-    "blue_ocean": "untapped opportunity"
+  "content_analysis": {
+    "top_performing_formats": [
+      {"format": "format type", "estimated_engagement": "high/medium", "example_topic": "example"}
+    ],
+    "posting_schedule": {
+      "best_days": ["day 1", "day 2"],
+      "best_times": ["time 1", "time 2"],
+      "frequency": "X times per week"
+    },
+    "content_pillars": ["pillar 1", "pillar 2", "pillar 3"]
   },
-  "content_ideas": [
-    {"concept": "content idea", "why_beats_them": "competitive advantage", "hook": "opening hook"}
+  "what_they_do_right": [
+    {"strength": "specific strength", "why_it_works": "explanation", "learn_from": "what to adopt"}
   ],
-  "action_items": ["immediate action 1", "action 2", "action 3"]
+  "what_you_can_do_better": [
+    {"weakness": "their weakness", "your_opportunity": "how to exploit", "content_idea": "specific idea"}
+  ],
+  "content_gaps": [
+    {"gap": "what they're missing", "opportunity": "how to fill", "priority": "high/medium/low"}
+  ],
+  "differentiation_strategy": {
+    "positioning": "how to position yourself",
+    "unique_angle": "your unique approach",
+    "key_differentiators": ["diff 1", "diff 2", "diff 3"]
+  },
+  "action_plan": [
+    {"priority": 1, "action": "immediate action", "expected_impact": "result"},
+    {"priority": 2, "action": "second action", "expected_impact": "result"},
+    {"priority": 3, "action": "third action", "expected_impact": "result"}
+  ],
+  "content_ideas_to_beat_them": [
+    {"idea": "content idea", "hook": "hook line", "why_better": "competitive advantage"}
+  ]
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all analysis in Turkish.',
+      'tr': 'Write ALL analysis in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -66,6 +86,7 @@ My niche: ${yourNiche || 'same niche'}
 Platform: ${platform}
 ${langInstruction}
 
+Provide comprehensive analysis with actionable insights.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -81,7 +102,7 @@ Respond with ONLY the JSON object.`
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     })
 

@@ -4,64 +4,79 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, elementToTest, platform, language } = await request.json()
+    const { optionA, optionB, contentType, platform, language } = await request.json()
 
-    if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    if (!optionA || !optionB) {
+      return NextResponse.json({ error: 'Both options are required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are SplitTestPro, a conversion optimization expert with 10,000+ A/B tests experience. You create variations that reveal what works.
+    const systemPrompt = `You are SplitTestPro, expert at predicting which content will perform better.
 
-TEST AREAS:
-- Hooks: First 3 words, opening frame
-- Titles: Curiosity vs clarity, emotion vs logic
-- Thumbnails: Colors, faces, text
-- CTAs: Placement, wording, urgency
+EVALUATION CRITERIA:
+1. HOOK POWER - How well does it stop the scroll?
+2. CLARITY - Is the message clear?
+3. EMOTIONAL TRIGGER - Does it evoke emotion?
+4. CTA STRENGTH - Is the call to action compelling?
+5. SHAREABILITY - Would people share this?
+6. PLATFORM FIT - Does it match platform culture?
 
-PSYCHOLOGICAL LEVERS:
-- Curiosity vs Clarity
-- Fear vs Desire
-- Social proof vs Exclusivity
-- Urgency vs Timelessness
-- Questions vs Statements
+SCORING: Rate each criterion 1-10 for both options.
 
-You MUST respond with ONLY valid JSON:
+WINNER DECLARATION:
+- Clear winner if 10+ points difference
+- Close match if under 5 points difference
+- Provide specific reasons why winner is better
+
+Return ONLY valid JSON:
 {
-  "analysis": {
-    "current_approach": "what original is doing",
-    "weaknesses": ["weakness 1", "weakness 2"],
-    "test_opportunities": ["opportunity 1", "opportunity 2"]
+  "option_a": {
+    "content": "option A content",
+    "scores": {
+      "hook_power": 7,
+      "clarity": 8,
+      "emotional_trigger": 6,
+      "cta_strength": 7,
+      "shareability": 6,
+      "platform_fit": 8
+    },
+    "total_score": 42,
+    "strengths": ["strength 1", "strength 2"],
+    "weaknesses": ["weakness 1", "weakness 2"]
   },
-  "hook_tests": [
-    {
-      "name": "Curiosity vs Direct",
-      "variation_a": {"text": "hook A", "approach": "curiosity-based"},
-      "variation_b": {"text": "hook B", "approach": "direct benefit"},
-      "hypothesis": "what we're testing"
-    }
-  ],
-  "title_tests": [
-    {
-      "name": "Emotion vs Logic",
-      "variation_a": "title A",
-      "variation_b": "title B",
-      "metric": "CTR"
-    }
-  ],
-  "cta_tests": [
-    {
-      "variation_a": "CTA text A",
-      "variation_b": "CTA text B"
-    }
-  ],
-  "quick_wins": [
-    {"change": "immediate change", "impact": "expected improvement"}
-  ],
-  "testing_order": ["test 1 first", "then test 2", "then test 3"]
+  "option_b": {
+    "content": "option B content",
+    "scores": {
+      "hook_power": 8,
+      "clarity": 7,
+      "emotional_trigger": 8,
+      "cta_strength": 6,
+      "shareability": 8,
+      "platform_fit": 7
+    },
+    "total_score": 44,
+    "strengths": ["strength 1", "strength 2"],
+    "weaknesses": ["weakness 1", "weakness 2"]
+  },
+  "winner": {
+    "option": "B",
+    "margin": "close match",
+    "confidence": "72%",
+    "primary_reason": "why it wins",
+    "detailed_reasons": ["reason 1", "reason 2", "reason 3"]
+  },
+  "improvements": {
+    "for_winner": ["how to make it even better"],
+    "for_loser": ["how to improve to beat winner"]
+  },
+  "hybrid_suggestion": {
+    "best_of_both": "combined version taking best elements",
+    "why_better": "why this combo works"
+  },
+  "testing_advice": "what to test next"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write all test variations in Turkish.',
+      'tr': 'Provide ALL analysis and suggestions in Turkish.',
       'en': 'Write all content in English.',
       'ru': 'Write all content in Russian.',
       'de': 'Write all content in German.',
@@ -69,15 +84,22 @@ You MUST respond with ONLY valid JSON:
     }
     const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create A/B test variations for:
+    const userPrompt = `Compare these two ${contentType || 'content'} options:
+
+OPTION A:
 """
-${content}
+${optionA}
 """
 
-Element to test: ${elementToTest || 'hooks and titles'}
+OPTION B:
+"""
+${optionB}
+"""
+
 Platform: ${platform}
 ${langInstruction}
 
+Score each option, declare a winner, and provide improvement suggestions.
 Respond with ONLY the JSON object.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -92,7 +114,7 @@ Respond with ONLY the JSON object.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
+        temperature: 0.7,
         max_tokens: 3000,
       }),
     })
@@ -102,21 +124,21 @@ Respond with ONLY the JSON object.`
     }
 
     const data = await response.json()
-    const responseContent = data.choices?.[0]?.message?.content
+    const content = data.choices?.[0]?.message?.content
 
-    if (!responseContent) {
+    if (!content) {
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
     }
 
     let result
     try {
-      let cleanContent = responseContent.trim()
+      let cleanContent = content.trim()
       if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
       else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
       if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
       result = JSON.parse(cleanContent.trim())
     } catch {
-      result = { raw: responseContent }
+      result = { raw: content }
     }
 
     return NextResponse.json({ result })
