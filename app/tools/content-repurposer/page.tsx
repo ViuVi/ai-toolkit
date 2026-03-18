@@ -5,133 +5,138 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const texts: any = {
-  tr: { back: 'Dashboard', contentLabel: 'Orijinal İçerik', contentPlaceholder: 'Dönüştürmek istediğiniz içeriği yapıştırın...', sourceLabel: 'Kaynak Format', btn: 'Dönüştür', loading: 'Dönüştürülüyor...', copy: 'Kopyala', copied: '✓', platforms: 'Platform Versiyonları', newConvert: 'Yeni Dönüşüm' },
-  en: { back: 'Dashboard', contentLabel: 'Original Content', contentPlaceholder: 'Paste the content you want to repurpose...', sourceLabel: 'Source Format', btn: 'Repurpose', loading: 'Converting...', copy: 'Copy', copied: '✓', platforms: 'Platform Versions', newConvert: 'New Conversion' },
-  ru: { back: 'Панель', contentLabel: 'Контент', contentPlaceholder: 'Вставьте контент...', sourceLabel: 'Формат', btn: 'Конвертировать', loading: 'Конвертация...', copy: 'Копировать', copied: '✓', platforms: 'Платформы', newConvert: 'Новый' },
-  de: { back: 'Dashboard', contentLabel: 'Inhalt', contentPlaceholder: 'Inhalt einfügen...', sourceLabel: 'Format', btn: 'Konvertieren', loading: 'Konvertiere...', copy: 'Kopieren', copied: '✓', platforms: 'Plattformen', newConvert: 'Neu' },
-  fr: { back: 'Tableau', contentLabel: 'Contenu', contentPlaceholder: 'Collez le contenu...', sourceLabel: 'Format', btn: 'Convertir', loading: 'Conversion...', copy: 'Copier', copied: '✓', platforms: 'Plateformes', newConvert: 'Nouveau' }
-}
-
-const platformIcons: any = {
-  'instagram': '📸',
-  'tiktok': '🎵',
-  'youtube': '▶️',
-  'twitter': '🐦',
-  'linkedin': '💼',
-  'threads': '🧵',
-  'facebook': '👥'
-}
-
 export default function ContentRepurposerPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [originalContent, setOriginalContent] = useState('')
+  const [contentType, setContentType] = useState('blog')
   const [result, setResult] = useState<any>(null)
-  const [content, setContent] = useState('')
-  const [sourceFormat, setSourceFormat] = useState('blog')
-  const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState('tiktok')
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
-  const t = texts[language] || texts.en
+  const { language } = useLanguage()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
-    })
-  }, [])
-
-  const handleSubmit = async () => {
-    if (!content.trim() || loading) return
-    setLoading(true); setResult(null)
-    try {
-      const res = await fetch('/api/content-repurposer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, sourceFormat, language }) })
-      const data = await res.json()
-      if (res.ok && data.result) {
-        setResult(data.result)
-        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 8 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.push('/login')
+      else {
+        setUser(session.user)
+        supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
+          .then(({ data }) => setCredits(data?.balance || 0))
       }
-    } catch (e) { console.error(e) }
+    })
+  }, [router])
+
+  const handleRepurpose = async () => {
+    if (!originalContent.trim() || loading) return
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch('/api/content-repurposer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ originalContent, contentType, language })
+      })
+      const data = await res.json()
+      if (res.ok && data.result) setResult(data.result)
+      else setError(data.error || 'Hata oluştu')
+    } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)
   }
-
-  const copyText = (key: string, text: string) => { navigator.clipboard.writeText(text); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1500) }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex items-center gap-3"><span className="text-2xl">♻️</span><h1 className="font-semibold">Content Repurposer</h1></div>
+            <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
+            <h1 className="font-bold">♻️ Content Repurposer</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
-            <div className="relative group">
-              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
-              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
-              </div>
-            </div>
-          </div>
+          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
         </div>
       </header>
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {!result ? (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-2">
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.contentLabel}</label>
-                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPlaceholder} className="w-full h-48 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none transition" />
+                <label className="block text-sm text-gray-400 mb-2">Orijinal İçerik</label>
+                <textarea value={originalContent} onChange={(e) => setOriginalContent(e.target.value)} placeholder="Blog yazısı, video scripti veya herhangi bir içeriği yapıştırın..." rows={8} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none" />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.sourceLabel}</label>
-                <select value={sourceFormat} onChange={e => setSourceFormat(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                  <option value="blog">Blog Post</option>
-                  <option value="video_script">Video Script</option>
-                  <option value="podcast">Podcast Notes</option>
-                  <option value="article">Article</option>
-                </select>
+                <label className="block text-sm text-gray-400 mb-2">İçerik Türü</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[['blog', '📝 Blog'], ['video', '🎬 Video'], ['podcast', '🎙️ Podcast'], ['tweet', '🐦 Tweet']].map(([val, label]) => (
+                    <button key={val} onClick={() => setContentType(val)} className={`p-3 rounded-xl border text-sm ${contentType === val ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-white/5 border-white/10 text-gray-400'}`}>{label}</button>
+                  ))}
+                </div>
               </div>
-              <button onClick={handleSubmit} disabled={loading || !content.trim() || credits < 8} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 8 ✦</span></>}
+              <button onClick={handleRepurpose} disabled={loading || !originalContent.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Dönüştürülüyor...</> : '♻️ 5 Platforma Dönüştür'}
               </button>
+              {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold">{t.platforms}</h2>
-            {result.versions?.map((ver: any, i: number) => (
-              <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:border-white/10 transition">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{platformIcons[ver.platform?.toLowerCase()] || '📱'}</span>
-                    <h3 className="font-semibold capitalize">{ver.platform}</h3>
-                    {ver.format && <span className="text-xs px-2 py-1 bg-white/5 text-gray-400 rounded">{ver.format}</span>}
+          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">♻️</div><h3 className="text-xl font-medium mb-2">İçerik Dönüştürücü</h3><p className="text-gray-500">Bir içeriği 5 farklı platforma dönüştürün</p></div>}
+            {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
+            {result && (
+              <div className="space-y-4">
+                <div className="flex gap-2 p-1 bg-white/5 rounded-xl overflow-x-auto">
+                  {[['tiktok', '🎵 TikTok'], ['twitter', '🐦 Twitter'], ['linkedin', '💼 LinkedIn'], ['instagram', '📸 IG'], ['youtube', '🎬 YT']].map(([key, label]) => (
+                    <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium whitespace-nowrap ${activeTab === key ? 'bg-purple-500 text-white' : 'text-gray-400'}`}>{label}</button>
+                  ))}
+                </div>
+
+                {activeTab === 'tiktok' && result.tiktok_scripts?.map((s: any, i: number) => (
+                  <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-medium text-purple-400 mb-2">Script {i + 1}</h4>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{s.script || s}</p>
                   </div>
-                  <button onClick={() => copyText(`ver-${i}`, ver.content)} className={`px-3 py-1.5 rounded-lg text-sm transition ${copiedKey === `ver-${i}` ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
-                    {copiedKey === `ver-${i}` ? t.copied : t.copy}
-                  </button>
-                </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-gray-300 whitespace-pre-wrap">{ver.content}</p>
-                </div>
-                {ver.hashtags && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {ver.hashtags.map((h: string, j: number) => <span key={j} className="text-blue-400 text-sm">{h}</span>)}
+                ))}
+
+                {activeTab === 'twitter' && result.twitter_threads?.map((t: any, i: number) => (
+                  <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-medium text-blue-400 mb-2">Thread {i + 1}</h4>
+                    {(t.tweets || [t]).map((tw: any, j: number) => (
+                      <p key={j} className="text-sm text-gray-300 mb-2 p-2 bg-white/5 rounded">{tw.text || tw}</p>
+                    ))}
+                  </div>
+                ))}
+
+                {activeTab === 'linkedin' && result.linkedin_posts?.map((p: any, i: number) => (
+                  <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-medium text-blue-600 mb-2">Post {i + 1}</h4>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{p.post || p}</p>
+                  </div>
+                ))}
+
+                {activeTab === 'instagram' && result.instagram_carousel && (
+                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-medium text-pink-400 mb-2">Carousel</h4>
+                    {result.instagram_carousel.slides?.map((s: any, i: number) => (
+                      <div key={i} className="p-2 bg-white/5 rounded mb-2">
+                        <p className="text-sm font-medium">Slide {s.slide || i + 1}</p>
+                        <p className="text-xs text-gray-400">{s.content || s.text}</p>
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
-            ))}
 
-            <div className="text-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newConvert}</button>
-            </div>
+                {activeTab === 'youtube' && result.youtube_short && (
+                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-medium text-red-400 mb-2">YouTube Short</h4>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{result.youtube_short.script || result.youtube_short}</p>
+                  </div>
+                )}
+
+                {result.raw && !result.tiktok_scripts && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </div>
   )

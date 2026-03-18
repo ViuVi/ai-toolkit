@@ -5,157 +5,157 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const texts: any = {
-  tr: { back: 'Dashboard', nicheLabel: 'Niş', nichePlaceholder: 'örn: fitness, yemek, teknoloji...', platformLabel: 'Platform', audienceLabel: 'Hedef Kitle', btn: 'Optimal Zamanları Bul', loading: 'Analiz ediliyor...', bestTimes: 'En İyi Zamanlar', weeklySchedule: 'Haftalık Program', tips: 'İpuçları', newAnalysis: 'Yeni Analiz' },
-  en: { back: 'Dashboard', nicheLabel: 'Niche', nichePlaceholder: 'e.g., fitness, food, tech...', platformLabel: 'Platform', audienceLabel: 'Target Audience', btn: 'Find Optimal Times', loading: 'Analyzing...', bestTimes: 'Best Times', weeklySchedule: 'Weekly Schedule', tips: 'Tips', newAnalysis: 'New Analysis' },
-  ru: { back: 'Панель', nicheLabel: 'Ниша', nichePlaceholder: 'напр: фитнес...', platformLabel: 'Платформа', audienceLabel: 'Аудитория', btn: 'Найти', loading: 'Анализ...', bestTimes: 'Лучшее время', weeklySchedule: 'Расписание', tips: 'Советы', newAnalysis: 'Новый' },
-  de: { back: 'Dashboard', nicheLabel: 'Nische', nichePlaceholder: 'z.B. Fitness...', platformLabel: 'Plattform', audienceLabel: 'Zielgruppe', btn: 'Finden', loading: 'Analyse...', bestTimes: 'Beste Zeiten', weeklySchedule: 'Wochenplan', tips: 'Tipps', newAnalysis: 'Neu' },
-  fr: { back: 'Tableau', nicheLabel: 'Niche', nichePlaceholder: 'ex: fitness...', platformLabel: 'Plateforme', audienceLabel: 'Public', btn: 'Trouver', loading: 'Analyse...', bestTimes: 'Meilleurs moments', weeklySchedule: 'Programme', tips: 'Conseils', newAnalysis: 'Nouveau' }
-}
-
-const dayNames: any = {
-  tr: ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'],
-  en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-}
-
 export default function PostingOptimizerPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
   const [niche, setNiche] = useState('')
-  const [platform, setPlatform] = useState('instagram')
-  const [audience, setAudience] = useState('general')
+  const [targetAudience, setTargetAudience] = useState('')
+  const [platforms, setPlatforms] = useState(['instagram', 'tiktok'])
+  const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState('')
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
-  const t = texts[language] || texts.en
-  const days = dayNames[language] || dayNames.en
+  const { language } = useLanguage()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
-    })
-  }, [])
-
-  const handleSubmit = async () => {
-    if (!niche.trim() || loading) return
-    setLoading(true); setResult(null)
-    try {
-      const res = await fetch('/api/posting-optimizer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ niche, platform, audience, language }) })
-      const data = await res.json()
-      if (res.ok && data.result) {
-        setResult(data.result)
-        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 2 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.push('/login')
+      else {
+        setUser(session.user)
+        supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
+          .then(({ data }) => setCredits(data?.balance || 0))
       }
-    } catch (e) { console.error(e) }
+    })
+  }, [router])
+
+  const togglePlatform = (p: string) => {
+    if (platforms.includes(p)) setPlatforms(platforms.filter(x => x !== p))
+    else setPlatforms([...platforms, p])
+  }
+
+  const handleAnalyze = async () => {
+    if (!niche.trim() || loading) return
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch('/api/posting-optimizer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche, targetAudience, platforms: platforms.join(','), language })
+      })
+      const data = await res.json()
+      if (res.ok && data.result) setResult(data.result)
+      else setError(data.error || 'Hata oluştu')
+    } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)
   }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex items-center gap-3"><span className="text-2xl">⏰</span><h1 className="font-semibold">Smart Posting Times</h1></div>
+            <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
+            <h1 className="font-bold">⏰ Smart Posting Times</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
-            <div className="relative group">
-              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
-              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
-              </div>
-            </div>
-          </div>
+          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
         </div>
       </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        {!result ? (
-          <div className="max-w-xl mx-auto">
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-2">
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label>
-                <input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder={t.nichePlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition" />
+                <label className="block text-sm text-gray-400 mb-2">Niş</label>
+                <input type="text" value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="örn: Moda, Fitness..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
-                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                    <option value="instagram">Instagram</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="youtube">YouTube</option>
-                    <option value="twitter">Twitter/X</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.audienceLabel}</label>
-                  <select value={audience} onChange={e => setAudience(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                    <option value="general">🌍 Genel</option>
-                    <option value="students">🎓 Öğrenciler</option>
-                    <option value="professionals">💼 Profesyoneller</option>
-                    <option value="parents">👨‍👩‍👧 Ebeveynler</option>
-                  </select>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Hedef Kitle (opsiyonel)</label>
+                <input type="text" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} placeholder="örn: 18-25 yaş kadınlar..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Platformlar</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['instagram', 'tiktok', 'youtube', 'twitter'].map((p) => (
+                    <button key={p} onClick={() => togglePlatform(p)} className={`p-2 rounded-xl border text-sm capitalize ${platforms.includes(p) ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-white/5 border-white/10 text-gray-400'}`}>{p}</button>
+                  ))}
                 </div>
               </div>
-              <button onClick={handleSubmit} disabled={loading || !niche.trim() || credits < 2} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 2 ✦</span></>}
+              <button onClick={handleAnalyze} disabled={loading || !niche.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Analiz Ediliyor...</> : '⏰ En İyi Zamanları Bul'}
               </button>
+              {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Best Times */}
-            {result.best_times && (
-              <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-5">
-                <h3 className="text-green-400 font-semibold mb-4">🏆 {t.bestTimes}</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {(result.best_times.top_3 || result.best_times).slice?.(0,3).map((time: any, i: number) => (
-                    <div key={i} className={`p-4 rounded-xl text-center ${i === 0 ? 'bg-green-500/20 border border-green-500/30' : 'bg-white/5'}`}>
-                      <div className="text-2xl mb-1">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
-                      <div className="text-white font-bold">{typeof time === 'string' ? time : time.time}</div>
-                      {time.day && <div className="text-gray-500 text-sm">{time.day}</div>}
+          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">⏰</div><h3 className="text-xl font-medium mb-2">Posting Optimizer</h3><p className="text-gray-500">Nişinize göre en iyi paylaşım saatlerini bulun</p></div>}
+            {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
+            {result && (
+              <div className="space-y-4">
+                {/* Optimal Times */}
+                {result.optimal_times && (
+                  <div className="p-5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl">
+                    <h3 className="font-semibold text-purple-400 mb-4">🏆 En İyi Zamanlar</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {result.optimal_times.map((t: any, i: number) => (
+                        <div key={i} className="p-3 bg-white/5 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-white">{t.time}</p>
+                          <p className="text-xs text-gray-400">{t.day}</p>
+                          {t.reason && <p className="text-xs text-purple-400 mt-1">{t.reason}</p>}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* Weekly Schedule */}
-            {result.weekly_schedule && (
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-5">
-                <h3 className="font-semibold mb-4">📅 {t.weeklySchedule}</h3>
-                <div className="space-y-2">
-                  {Object.entries(result.weekly_schedule).map(([day, times]: [string, any], i: number) => (
-                    <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
-                      <span className="text-gray-400">{day}</span>
-                      <div className="flex gap-2">
-                        {(Array.isArray(times) ? times : [times]).map((time: string, j: number) => (
-                          <span key={j} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-sm">{time}</span>
-                        ))}
-                      </div>
+                {/* By Platform */}
+                {result.by_platform && Object.entries(result.by_platform).map(([platform, data]: [string, any]) => (
+                  <div key={platform} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-semibold capitalize text-purple-400 mb-3">{platform}</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {data.best_times?.map((t: any, i: number) => (
+                        <div key={i} className="p-2 bg-white/5 rounded text-sm">
+                          <span className="font-medium">{t.time}</span>
+                          <span className="text-gray-500 ml-2">{t.day}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+
+                {/* Weekly Schedule */}
+                {result.weekly_schedule && (
+                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <h4 className="font-semibold text-green-400 mb-3">📅 Haftalık Program</h4>
+                    <div className="space-y-2">
+                      {Object.entries(result.weekly_schedule).map(([day, times]: [string, any]) => (
+                        <div key={day} className="flex justify-between items-center p-2 bg-white/5 rounded">
+                          <span className="font-medium capitalize">{day}</span>
+                          <span className="text-sm text-gray-400">{Array.isArray(times) ? times.join(', ') : times}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pro Tips */}
+                {result.pro_tips && (
+                  <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                    <h4 className="font-semibold text-orange-400 mb-3">💡 Pro İpuçları</h4>
+                    <div className="space-y-1">
+                      {result.pro_tips.map((tip: string, i: number) => (
+                        <p key={i} className="text-sm text-gray-300">• {tip}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {result.raw && !result.optimal_times && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
-
-            {/* Tips */}
-            {result.tips?.length > 0 && (
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5">
-                <h3 className="text-yellow-400 font-semibold mb-3">💡 {t.tips}</h3>
-                <ul className="space-y-2">{result.tips.map((tip: string, i: number) => <li key={i} className="text-gray-300 text-sm">• {tip}</li>)}</ul>
-              </div>
-            )}
-
-            <div className="text-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newAnalysis}</button>
-            </div>
           </div>
-        )}
+        </div>
       </main>
     </div>
   )

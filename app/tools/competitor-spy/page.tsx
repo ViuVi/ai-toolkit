@@ -5,144 +5,127 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const texts: any = {
-  tr: { back: 'Dashboard', competitorLabel: 'Rakip Hesabı', competitorPlaceholder: '@kullaniciadi veya hesap açıklaması', platformLabel: 'Platform', nicheLabel: 'Niş', btn: 'Analiz Et', loading: 'Analiz ediliyor...', overview: 'Genel Bakış', topContent: 'En İyi İçerikler', strategy: 'Strateji Analizi', weaknesses: 'Zayıf Noktalar', newAnalysis: 'Yeni Analiz' },
-  en: { back: 'Dashboard', competitorLabel: 'Competitor Account', competitorPlaceholder: '@username or account description', platformLabel: 'Platform', nicheLabel: 'Niche', btn: 'Analyze', loading: 'Analyzing...', overview: 'Overview', topContent: 'Top Content', strategy: 'Strategy Analysis', weaknesses: 'Weaknesses', newAnalysis: 'New Analysis' },
-  ru: { back: 'Панель', competitorLabel: 'Конкурент', competitorPlaceholder: '@username', platformLabel: 'Платформа', nicheLabel: 'Ниша', btn: 'Анализ', loading: 'Анализ...', overview: 'Обзор', topContent: 'Лучший контент', strategy: 'Стратегия', weaknesses: 'Слабости', newAnalysis: 'Новый' },
-  de: { back: 'Dashboard', competitorLabel: 'Konkurrent', competitorPlaceholder: '@username', platformLabel: 'Plattform', nicheLabel: 'Nische', btn: 'Analysieren', loading: 'Analyse...', overview: 'Übersicht', topContent: 'Top Inhalte', strategy: 'Strategie', weaknesses: 'Schwächen', newAnalysis: 'Neu' },
-  fr: { back: 'Tableau', competitorLabel: 'Concurrent', competitorPlaceholder: '@username', platformLabel: 'Plateforme', nicheLabel: 'Niche', btn: 'Analyser', loading: 'Analyse...', overview: 'Aperçu', topContent: 'Meilleur contenu', strategy: 'Stratégie', weaknesses: 'Faiblesses', newAnalysis: 'Nouveau' }
-}
-
 export default function CompetitorSpyPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
-  const [competitor, setCompetitor] = useState('')
+  const [competitorInfo, setCompetitorInfo] = useState('')
+  const [yourNiche, setYourNiche] = useState('')
   const [platform, setPlatform] = useState('instagram')
-  const [niche, setNiche] = useState('')
+  const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState('')
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
-  const t = texts[language] || texts.en
+  const { language } = useLanguage()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
-    })
-  }, [])
-
-  const handleSubmit = async () => {
-    if (!competitor.trim() || loading) return
-    setLoading(true); setResult(null)
-    try {
-      const res = await fetch('/api/competitor-spy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ competitor, platform, niche, language }) })
-      const data = await res.json()
-      if (res.ok && data.result) {
-        setResult(data.result)
-        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 8 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.push('/login')
+      else {
+        setUser(session.user)
+        supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
+          .then(({ data }) => setCredits(data?.balance || 0))
       }
-    } catch (e) { console.error(e) }
+    })
+  }, [router])
+
+  const handleAnalyze = async () => {
+    if (!competitorInfo.trim() || loading) return
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch('/api/competitor-spy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ competitorInfo, yourNiche, platform, language })
+      })
+      const data = await res.json()
+      if (res.ok && data.result) setResult(data.result)
+      else setError(data.error || 'Hata oluştu')
+    } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)
   }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex items-center gap-3"><span className="text-2xl">🕵️</span><h1 className="font-semibold">Competitor Spy</h1></div>
+            <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
+            <h1 className="font-bold">🕵️ Competitor Spy</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
-            <div className="relative group">
-              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
-              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
-              </div>
-            </div>
-          </div>
+          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
         </div>
       </header>
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {!result ? (
-          <div className="max-w-xl mx-auto">
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-2">
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.competitorLabel}</label>
-                <input type="text" value={competitor} onChange={e => setCompetitor(e.target.value)} placeholder={t.competitorPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition" />
+                <label className="block text-sm text-gray-400 mb-2">Rakip Hakkında Bilgi</label>
+                <textarea value={competitorInfo} onChange={(e) => setCompetitorInfo(e.target.value)} placeholder="Rakibin kullanıcı adı veya içerik stratejisi hakkında bilgi..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
-                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                    <option value="instagram">Instagram</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="youtube">YouTube</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.nicheLabel}</label>
-                  <input type="text" value={niche} onChange={e => setNiche(e.target.value)} placeholder="örn: fitness" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
-                </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Sizin Nişiniz</label>
+                <input type="text" value={yourNiche} onChange={(e) => setYourNiche(e.target.value)} placeholder="örn: Fitness, Teknoloji..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
-              <button onClick={handleSubmit} disabled={loading || !competitor.trim() || credits < 8} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 8 ✦</span></>}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Overview */}
-            {result.profile_analysis && (
-              <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-5">
-                <h3 className="text-purple-400 font-semibold mb-3">📊 {t.overview}</h3>
-                <p className="text-gray-300">{result.profile_analysis}</p>
-              </div>
-            )}
-
-            {/* Top Content */}
-            {result.top_performing_content?.length > 0 && (
-              <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-5">
-                <h3 className="text-green-400 font-semibold mb-4">🏆 {t.topContent}</h3>
-                <div className="space-y-3">
-                  {result.top_performing_content.map((content: any, i: number) => (
-                    <div key={i} className="bg-white/5 rounded-xl p-4">
-                      <h4 className="font-medium text-white mb-2">{content.title || content.topic}</h4>
-                      {content.why_it_works && <p className="text-gray-500 text-sm">{content.why_it_works}</p>}
-                      {content.engagement && <span className="text-xs text-green-400 mt-2 inline-block">{content.engagement}</span>}
-                    </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Platform</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['instagram', 'tiktok', 'youtube', 'twitter'].map((p) => (
+                    <button key={p} onClick={() => setPlatform(p)} className={`p-3 rounded-xl border text-sm capitalize ${platform === p ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-white/5 border-white/10 text-gray-400'}`}>{p}</button>
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Strategy */}
-            {result.content_strategy && (
-              <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5">
-                <h3 className="text-blue-400 font-semibold mb-3">🎯 {t.strategy}</h3>
-                <p className="text-gray-300">{typeof result.content_strategy === 'string' ? result.content_strategy : result.content_strategy.summary}</p>
-              </div>
-            )}
-
-            {/* Weaknesses */}
-            {result.weaknesses?.length > 0 && (
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-5">
-                <h3 className="text-yellow-400 font-semibold mb-3">💡 {t.weaknesses}</h3>
-                <ul className="space-y-2">
-                  {result.weaknesses.map((w: string, i: number) => <li key={i} className="text-gray-300 text-sm flex items-start gap-2"><span className="text-yellow-400">→</span>{w}</li>)}
-                </ul>
-              </div>
-            )}
-
-            <div className="text-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newAnalysis}</button>
+              <button onClick={handleAnalyze} disabled={loading || !competitorInfo.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Analiz Ediliyor...</> : '🕵️ Rakibi Analiz Et'}
+              </button>
+              {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
-        )}
+          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">🕵️</div><h3 className="text-xl font-medium mb-2">Rakip Analizi</h3><p className="text-gray-500">Rakibiniz hakkında bilgi girin</p></div>}
+            {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
+            {result && (
+              <div className="space-y-4">
+                {result.what_they_do_right && (
+                  <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <h4 className="font-semibold text-green-400 mb-3">✅ Doğru Yaptıkları</h4>
+                    {result.what_they_do_right.map((item: any, i: number) => (
+                      <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
+                        <p className="font-medium text-sm">{item.strength}</p>
+                        <p className="text-xs text-gray-400">{item.learn_from}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {result.what_you_can_do_better && (
+                  <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                    <h4 className="font-semibold text-purple-400 mb-3">🚀 Siz Daha İyi Yapabilirsiniz</h4>
+                    {result.what_you_can_do_better.map((item: any, i: number) => (
+                      <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
+                        <p className="font-medium text-sm">{item.weakness}</p>
+                        <p className="text-xs text-gray-400">{item.your_opportunity}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {result.action_plan && (
+                  <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                    <h4 className="font-semibold text-orange-400 mb-3">🎯 Aksiyon Planı</h4>
+                    {result.action_plan.map((item: any, i: number) => (
+                      <div key={i} className="mb-2 flex gap-3 items-start">
+                        <span className="w-6 h-6 bg-orange-500/20 text-orange-400 rounded flex items-center justify-center text-sm shrink-0">{item.priority}</span>
+                        <p className="text-sm">{item.action}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {result.raw && !result.what_they_do_right && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   )

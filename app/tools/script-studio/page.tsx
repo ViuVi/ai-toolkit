@@ -5,168 +5,405 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
-const texts: any = {
-  tr: { back: 'Dashboard', topicLabel: 'Video Konusu', topicPlaceholder: 'örn: 5 dakikada kahvaltı tarifleri...', platformLabel: 'Platform', durationLabel: 'Süre', styleLabel: 'Stil', btn: 'Script Yaz', loading: 'Yazılıyor...', copy: 'Kopyala', copied: '✓', fullScript: 'Tam Script', sections: 'Bölümler', tips: 'İpuçları', newScript: 'Yeni Script' },
-  en: { back: 'Dashboard', topicLabel: 'Video Topic', topicPlaceholder: 'e.g., 5-minute breakfast recipes...', platformLabel: 'Platform', durationLabel: 'Duration', styleLabel: 'Style', btn: 'Write Script', loading: 'Writing...', copy: 'Copy', copied: '✓', fullScript: 'Full Script', sections: 'Sections', tips: 'Tips', newScript: 'New Script' },
-  ru: { back: 'Панель', topicLabel: 'Тема', topicPlaceholder: 'напр: рецепты...', platformLabel: 'Платформа', durationLabel: 'Длительность', styleLabel: 'Стиль', btn: 'Написать', loading: 'Пишу...', copy: 'Копировать', copied: '✓', fullScript: 'Скрипт', sections: 'Разделы', tips: 'Советы', newScript: 'Новый' },
-  de: { back: 'Dashboard', topicLabel: 'Thema', topicPlaceholder: 'z.B. Rezepte...', platformLabel: 'Plattform', durationLabel: 'Dauer', styleLabel: 'Stil', btn: 'Schreiben', loading: 'Schreibe...', copy: 'Kopieren', copied: '✓', fullScript: 'Skript', sections: 'Abschnitte', tips: 'Tipps', newScript: 'Neu' },
-  fr: { back: 'Tableau', topicLabel: 'Sujet', topicPlaceholder: 'ex: recettes...', platformLabel: 'Plateforme', durationLabel: 'Durée', styleLabel: 'Style', btn: 'Écrire', loading: 'Écriture...', copy: 'Copier', copied: '✓', fullScript: 'Script', sections: 'Sections', tips: 'Conseils', newScript: 'Nouveau' }
-}
-
-const styleOptions = [
-  { value: 'educational', icon: '📚', label: 'Eğitici', labelEn: 'Educational' },
-  { value: 'entertaining', icon: '🎉', label: 'Eğlenceli', labelEn: 'Entertaining' },
-  { value: 'storytelling', icon: '📖', label: 'Hikaye', labelEn: 'Storytelling' },
-  { value: 'tutorial', icon: '🎯', label: 'Tutorial', labelEn: 'Tutorial' },
-]
-
 export default function ScriptStudioPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
   const [topic, setTopic] = useState('')
   const [platform, setPlatform] = useState('tiktok')
-  const [duration, setDuration] = useState('30')
+  const [duration, setDuration] = useState('60')
   const [style, setStyle] = useState('educational')
-  const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState('script')
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
-  const t = texts[language] || texts.en
+  const { language } = useLanguage()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.push('/login')
-      else { setUser(user); supabase.from('credits').select('balance').eq('user_id', user.id).single().then(({ data }) => setCredits(data?.balance || 0)) }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.push('/login')
+      else {
+        setUser(session.user)
+        supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
+          .then(({ data }) => setCredits(data?.balance || 0))
+      }
     })
-  }, [])
+  }, [router])
 
-  const handleSubmit = async () => {
+  const handleGenerate = async () => {
     if (!topic.trim() || loading) return
-    setLoading(true); setResult(null)
+    setLoading(true)
+    setError('')
+    setResult(null)
+
     try {
-      const res = await fetch('/api/script-studio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, platform, duration, style, language }) })
+      const res = await fetch('/api/script-studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, platform, duration, style, language })
+      })
       const data = await res.json()
+      
       if (res.ok && data.result) {
         setResult(data.result)
-        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 6 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
+      } else {
+        setError(data.error || 'Bir hata oluştu')
       }
-    } catch (e) { console.error(e) }
+    } catch (err) {
+      setError('Bağlantı hatası')
+    }
     setLoading(false)
   }
 
-  const copyText = (key: string, text: string) => { navigator.clipboard.writeText(text); setCopiedKey(key); setTimeout(() => setCopiedKey(null), 1500) }
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const platforms = [
+    { value: 'tiktok', label: 'TikTok' },
+    { value: 'reels', label: 'Reels' },
+    { value: 'shorts', label: 'Shorts' },
+    { value: 'youtube', label: 'YouTube' }
+  ]
+
+  const durations = [
+    { value: '15', label: '15 sn' },
+    { value: '30', label: '30 sn' },
+    { value: '60', label: '60 sn' },
+    { value: '180', label: '3 dk' }
+  ]
+
+  const styles = [
+    { value: 'educational', label: '📚 Eğitici' },
+    { value: 'entertaining', label: '🎭 Eğlenceli' },
+    { value: 'storytelling', label: '📖 Hikaye' },
+    { value: 'tutorial', label: '🎯 Tutorial' }
+  ]
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition"><span>←</span><span className="hidden sm:inline">{t.back}</span></Link>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex items-center gap-3"><span className="text-2xl">🎬</span><h1 className="font-semibold">Script Studio</h1></div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"><span className="text-purple-400 text-sm">✦</span><span className="font-medium">{credits}</span></div>
-            <div className="relative group">
-              <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition">🌐</button>
-              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>)}
-              </div>
+            <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Dashboard</Link>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🎬</span>
+              <h1 className="font-bold text-lg">Script Studio</h1>
             </div>
+          </div>
+          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <span className="text-purple-400">✦ {credits}</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        {!result ? (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Input Panel */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.topicLabel}</label>
-                <textarea value={topic} onChange={e => setTopic(e.target.value)} placeholder={t.topicPlaceholder} className="w-full h-28 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none transition" />
+                <label className="block text-sm text-gray-400 mb-2">Video Konusu</label>
+                <textarea
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="örn: Yapay zeka ile 5 dakikada logo tasarımı..."
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none"
+                />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.platformLabel}</label>
-                  <select value={platform} onChange={e => setPlatform(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                    <option value="tiktok">TikTok</option>
-                    <option value="reels">Instagram Reels</option>
-                    <option value="shorts">YouTube Shorts</option>
-                    <option value="youtube">YouTube</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">{t.durationLabel}</label>
-                  <select value={duration} onChange={e => setDuration(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50">
-                    <option value="15">15 sn</option>
-                    <option value="30">30 sn</option>
-                    <option value="60">60 sn</option>
-                    <option value="180">3 dk</option>
-                  </select>
-                </div>
-              </div>
+
               <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.styleLabel}</label>
+                <label className="block text-sm text-gray-400 mb-2">Platform</label>
                 <div className="grid grid-cols-4 gap-2">
-                  {styleOptions.map(opt => (
-                    <button key={opt.value} onClick={() => setStyle(opt.value)} className={`p-3 rounded-xl border text-center transition-all ${style === opt.value ? 'bg-purple-500/20 border-purple-500/50 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'}`}>
-                      <div className="text-xl mb-1">{opt.icon}</div>
-                      <div className="text-xs">{language === 'tr' ? opt.label : opt.labelEn}</div>
+                  {platforms.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => setPlatform(p.value)}
+                      className={`p-2 rounded-xl border text-sm font-medium transition ${
+                        platform === p.value
+                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      }`}
+                    >
+                      {p.label}
                     </button>
                   ))}
                 </div>
               </div>
-              <button onClick={handleSubmit} disabled={loading || !topic.trim() || credits < 6} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> {t.loading}</> : <>{t.btn} <span className="text-white/70">• 6 ✦</span></>}
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Süre</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {durations.map((d) => (
+                    <button
+                      key={d.value}
+                      onClick={() => setDuration(d.value)}
+                      className={`p-2 rounded-xl border text-sm font-medium transition ${
+                        duration === d.value
+                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Stil</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {styles.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setStyle(s.value)}
+                      className={`p-2 rounded-xl border text-sm font-medium transition ${
+                        style === s.value
+                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !topic.trim()}
+                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Script Yazılıyor...
+                  </>
+                ) : (
+                  <>🎬 Script Oluştur</>
+                )}
               </button>
+
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Full Script */}
-            {result.full_script && (
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-lg">📝 {t.fullScript}</h3>
-                  <button onClick={() => copyText('full', result.full_script)} className={`px-4 py-2 rounded-lg text-sm transition ${copiedKey === 'full' ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>{copiedKey === 'full' ? t.copied : t.copy}</button>
-                </div>
-                <div className="bg-white/5 rounded-xl p-5">
-                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{result.full_script}</p>
-                </div>
+
+          {/* Results Panel */}
+          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+            {!result && !loading && (
+              <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
+                <div className="text-5xl mb-4">🎬</div>
+                <h3 className="text-xl font-medium mb-2">Video Script</h3>
+                <p className="text-gray-500">Konunuzu girin, çekime hazır script oluşturalım</p>
               </div>
             )}
 
-            {/* Sections */}
-            {result.sections && (
-              <div className="space-y-3">
-                <h3 className="font-semibold">📋 {t.sections}</h3>
-                {result.sections.map((sec: any, i: number) => (
-                  <div key={i} className={`rounded-xl p-4 border ${sec.type === 'hook' ? 'bg-red-500/5 border-red-500/20' : sec.type === 'cta' ? 'bg-green-500/5 border-green-500/20' : 'bg-white/[0.02] border-white/5'}`}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs uppercase text-gray-400 font-semibold">{sec.type} • {sec.duration}</span>
-                      <button onClick={() => copyText(`sec-${i}`, sec.text)} className="text-xs text-purple-400">{copiedKey === `sec-${i}` ? t.copied : t.copy}</button>
+            {loading && (
+              <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
+                <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-400">Viral script yazılıyor...</p>
+              </div>
+            )}
+
+            {result && (
+              <div className="space-y-4">
+                {/* Tabs */}
+                <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+                  <button
+                    onClick={() => setActiveTab('script')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      activeTab === 'script' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    📝 Script
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('scenes')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      activeTab === 'scenes' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    🎬 Sahneler
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('extras')}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      activeTab === 'extras' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    ✨ Extras
+                  </button>
+                </div>
+
+                {/* Script Tab */}
+                {activeTab === 'script' && result.script && (
+                  <div className="space-y-4">
+                    {/* Full Script */}
+                    <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold text-purple-400">📝 Tam Script</h3>
+                        <button
+                          onClick={() => copyToClipboard(result.script.full_script || '')}
+                          className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-lg text-sm hover:bg-purple-500/30 transition"
+                        >
+                          {copied ? '✓ Kopyalandı' : 'Kopyala'}
+                        </button>
+                      </div>
+                      <div className="prose prose-invert max-w-none">
+                        <p className="whitespace-pre-wrap text-gray-200 leading-relaxed">
+                          {result.script.full_script}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-white">{sec.text}</p>
-                    {sec.visual_note && <p className="text-gray-500 text-sm mt-2">🎥 {sec.visual_note}</p>}
+
+                    {/* Script Sections */}
+                    {result.script.hook && (
+                      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-semibold text-red-400">🎯 HOOK ({result.script.hook.duration})</span>
+                        </div>
+                        <p className="text-gray-200">{result.script.hook.text}</p>
+                        <p className="text-xs text-gray-500 mt-2">{result.script.hook.delivery}</p>
+                      </div>
+                    )}
+
+                    {result.script.problem && (
+                      <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                        <span className="text-sm font-semibold text-orange-400">⚠️ PROBLEM</span>
+                        <p className="text-gray-200 mt-2">{result.script.problem.text}</p>
+                      </div>
+                    )}
+
+                    {result.script.buildup && (
+                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                        <span className="text-sm font-semibold text-yellow-400">📈 BUILD-UP</span>
+                        <p className="text-gray-200 mt-2">{result.script.buildup.text}</p>
+                      </div>
+                    )}
+
+                    {result.script.solution && (
+                      <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                        <span className="text-sm font-semibold text-green-400">✅ SOLUTION</span>
+                        <p className="text-gray-200 mt-2">{result.script.solution.text}</p>
+                      </div>
+                    )}
+
+                    {result.script.cta && (
+                      <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                        <span className="text-sm font-semibold text-purple-400">👉 CTA</span>
+                        <p className="text-gray-200 mt-2">{result.script.cta.text}</p>
+                      </div>
+                    )}
                   </div>
-                ))}
+                )}
+
+                {/* Scenes Tab */}
+                {activeTab === 'scenes' && result.scene_breakdown && (
+                  <div className="space-y-3">
+                    {result.scene_breakdown.map((scene: any, index: number) => (
+                      <div key={index} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="w-8 h-8 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-sm font-bold">
+                            {scene.scene}
+                          </span>
+                          <div>
+                            <span className="font-semibold text-white">{scene.section}</span>
+                            <span className="text-gray-500 text-sm ml-2">({scene.shot} - {scene.duration})</span>
+                          </div>
+                        </div>
+                        <p className="text-gray-300 text-sm ml-11">{scene.text}</p>
+                        <p className="text-gray-500 text-xs ml-11 mt-1">{scene.action}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Extras Tab */}
+                {activeTab === 'extras' && (
+                  <div className="space-y-4">
+                    {/* Metadata */}
+                    {result.metadata && (
+                      <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h4 className="font-semibold text-purple-400 mb-3">📊 Video Bilgileri</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="p-2 bg-white/5 rounded-lg">
+                            <span className="text-gray-500">Süre:</span>
+                            <span className="text-white ml-2">{result.metadata.total_duration}</span>
+                          </div>
+                          <div className="p-2 bg-white/5 rounded-lg">
+                            <span className="text-gray-500">Kelime:</span>
+                            <span className="text-white ml-2">{result.metadata.word_count}</span>
+                          </div>
+                          <div className="p-2 bg-white/5 rounded-lg col-span-2">
+                            <span className="text-gray-500">Stil:</span>
+                            <span className="text-white ml-2">{result.metadata.speaking_style}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Title Options */}
+                    {result.title_options && (
+                      <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h4 className="font-semibold text-purple-400 mb-3">📌 Başlık Önerileri</h4>
+                        <div className="space-y-2">
+                          {result.title_options.map((title: string, i: number) => (
+                            <div key={i} className="p-2 bg-white/5 rounded-lg text-sm text-gray-300">
+                              {title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hashtags */}
+                    {result.hashtags && (
+                      <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h4 className="font-semibold text-purple-400 mb-3">#️⃣ Hashtag'ler</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.hashtags.map((tag: string, i: number) => (
+                            <span key={i} className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg text-sm">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Filming Tips */}
+                    {result.filming_tips && (
+                      <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+                        <h4 className="font-semibold text-purple-400 mb-3">💡 Çekim İpuçları</h4>
+                        <ul className="space-y-2">
+                          {result.filming_tips.map((tip: string, i: number) => (
+                            <li key={i} className="text-sm text-gray-300 flex gap-2">
+                              <span className="text-purple-400">•</span> {tip}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Raw fallback */}
+                {result.raw && !result.script && (
+                  <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-300">{result.raw}</pre>
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Tips */}
-            {result.production_tips?.length > 0 && (
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5">
-                <h3 className="text-yellow-400 font-semibold mb-3">💡 {t.tips}</h3>
-                <ul className="space-y-2">{result.production_tips.map((tip: string, i: number) => <li key={i} className="text-gray-300 text-sm">• {tip}</li>)}</ul>
-              </div>
-            )}
-
-            <div className="text-center pt-4">
-              <button onClick={() => setResult(null)} className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition">← {t.newScript}</button>
-            </div>
           </div>
-        )}
+        </div>
       </main>
     </div>
   )
