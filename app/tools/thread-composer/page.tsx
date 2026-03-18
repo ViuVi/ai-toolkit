@@ -41,7 +41,7 @@ export default function ThreadComposerPage() {
       const data = await res.json()
       if (res.ok && data.result) {
         setResult(data.result)
-        if (credits >= 5) { await supabase.from('credits').update({ balance: credits - 5 }).eq('user_id', user.id); setCredits(prev => prev - 5) }
+        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 5 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
       }
     } catch (e) { console.error(e) }
     setLoading(false)

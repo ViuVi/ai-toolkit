@@ -46,7 +46,7 @@ export default function PostingOptimizerPage() {
       const data = await res.json()
       if (res.ok && data.result) {
         setResult(data.result)
-        if (credits >= 2) { await supabase.from('credits').update({ balance: credits - 2 }).eq('user_id', user.id); setCredits(prev => prev - 2) }
+        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 2 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
       }
     } catch (e) { console.error(e) }
     setLoading(false)

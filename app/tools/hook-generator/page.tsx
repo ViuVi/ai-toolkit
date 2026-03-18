@@ -58,11 +58,11 @@ export default function HookGeneratorPage() {
       const data = await res.json()
       if (res.ok && data.result) {
         setResult(data.result)
-        // Deduct credits
-        if (credits >= 3) {
-          await supabase.from('credits').update({ balance: credits - 3 }).eq('user_id', user.id)
-          setCredits(prev => prev - 3)
-        }
+        // TEST MODE - Credits disabled
+        // if (credits >= X) {
+          // await supabase.from("credits").update({ balance: credits - 3 }).eq('user_id', user.id)
+          // setCredits(prev => prev - X)
+        // }
       }
     } catch (e) { console.error(e) }
     setLoading(false)

@@ -49,7 +49,7 @@ export default function ScriptStudioPage() {
       const data = await res.json()
       if (res.ok && data.result) {
         setResult(data.result)
-        if (credits >= 6) { await supabase.from('credits').update({ balance: credits - 6 }).eq('user_id', user.id); setCredits(prev => prev - 6) }
+        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 6 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
       }
     } catch (e) { console.error(e) }
     setLoading(false)

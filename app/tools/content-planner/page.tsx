@@ -41,7 +41,7 @@ export default function ContentPlannerPage() {
       const data = await res.json()
       if (res.ok && data.result) {
         setResult(data.result)
-        if (credits >= 10) { await supabase.from('credits').update({ balance: credits - 10 }).eq('user_id', user.id); setCredits(prev => prev - 10) }
+        // if (credits >= X) { // await supabase.from("credits").update({ balance: credits - 10 }).eq('user_id', user.id); // setCredits(prev => prev - X) }
       }
     } catch (e) { console.error(e) }
     setLoading(false)
