@@ -5,6 +5,15 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const languages = ['en', 'tr', 'ru', 'de', 'fr'] as const
+const languageNames: Record<string, string> = {
+  en: '🇺🇸 English',
+  tr: '🇹🇷 Türkçe',
+  ru: '🇷🇺 Русский',
+  de: '🇩🇪 Deutsch',
+  fr: '🇫🇷 Français'
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
