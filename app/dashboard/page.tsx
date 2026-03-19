@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { useLanguage, languageNames, languages } from '@/lib/LanguageContext'
+import { useLanguage } from '@/lib/LanguageContext'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
