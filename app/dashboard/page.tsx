@@ -1,163 +1,109 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { useLanguage } from '@/lib/LanguageContext'
-
-const texts: Record<string, Record<string, string>> = {
-  tr: { welcome: 'Hoş Geldin', credits: 'Kredi', logout: 'Çıkış Yap', create: 'Oluşturma', analyze: 'Analiz', optimize: 'Optimizasyon', allTools: 'Tüm Araçlar', changePhoto: 'Fotoğraf Değiştir', uploadPhoto: 'Fotoğraf Yükle', uploading: 'Yükleniyor...', removePhoto: 'Fotoğrafı Kaldır', uploadError: 'Yükleme hatası', uploadSuccess: 'Fotoğraf güncellendi' },
-  en: { welcome: 'Welcome', credits: 'Credits', logout: 'Log Out', create: 'Create', analyze: 'Analyze', optimize: 'Optimize', allTools: 'All Tools', changePhoto: 'Change Photo', uploadPhoto: 'Upload Photo', uploading: 'Uploading...', removePhoto: 'Remove Photo', uploadError: 'Upload failed', uploadSuccess: 'Photo updated' },
-  ru: { welcome: 'Добро пожаловать', credits: 'Кредиты', logout: 'Выйти', create: 'Создать', analyze: 'Анализ', optimize: 'Оптимизация', allTools: 'Все инструменты', changePhoto: 'Изменить фото', uploadPhoto: 'Загрузить', uploading: 'Загрузка...', removePhoto: 'Удалить фото', uploadError: 'Ошибка загрузки', uploadSuccess: 'Фото обновлено' },
-  de: { welcome: 'Willkommen', credits: 'Credits', logout: 'Abmelden', create: 'Erstellen', analyze: 'Analysieren', optimize: 'Optimieren', allTools: 'Alle Tools', changePhoto: 'Foto ändern', uploadPhoto: 'Hochladen', uploading: 'Lädt...', removePhoto: 'Foto entfernen', uploadError: 'Upload fehlgeschlagen', uploadSuccess: 'Foto aktualisiert' },
-  fr: { welcome: 'Bienvenue', credits: 'Crédits', logout: 'Déconnexion', create: 'Créer', analyze: 'Analyser', optimize: 'Optimiser', allTools: 'Tous les outils', changePhoto: 'Changer la photo', uploadPhoto: 'Télécharger', uploading: 'Téléchargement...', removePhoto: 'Supprimer', uploadError: 'Échec du téléchargement', uploadSuccess: 'Photo mise à jour' }
-}
-
-const tools = [
-  { icon: '🔍', name: 'Viral Video Finder', slug: 'video-finder', credits: 5, category: 'analyze' },
-  { icon: '🎣', name: 'Hook Generator', slug: 'hook-generator', credits: 3, category: 'create' },
-  { icon: '✍️', name: 'Caption Generator', slug: 'caption-generator', credits: 3, category: 'create' },
-  { icon: '🎯', name: 'Steal This Video', slug: 'steal-video', credits: 8, category: 'analyze' },
-  { icon: '🔬', name: 'Viral Analyzer', slug: 'viral-analyzer', credits: 5, category: 'analyze' },
-  { icon: '🎬', name: 'Script Studio', slug: 'script-studio', credits: 6, category: 'create' },
-  { icon: '📅', name: 'Content Calendar', slug: 'content-planner', credits: 10, category: 'optimize' },
-  { icon: '📡', name: 'Trend Radar', slug: 'trend-radar', credits: 4, category: 'analyze' },
-  { icon: '🕵️', name: 'Competitor Spy', slug: 'competitor-spy', credits: 8, category: 'analyze' },
-  { icon: '#️⃣', name: 'Hashtag Research', slug: 'hashtag-research', credits: 3, category: 'optimize' },
-  { icon: '♻️', name: 'Content Repurposer', slug: 'content-repurposer', credits: 8, category: 'create' },
-  { icon: '⚖️', name: 'A/B Tester', slug: 'ab-tester', credits: 5, category: 'analyze' },
-  { icon: '🎠', name: 'Carousel Planner', slug: 'carousel-planner', credits: 5, category: 'create' },
-  { icon: '🚀', name: 'Engagement Booster', slug: 'engagement-booster', credits: 4, category: 'optimize' },
-  { icon: '⏰', name: 'Posting Optimizer', slug: 'posting-optimizer', credits: 2, category: 'optimize' },
-  { icon: '🧵', name: 'Thread Composer', slug: 'thread-composer', credits: 5, category: 'create' },
-]
+import { useLanguage, languageNames, languages } from '@/lib/LanguageContext'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
+  const [plan, setPlan] = useState('free')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [showAvatarModal, setShowAvatarModal] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
-  const [filter, setFilter] = useState('all')
-  const [loading, setLoading] = useState(true)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [adCountdown, setAdCountdown] = useState(30)
+  const [adComplete, setAdComplete] = useState(false)
+  const [showLangMenu, setShowLangMenu] = useState(false)
   const router = useRouter()
-  const { language, setLanguage } = useLanguage()
-  const t = texts[language] || texts.en
-
-  const getUserName = (): string => {
-    if (!user) return ''
-    if (user.user_metadata?.full_name) return user.user_metadata.full_name
-    if (user.user_metadata?.name) return user.user_metadata.name
-    if (user.email) return user.email.split('@')[0]
-    return ''
-  }
-
-  const getInitial = (): string => {
-    const name = getUserName()
-    return name ? name[0].toUpperCase() : 'U'
-  }
+  const { language, setLanguage, t } = useLanguage()
 
   useEffect(() => {
-    // Önce mevcut session'ı kontrol et
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.push('/login')
       } else {
         setUser(session.user)
-        supabase.from('credits').select('balance, avatar_url').eq('user_id', session.user.id).single().then(({ data }) => {
-          if (data) {
-            setCredits(data.balance || 0)
-            setAvatarUrl(data.avatar_url || null)
-          }
-          setLoading(false)
-        })
+        fetchCredits(session.user.id)
       }
     })
-
-    // Auth state değişikliklerini dinle
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/login')
-      } else {
-        setUser(session.user)
-      }
-    })
-
-    return () => subscription.unsubscribe()
   }, [router])
+
+  const fetchCredits = async (userId: string) => {
+    const { data } = await supabase
+      .from('credits')
+      .select('balance, plan, avatar_url')
+      .eq('user_id', userId)
+      .single()
+    
+    if (data) {
+      setCredits(data.balance || 0)
+      setPlan(data.plan || 'free')
+      setAvatarUrl(data.avatar_url)
+    }
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) return
-
-    setUploading(true)
-    setUploadMessage(null)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('userId', user.id)
-
-      const res = await fetch('/api/upload-avatar', {
-        method: 'POST',
-        body: formData
-      })
-
-      const data = await res.json()
-
-      if (res.ok && data.url) {
-        setAvatarUrl(data.url)
-        setUploadMessage({ type: 'success', text: t.uploadSuccess })
-        setTimeout(() => {
-          setShowAvatarModal(false)
-          setUploadMessage(null)
-        }, 1500)
-      } else {
-        setUploadMessage({ type: 'error', text: data.error || t.uploadError })
-      }
-    } catch (error) {
-      setUploadMessage({ type: 'error', text: t.uploadError })
-    }
-
-    setUploading(false)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+  // Watch Ad for Credits
+  const startWatchingAd = () => {
+    setShowAdModal(true)
+    setAdCountdown(30)
+    setAdComplete(false)
   }
 
-  const removeAvatar = async () => {
+  useEffect(() => {
+    if (showAdModal && adCountdown > 0 && !adComplete) {
+      const timer = setTimeout(() => setAdCountdown(adCountdown - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (showAdModal && adCountdown === 0 && !adComplete) {
+      addAdCredits()
+    }
+  }, [showAdModal, adCountdown, adComplete])
+
+  const addAdCredits = async () => {
     if (!user) return
-    await supabase.from('credits').update({ avatar_url: null }).eq('user_id', user.id)
-    setAvatarUrl(null)
-    setShowAvatarModal(false)
-  }
-
-  const renderAvatar = (size: string = 'w-10 h-10', textSize: string = 'text-lg') => {
-    if (avatarUrl) {
-      return <img src={avatarUrl} alt="Avatar" className={`${size} rounded-xl object-cover`} />
+    setAdComplete(true)
+    
+    const { error } = await supabase
+      .from('credits')
+      .update({ balance: credits + 10 })
+      .eq('user_id', user.id)
+    
+    if (!error) {
+      setCredits(credits + 10)
     }
-    return (
-      <div className={`${size} rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold ${textSize}`}>
-        {getInitial()}
-      </div>
-    )
+    
+    setTimeout(() => {
+      setShowAdModal(false)
+    }, 2000)
   }
 
-  const filteredTools = filter === 'all' ? tools : tools.filter(tool => tool.category === filter)
+  const tools = [
+    { key: 'hookGenerator', icon: '🎣', href: '/tools/hook-generator', credits: 3, color: 'purple' },
+    { key: 'captionGenerator', icon: '✍️', href: '/tools/caption-generator', credits: 3, color: 'pink' },
+    { key: 'scriptStudio', icon: '🎬', href: '/tools/script-studio', credits: 6, color: 'blue' },
+    { key: 'viralAnalyzer', icon: '📊', href: '/tools/viral-analyzer', credits: 5, color: 'green' },
+    { key: 'stealVideo', icon: '🎯', href: '/tools/steal-video', credits: 8, color: 'orange' },
+    { key: 'videoFinder', icon: '🔍', href: '/tools/video-finder', credits: 5, color: 'cyan' },
+    { key: 'trendRadar', icon: '📡', href: '/tools/trend-radar', credits: 4, color: 'red' },
+    { key: 'competitorSpy', icon: '🕵️', href: '/tools/competitor-spy', credits: 8, color: 'yellow' },
+    { key: 'hashtagResearch', icon: '#️⃣', href: '/tools/hashtag-research', credits: 3, color: 'indigo' },
+    { key: 'contentPlanner', icon: '📅', href: '/tools/content-planner', credits: 10, color: 'emerald' },
+    { key: 'contentRepurposer', icon: '♻️', href: '/tools/content-repurposer', credits: 8, color: 'violet' },
+    { key: 'abTester', icon: '⚔️', href: '/tools/ab-tester', credits: 5, color: 'rose' },
+    { key: 'carouselPlanner', icon: '🎠', href: '/tools/carousel-planner', credits: 5, color: 'amber' },
+    { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4, color: 'sky' },
+    { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2, color: 'lime' },
+    { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5, color: 'fuchsia' },
+  ]
 
-  // Loading durumunda spinner göster
-  if (loading) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
+        <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -166,143 +112,162 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl font-bold">M</div>
-            <span className="text-xl font-bold hidden sm:block">MediaToolkit</span>
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Logo - Ana sayfaya yönlendir */}
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">M</span>
+            </div>
+            <span className="font-bold text-lg hidden sm:block">MediaToolKit</span>
           </Link>
 
-          <div className="flex items-center gap-4">
-            {/* Credits */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
-              <span className="text-purple-400">✦</span>
-              <span className="font-semibold">{credits}</span>
-              <span className="text-gray-500 text-sm hidden sm:inline">{t.credits}</span>
-            </div>
-
-            {/* Language */}
-            <div className="relative group">
-              <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
-              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
-                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Profile */}
-            <div className="relative group">
-              <button className="flex items-center gap-2 cursor-pointer">
-                {renderAvatar('w-10 h-10', 'text-lg')}
+          {/* Right Side */}
+          <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition text-sm"
+              >
+                {languageNames[language].split(' ')[0]}
               </button>
-              <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-2 z-50">
-                <div className="px-4 py-3 border-b border-gray-800">
-                  <div className="font-semibold text-white">{getUserName()}</div>
-                  <div className="text-sm text-gray-500">{user?.email}</div>
+              {showLangMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => { setLanguage(lang); setShowLangMenu(false) }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-white/10 transition ${language === lang ? 'bg-purple-500/20 text-purple-400' : 'text-gray-300'}`}
+                    >
+                      {languageNames[lang]}
+                    </button>
+                  ))}
                 </div>
-                <button onClick={() => setShowAvatarModal(true)} className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                  {t.changePhoto}
-                </button>
-                <button onClick={handleLogout} className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-gray-800 transition">
-                  {t.logout}
-                </button>
-              </div>
+              )}
+            </div>
+
+            {/* Credits */}
+            <div className="px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
+              <span className="text-purple-400 font-medium">✦ {credits}</span>
+            </div>
+
+            {/* Watch Ad Button */}
+            <button
+              onClick={startWatchingAd}
+              className="px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:from-green-500/30 hover:to-emerald-500/30 transition hidden sm:block"
+            >
+              🎬 +10
+            </button>
+
+            {/* Avatar / User Menu */}
+            <div className="flex items-center gap-2">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <span className="text-purple-400 text-sm">{user.email?.[0].toUpperCase()}</span>
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-400 hover:text-white transition hidden sm:block"
+              >
+                {t('nav.logout')}
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Welcome */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold">{t.welcome}, {getUserName()} 👋</h1>
-          <p className="text-gray-500">Ready to create viral content?</p>
+          <h1 className="text-2xl font-bold mb-2">{t('dashboard.welcome')}, {user.email?.split('@')[0]}! 👋</h1>
+          <p className="text-gray-400">{t('dashboard.credits')}: <span className="text-purple-400 font-semibold">{credits}</span></p>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[
-            { key: 'all', label: t.allTools, icon: '📦' },
-            { key: 'create', label: t.create, icon: '✨' },
-            { key: 'analyze', label: t.analyze, icon: '🔍' },
-            { key: 'optimize', label: t.optimize, icon: '⚡' },
-          ].map(f => (
-            <button key={f.key} onClick={() => setFilter(f.key)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${filter === f.key ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10'}`}>
-              <span>{f.icon}</span> {f.label}
+        {/* Watch Ad Card - Mobile */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl sm:hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-green-400">{t('ad.title')}</h3>
+              <p className="text-sm text-gray-400">{t('ad.description')}</p>
+            </div>
+            <button
+              onClick={startWatchingAd}
+              className="px-4 py-2 bg-green-500 text-white rounded-xl font-medium"
+            >
+              +10 🎬
             </button>
-          ))}
+          </div>
         </div>
 
         {/* Tools Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredTools.map((tool) => (
-            <Link key={tool.slug} href={`/tools/${tool.slug}`} className="group p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] hover:border-purple-500/30 transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
+        <h2 className="text-xl font-semibold mb-4">{t('dashboard.tools')}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {tools.map((tool) => (
+            <Link
+              key={tool.key}
+              href={tool.href}
+              className="group p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-purple-500/30 hover:bg-white/[0.04] transition"
+            >
+              <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{tool.icon}</span>
-                <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg text-xs font-medium">{tool.credits} ✦</span>
+                <span className="text-xs px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg">
+                  {tool.credits} {t('dashboard.credits').toLowerCase()}
+                </span>
               </div>
-              <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">{tool.name}</h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span className={`w-2 h-2 rounded-full ${tool.category === 'create' ? 'bg-green-500' : tool.category === 'analyze' ? 'bg-blue-500' : 'bg-yellow-500'}`}></span>
-                {tool.category === 'create' ? t.create : tool.category === 'analyze' ? t.analyze : t.optimize}
-              </div>
+              <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">
+                {t(`tool.${tool.key}`)}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {t(`tool.${tool.key}.desc`)}
+              </p>
             </Link>
           ))}
         </div>
       </main>
 
-      {/* Avatar Modal */}
-      {showAvatarModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowAvatarModal(false)}>
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">{t.changePhoto}</h2>
-              <button onClick={() => setShowAvatarModal(false)} className="text-gray-500 hover:text-white text-xl">✕</button>
-            </div>
+      {/* Ad Modal */}
+      {showAdModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 max-w-md w-full text-center">
+            {!adComplete ? (
+              <>
+                <div className="text-6xl mb-4">📺</div>
+                <h3 className="text-xl font-bold mb-2">{t('ad.watching')}</h3>
+                
+                {/* Fake Ad Content */}
+                <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl">
+                  <p className="text-sm text-gray-300 mb-2">✨ MediaToolKit Pro ✨</p>
+                  <p className="text-xs text-gray-400">Unlock unlimited credits and premium features!</p>
+                </div>
 
-            {/* Current Avatar */}
-            <div className="flex justify-center mb-6">
-              {renderAvatar('w-28 h-28', 'text-5xl')}
-            </div>
+                {/* Countdown */}
+                <div className="mb-4">
+                  <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-1000"
+                      style={{ width: `${((30 - adCountdown) / 30) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-400">{adCountdown} {t('ad.remaining')}</p>
+                </div>
 
-            {/* Message */}
-            {uploadMessage && (
-              <div className={`mb-4 p-3 rounded-lg text-sm text-center ${uploadMessage.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                {uploadMessage.text}
-              </div>
-            )}
-
-            {/* Upload Button */}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={uploadAvatar} 
-              accept="image/jpeg,image/png,image/gif,image/webp" 
-              className="hidden" 
-            />
-            <button 
-              onClick={() => fileInputRef.current?.click()} 
-              disabled={uploading} 
-              className="w-full py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 mb-3"
-            >
-              {uploading ? (
-                <>
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  {t.uploading}
-                </>
-              ) : (
-                t.uploadPhoto
-              )}
-            </button>
-
-            <p className="text-center text-gray-500 text-xs mb-4">JPG, PNG, GIF, WebP • Max 5MB</p>
-
-            {/* Remove Button */}
-            {avatarUrl && (
-              <button onClick={removeAvatar} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-red-400 hover:border-red-500/30 transition">
-                {t.removePhoto}
-              </button>
+                <button
+                  onClick={() => setShowAdModal(false)}
+                  className="text-sm text-gray-500 hover:text-gray-300 transition"
+                >
+                  {t('common.cancel')}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-6xl mb-4">🎉</div>
+                <h3 className="text-xl font-bold text-green-400 mb-2">{t('ad.complete')}</h3>
+                <p className="text-gray-400">+10 {t('dashboard.credits')}</p>
+              </>
             )}
           </div>
         </div>

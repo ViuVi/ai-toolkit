@@ -12,7 +12,7 @@ const texts: any = {
     tools: { title: 'Güçlü AI Araçları', subtitle: 'Viral içerik üretmek için ihtiyacın olan her şey', viewAll: 'Tüm 16 aracı gör' },
     howItWorks: { title: 'Nasıl Çalışır?', subtitle: 'Fikirden viral içeriğe dakikalar içinde', step1: 'Trendleri Keşfet', step1Desc: 'AI destekli trend analizi ile nişindeki viral içerikleri bul', step2: 'İçerik Üret', step2Desc: 'Engagement için optimize edilmiş hook, script ve caption oluştur', step3: 'Viral Ol', step3Desc: 'Mükemmel zamanda paylaş ve içeriğinin patlamasını izle' },
     testimonials: { title: 'Üreticiler Tarafından Seviliyor', subtitle: 'Kullanıcılarımız ne diyor' },
-    pricing: { title: 'Basit Fiyatlandırma', subtitle: 'Ücretsiz başla, ihtiyacın olduğunda yükselt', starter: 'Başlangıç', pro: 'Pro', agency: 'Agency', free: 'Ücretsiz', month: '/ay', credits: 'kredi', features: { starter: ['5 Araç Erişimi', '50 Kredi/ay', 'Temel Destek'], pro: ['Tüm 16 Araç', '500 Kredi/ay', 'Öncelikli Destek', 'Filigran Yok'], agency: ['Sınırsız Kredi', 'Takım Erişimi (5 kişi)', 'API Erişimi', 'Özel Destek'] }, cta: { starter: 'Ücretsiz Başla', pro: 'Pro\'ya Geç', agency: 'İletişime Geç' }, popular: 'EN POPÜLER' },
+    pricing: { title: 'Basit Fiyatlandırma', subtitle: 'Ücretsiz başla, ihtiyacın olduğunda yükselt', starter: 'Başlangıç', pro: 'Pro', agency: 'Agency', free: 'Ücretsiz', month: '/ay', credits: 'kredi', features: { starter: ['Tüm 16 Araç', '100 Kredi/ay', 'Reklam ile +10 Kredi', 'Temel Destek'], pro: ['Tüm 16 Araç', '1000 Kredi/ay', 'Öncelikli Destek', 'Filigran Yok', 'Reklamsız'], agency: ['Sınırsız Kredi', 'Takım Erişimi (5 kişi)', 'API Erişimi', 'Özel Destek'] }, cta: { starter: 'Ücretsiz Başla', pro: 'Pro\'ya Geç', agency: 'İletişime Geç' }, popular: 'EN POPÜLER' },
     cta: { title: 'Viral Olmaya Hazır mısın?', subtitle: 'MediaToolkit ile daha hızlı büyüyen 10.000+ üreticiye katıl', button: 'Ücretsiz Başla' },
     footer: { privacy: 'Gizlilik', terms: 'Şartlar', contact: 'İletişim', rights: 'Tüm hakları saklıdır.' }
   },
@@ -23,7 +23,7 @@ const texts: any = {
     tools: { title: 'Powerful AI Tools', subtitle: 'Everything you need to create viral content', viewAll: 'View all 16 tools' },
     howItWorks: { title: 'How It Works', subtitle: 'From idea to viral content in minutes', step1: 'Discover Trends', step1Desc: 'Find viral content in your niche with AI-powered trend analysis', step2: 'Generate Content', step2Desc: 'Create hooks, scripts, and captions optimized for engagement', step3: 'Go Viral', step3Desc: 'Post at the perfect time and watch your content explode' },
     testimonials: { title: 'Loved by Creators', subtitle: 'See what our users are saying' },
-    pricing: { title: 'Simple Pricing', subtitle: 'Start free, upgrade when you need', starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free', month: '/mo', credits: 'credits', features: { starter: ['5 Tools Access', '50 Credits/month', 'Basic Support'], pro: ['All 16 Tools', '500 Credits/month', 'Priority Support', 'No Watermarks'], agency: ['Unlimited Credits', 'Team Access (5 seats)', 'API Access', 'Dedicated Support'] }, cta: { starter: 'Start Free', pro: 'Go Pro', agency: 'Contact Us' }, popular: 'MOST POPULAR' },
+    pricing: { title: 'Simple Pricing', subtitle: 'Start free, upgrade when you need', starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free', month: '/mo', credits: 'credits', features: { starter: ['All 16 Tools', '100 Credits/month', 'Watch Ads for +10 Credits', 'Basic Support'], pro: ['All 16 Tools', '1000 Credits/month', 'Priority Support', 'No Watermarks', 'Ad-Free'], agency: ['Unlimited Credits', 'Team Access (5 seats)', 'API Access', 'Dedicated Support'] }, cta: { starter: 'Start Free', pro: 'Go Pro', agency: 'Contact Us' }, popular: 'MOST POPULAR' },
     cta: { title: 'Ready to Go Viral?', subtitle: 'Join 10,000+ creators who are growing faster with MediaToolkit', button: 'Start Creating Free' },
     footer: { privacy: 'Privacy', terms: 'Terms', contact: 'Contact', rights: 'All rights reserved.' }
   },
@@ -34,7 +34,7 @@ const texts: any = {
     tools: { title: 'Мощные ИИ инструменты', subtitle: 'Всё для создания вирусного контента', viewAll: 'Все 16 инструментов' },
     howItWorks: { title: 'Как это работает', subtitle: 'От идеи до вирусного контента за минуты', step1: 'Найдите тренды', step1Desc: 'ИИ-анализ трендов', step2: 'Создайте контент', step2Desc: 'Хуки, скрипты, подписи', step3: 'Станьте вирусным', step3Desc: 'Публикуйте в лучшее время' },
     testimonials: { title: 'Любимый создателями', subtitle: 'Отзывы пользователей' },
-    pricing: { title: 'Простые цены', subtitle: 'Начните бесплатно', starter: 'Старт', pro: 'Про', agency: 'Агентство', free: 'Бесплатно', month: '/мес', credits: 'кредитов', features: { starter: ['5 инструментов', '50 кредитов/мес', 'Базовая поддержка'], pro: ['Все 16 инструментов', '500 кредитов/мес', 'Приоритет', 'Без водяных знаков'], agency: ['Безлимит', 'Команда (5 мест)', 'API', 'Выделенная поддержка'] }, cta: { starter: 'Бесплатно', pro: 'Про', agency: 'Связаться' }, popular: 'ПОПУЛЯРНЫЙ' },
+    pricing: { title: 'Простые цены', subtitle: 'Начните бесплатно', starter: 'Старт', pro: 'Про', agency: 'Агентство', free: 'Бесплатно', month: '/мес', credits: 'кредитов', features: { starter: ['Все 16 инструментов', '100 кредитов/мес', 'Реклама +10 кредитов', 'Базовая поддержка'], pro: ['Все 16 инструментов', '1000 кредитов/мес', 'Приоритет', 'Без водяных знаков', 'Без рекламы'], agency: ['Безлимит', 'Команда (5 мест)', 'API', 'Выделенная поддержка'] }, cta: { starter: 'Бесплатно', pro: 'Про', agency: 'Связаться' }, popular: 'ПОПУЛЯРНЫЙ' },
     cta: { title: 'Готовы стать вирусным?', subtitle: 'Присоединяйтесь к 10,000+ создателей', button: 'Начать бесплатно' },
     footer: { privacy: 'Конфиденциальность', terms: 'Условия', contact: 'Контакты', rights: 'Все права защищены.' }
   },
@@ -45,7 +45,7 @@ const texts: any = {
     tools: { title: 'Leistungsstarke KI-Tools', subtitle: 'Alles für viralen Content', viewAll: 'Alle 16 Tools' },
     howItWorks: { title: 'So funktioniert es', subtitle: 'Von der Idee zum viralen Content', step1: 'Trends entdecken', step1Desc: 'KI-gestützte Trendanalyse', step2: 'Content erstellen', step2Desc: 'Hooks, Skripte, Captions', step3: 'Viral gehen', step3Desc: 'Zur perfekten Zeit posten' },
     testimonials: { title: 'Geliebt von Erstellern', subtitle: 'Was unsere Nutzer sagen' },
-    pricing: { title: 'Einfache Preise', subtitle: 'Kostenlos starten', starter: 'Starter', pro: 'Pro', agency: 'Agentur', free: 'Kostenlos', month: '/Monat', credits: 'Credits', features: { starter: ['5 Tools', '50 Credits/Monat', 'Basis-Support'], pro: ['Alle 16 Tools', '500 Credits/Monat', 'Priorität', 'Keine Wasserzeichen'], agency: ['Unbegrenzt', 'Team (5 Plätze)', 'API', 'Dedizierter Support'] }, cta: { starter: 'Kostenlos', pro: 'Pro werden', agency: 'Kontakt' }, popular: 'BELIEBTESTE' },
+    pricing: { title: 'Einfache Preise', subtitle: 'Kostenlos starten', starter: 'Starter', pro: 'Pro', agency: 'Agentur', free: 'Kostenlos', month: '/Monat', credits: 'Credits', features: { starter: ['Alle 16 Tools', '100 Credits/Monat', 'Werbung +10 Credits', 'Basis-Support'], pro: ['Alle 16 Tools', '1000 Credits/Monat', 'Priorität', 'Keine Wasserzeichen', 'Werbefrei'], agency: ['Unbegrenzt', 'Team (5 Plätze)', 'API', 'Dedizierter Support'] }, cta: { starter: 'Kostenlos', pro: 'Pro werden', agency: 'Kontakt' }, popular: 'BELIEBTESTE' },
     cta: { title: 'Bereit viral zu gehen?', subtitle: 'Schließe dich 10.000+ Erstellern an', button: 'Kostenlos starten' },
     footer: { privacy: 'Datenschutz', terms: 'AGB', contact: 'Kontakt', rights: 'Alle Rechte vorbehalten.' }
   },
@@ -56,7 +56,7 @@ const texts: any = {
     tools: { title: 'Outils IA Puissants', subtitle: 'Tout pour créer du contenu viral', viewAll: 'Voir les 16 outils' },
     howItWorks: { title: 'Comment ça marche', subtitle: 'De l\'idée au contenu viral en minutes', step1: 'Découvrir les tendances', step1Desc: 'Analyse des tendances par IA', step2: 'Générer du contenu', step2Desc: 'Hooks, scripts, légendes', step3: 'Devenir viral', step3Desc: 'Publier au bon moment' },
     testimonials: { title: 'Adoré par les créateurs', subtitle: 'Ce que disent nos utilisateurs' },
-    pricing: { title: 'Tarification Simple', subtitle: 'Commencez gratuitement', starter: 'Débutant', pro: 'Pro', agency: 'Agence', free: 'Gratuit', month: '/mois', credits: 'crédits', features: { starter: ['5 outils', '50 crédits/mois', 'Support basique'], pro: ['16 outils', '500 crédits/mois', 'Priorité', 'Sans filigrane'], agency: ['Illimité', 'Équipe (5 places)', 'API', 'Support dédié'] }, cta: { starter: 'Gratuit', pro: 'Passer Pro', agency: 'Contacter' }, popular: 'POPULAIRE' },
+    pricing: { title: 'Tarification Simple', subtitle: 'Commencez gratuitement', starter: 'Débutant', pro: 'Pro', agency: 'Agence', free: 'Gratuit', month: '/mois', credits: 'crédits', features: { starter: ['Tous les 16 outils', '100 crédits/mois', 'Pub +10 crédits', 'Support basique'], pro: ['Tous les 16 outils', '1000 crédits/mois', 'Priorité', 'Sans filigrane', 'Sans pub'], agency: ['Illimité', 'Équipe (5 places)', 'API', 'Support dédié'] }, cta: { starter: 'Gratuit', pro: 'Passer Pro', agency: 'Contacter' }, popular: 'POPULAIRE' },
     cta: { title: 'Prêt à devenir viral?', subtitle: 'Rejoignez 10 000+ créateurs', button: 'Commencer gratuitement' },
     footer: { privacy: 'Confidentialité', terms: 'Conditions', contact: 'Contact', rights: 'Tous droits réservés.' }
   }
@@ -297,7 +297,7 @@ export default function HomePage() {
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-bold">$0</span>
               </div>
-              <div className="text-sm text-gray-400 mb-6">50 {t.pricing.credits}</div>
+              <div className="text-sm text-gray-400 mb-6">100 {t.pricing.credits}</div>
               <ul className="space-y-3 mb-8">
                 {t.pricing.features.starter.map((f: string, j: number) => (
                   <li key={j} className="flex items-center gap-2 text-sm text-gray-400">
@@ -318,7 +318,7 @@ export default function HomePage() {
                 <span className="text-4xl font-bold">$4.99</span>
                 <span className="text-gray-500">{t.pricing.month}</span>
               </div>
-              <div className="text-sm text-gray-400 mb-6">500 {t.pricing.credits}</div>
+              <div className="text-sm text-gray-400 mb-6">1000 {t.pricing.credits}</div>
               <ul className="space-y-3 mb-8">
                 {t.pricing.features.pro.map((f: string, j: number) => (
                   <li key={j} className="flex items-center gap-2 text-sm text-gray-400">

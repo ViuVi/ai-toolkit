@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const toolTexts: Record<string, Record<string, string>> = {
+  tr: { title: 'Hook Üretici Pro', topic: 'Konu / Niş', topicPlaceholder: 'örn: Yapay zeka, Fitness, Para kazanma...', platform: 'Platform', tone: 'Ton', generate: '20 Viral Hook Üret', generating: '20 Hook Üretiliyor...', bestHook: 'En İyi Hook', topicInsight: 'Konu Analizi', copy: 'Kopyala', copied: '✓', professional: 'Profesyonel', casual: 'Samimi', humorous: 'Esprili', dramatic: 'Dramatik', emptyTitle: '20 Viral Hook', emptyDesc: 'Konunuzu girin, scroll-durduran hook\'lar üretelim' },
+  en: { title: 'Hook Generator Pro', topic: 'Topic / Niche', topicPlaceholder: 'e.g: AI, Fitness, Making money...', platform: 'Platform', tone: 'Tone', generate: 'Generate 20 Viral Hooks', generating: 'Generating 20 Hooks...', bestHook: 'Best Hook', topicInsight: 'Topic Insight', copy: 'Copy', copied: '✓', professional: 'Professional', casual: 'Casual', humorous: 'Humorous', dramatic: 'Dramatic', emptyTitle: '20 Viral Hooks', emptyDesc: 'Enter your topic to generate scroll-stopping hooks' },
+  ru: { title: 'Генератор Хуков Pro', topic: 'Тема / Ниша', topicPlaceholder: 'напр: ИИ, Фитнес, Заработок...', platform: 'Платформа', tone: 'Тон', generate: 'Создать 20 Хуков', generating: 'Создаём 20 хуков...', bestHook: 'Лучший Хук', topicInsight: 'Анализ Темы', copy: 'Копировать', copied: '✓', professional: 'Профессиональный', casual: 'Дружеский', humorous: 'Юмор', dramatic: 'Драматический', emptyTitle: '20 Вирусных Хуков', emptyDesc: 'Введите тему для генерации хуков' },
+  de: { title: 'Hook Generator Pro', topic: 'Thema / Nische', topicPlaceholder: 'z.B: KI, Fitness, Geld verdienen...', platform: 'Plattform', tone: 'Ton', generate: '20 Virale Hooks Erstellen', generating: '20 Hooks werden erstellt...', bestHook: 'Bester Hook', topicInsight: 'Themen-Einblick', copy: 'Kopieren', copied: '✓', professional: 'Professionell', casual: 'Locker', humorous: 'Humorvoll', dramatic: 'Dramatisch', emptyTitle: '20 Virale Hooks', emptyDesc: 'Geben Sie Ihr Thema ein' },
+  fr: { title: 'Générateur de Hooks Pro', topic: 'Sujet / Niche', topicPlaceholder: 'ex: IA, Fitness, Gagner de l\'argent...', platform: 'Plateforme', tone: 'Ton', generate: 'Générer 20 Hooks Viraux', generating: 'Génération de 20 hooks...', bestHook: 'Meilleur Hook', topicInsight: 'Analyse du Sujet', copy: 'Copier', copied: '✓', professional: 'Professionnel', casual: 'Décontracté', humorous: 'Humoristique', dramatic: 'Dramatique', emptyTitle: '20 Hooks Viraux', emptyDesc: 'Entrez votre sujet pour générer des hooks' }
+}
+
 export default function HookGeneratorPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
@@ -16,7 +24,8 @@ export default function HookGeneratorPage() {
   const [error, setError] = useState('')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+  const t = toolTexts[language] || toolTexts.en
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -68,10 +77,10 @@ export default function HookGeneratorPage() {
   ]
 
   const tones = [
-    { value: 'professional', label: 'Profesyonel' },
-    { value: 'casual', label: 'Samimi' },
-    { value: 'humorous', label: 'Esprili' },
-    { value: 'dramatic', label: 'Dramatik' }
+    { value: 'professional', label: t.professional },
+    { value: 'casual', label: t.casual },
+    { value: 'humorous', label: t.humorous },
+    { value: 'dramatic', label: t.dramatic }
   ]
 
   return (
@@ -82,11 +91,22 @@ export default function HookGeneratorPage() {
             <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Dashboard</Link>
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎣</span>
-              <h1 className="font-bold text-lg">Hook Generator Pro</h1>
+              <h1 className="font-bold text-lg">{t.title}</h1>
             </div>
           </div>
-          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-            <span className="text-purple-400">✦ {credits}</span>
+          <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            <div className="relative group">
+              <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
+                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+              <span className="text-purple-400">✦ {credits}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -97,18 +117,18 @@ export default function HookGeneratorPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Konu / Niş</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.topic}</label>
                 <input
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="örn: Yapay zeka, Fitness, Para kazanma..."
+                  placeholder={t.topicPlaceholder}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Platform</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.platform}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {platforms.map((p) => (
                     <button
@@ -127,7 +147,7 @@ export default function HookGeneratorPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Ton</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.tone}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {tones.map((t) => (
                     <button
@@ -153,10 +173,10 @@ export default function HookGeneratorPage() {
                 {loading ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    20 Hook Üretiliyor...
+                    {t.generating}
                   </>
                 ) : (
-                  <>🎣 20 Viral Hook Üret</>
+                  <>🎣 {t.generate}</>
                 )}
               </button>
 
@@ -173,15 +193,15 @@ export default function HookGeneratorPage() {
             {!result && !loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
                 <div className="text-5xl mb-4">🎣</div>
-                <h3 className="text-xl font-medium mb-2">20 Viral Hook</h3>
-                <p className="text-gray-500">Konunuzu girin, scroll-durduran hook'lar üretelim</p>
+                <h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3>
+                <p className="text-gray-500">{t.emptyDesc}</p>
               </div>
             )}
 
             {loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
                 <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-400">20 viral hook üretiliyor...</p>
+                <p className="text-gray-400">{t.generating}</p>
               </div>
             )}
 
@@ -192,7 +212,7 @@ export default function HookGeneratorPage() {
                   <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-xl">🏆</span>
-                      <span className="font-semibold text-yellow-400">En İyi Hook</span>
+                      <span className="font-semibold text-yellow-400">{t.bestHook}</span>
                     </div>
                     <p className="text-lg font-medium mb-2">{result.best_hook.text}</p>
                     <p className="text-sm text-gray-400">{result.best_hook.reason}</p>
