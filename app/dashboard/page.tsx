@@ -328,21 +328,29 @@ export default function DashboardPage() {
               🎬 +10
             </button>
 
-            {/* Avatar / User Menu */}
-            <div className="flex items-center gap-2">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
-              ) : (
-                <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-purple-400 text-sm">{user.email?.[0]?.toUpperCase() || 'U'}</span>
-                </div>
-              )}
-              <button
-                onClick={handleLogout}
-                className="text-sm text-gray-400 hover:text-white transition hidden sm:block"
-              >
-                {t.logout}
+            {/* Profile Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center gap-2 cursor-pointer">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-10 h-10 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                )}
               </button>
+              <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-2 z-50">
+                <div className="px-4 py-3 border-b border-gray-800">
+                  <div className="font-semibold text-white">{user.email?.split('@')[0] || 'User'}</div>
+                  <div className="text-sm text-gray-500">{user.email}</div>
+                </div>
+                <button 
+                  onClick={handleLogout} 
+                  className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-gray-800 transition"
+                >
+                  {t.logout}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -384,7 +392,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{tool.icon}</span>
                 <span className="text-xs px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg">
-                  {tool.credits} {t.credits.toLowerCase()}
+                  ✦ {tool.credits} {t.credits.toLowerCase()}
                 </span>
               </div>
               <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">
