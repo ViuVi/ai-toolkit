@@ -33,7 +33,12 @@ const texts: Record<string, Record<string, string>> = {
     removePhoto: 'Remove Photo',
     uploadError: 'Upload failed',
     uploadSuccess: 'Photo updated',
-    photoRemoved: 'Photo removed'
+    photoRemoved: 'Photo removed',
+    readyToCreate: 'Ready to create viral content?',
+    allTools: 'All Tools',
+    create: 'Create',
+    analyze: 'Analyze',
+    optimize: 'Optimize'
   },
   tr: {
     welcome: 'Hoş Geldin',
@@ -52,7 +57,12 @@ const texts: Record<string, Record<string, string>> = {
     removePhoto: 'Fotoğrafı Kaldır',
     uploadError: 'Yükleme hatası',
     uploadSuccess: 'Fotoğraf güncellendi',
-    photoRemoved: 'Fotoğraf kaldırıldı'
+    photoRemoved: 'Fotoğraf kaldırıldı',
+    readyToCreate: 'Viral içerik oluşturmaya hazır mısın?',
+    allTools: 'Tüm Araçlar',
+    create: 'Oluştur',
+    analyze: 'Analiz',
+    optimize: 'Optimize'
   },
   ru: {
     welcome: 'Добро пожаловать',
@@ -71,7 +81,12 @@ const texts: Record<string, Record<string, string>> = {
     removePhoto: 'Удалить фото',
     uploadError: 'Ошибка загрузки',
     uploadSuccess: 'Фото обновлено',
-    photoRemoved: 'Фото удалено'
+    photoRemoved: 'Фото удалено',
+    readyToCreate: 'Готовы создавать вирусный контент?',
+    allTools: 'Все',
+    create: 'Создать',
+    analyze: 'Анализ',
+    optimize: 'Оптимизация'
   },
   de: {
     welcome: 'Willkommen',
@@ -90,7 +105,12 @@ const texts: Record<string, Record<string, string>> = {
     removePhoto: 'Foto entfernen',
     uploadError: 'Upload fehlgeschlagen',
     uploadSuccess: 'Foto aktualisiert',
-    photoRemoved: 'Foto entfernt'
+    photoRemoved: 'Foto entfernt',
+    readyToCreate: 'Bereit viralen Content zu erstellen?',
+    allTools: 'Alle',
+    create: 'Erstellen',
+    analyze: 'Analysieren',
+    optimize: 'Optimieren'
   },
   fr: {
     welcome: 'Bienvenue',
@@ -109,7 +129,12 @@ const texts: Record<string, Record<string, string>> = {
     removePhoto: 'Supprimer',
     uploadError: 'Échec du téléchargement',
     uploadSuccess: 'Photo mise à jour',
-    photoRemoved: 'Photo supprimée'
+    photoRemoved: 'Photo supprimée',
+    readyToCreate: 'Prêt à créer du contenu viral?',
+    allTools: 'Tous',
+    create: 'Créer',
+    analyze: 'Analyser',
+    optimize: 'Optimiser'
   }
 }
 
@@ -340,23 +365,26 @@ export default function DashboardPage() {
   }
 
   const tools = [
-    { key: 'hookGenerator', icon: '🎣', href: '/tools/hook-generator', credits: 3 },
-    { key: 'captionGenerator', icon: '✍️', href: '/tools/caption-generator', credits: 3 },
-    { key: 'scriptStudio', icon: '🎬', href: '/tools/script-studio', credits: 6 },
-    { key: 'viralAnalyzer', icon: '📊', href: '/tools/viral-analyzer', credits: 5 },
-    { key: 'stealVideo', icon: '🎯', href: '/tools/steal-video', credits: 8 },
-    { key: 'videoFinder', icon: '🔍', href: '/tools/video-finder', credits: 5 },
-    { key: 'trendRadar', icon: '📡', href: '/tools/trend-radar', credits: 4 },
-    { key: 'competitorSpy', icon: '🕵️', href: '/tools/competitor-spy', credits: 8 },
-    { key: 'hashtagResearch', icon: '#️⃣', href: '/tools/hashtag-research', credits: 3 },
-    { key: 'contentPlanner', icon: '📅', href: '/tools/content-planner', credits: 10 },
-    { key: 'contentRepurposer', icon: '♻️', href: '/tools/content-repurposer', credits: 8 },
-    { key: 'abTester', icon: '⚔️', href: '/tools/ab-tester', credits: 5 },
-    { key: 'carouselPlanner', icon: '🎠', href: '/tools/carousel-planner', credits: 5 },
-    { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4 },
-    { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2 },
-    { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5 },
+    { key: 'videoFinder', icon: '🔍', href: '/tools/video-finder', credits: 5, category: 'analyze' },
+    { key: 'hookGenerator', icon: '🎣', href: '/tools/hook-generator', credits: 3, category: 'create' },
+    { key: 'captionGenerator', icon: '✍️', href: '/tools/caption-generator', credits: 3, category: 'create' },
+    { key: 'stealVideo', icon: '🎯', href: '/tools/steal-video', credits: 8, category: 'analyze' },
+    { key: 'viralAnalyzer', icon: '📊', href: '/tools/viral-analyzer', credits: 5, category: 'analyze' },
+    { key: 'scriptStudio', icon: '🎬', href: '/tools/script-studio', credits: 6, category: 'create' },
+    { key: 'contentPlanner', icon: '📅', href: '/tools/content-planner', credits: 10, category: 'optimize' },
+    { key: 'trendRadar', icon: '📡', href: '/tools/trend-radar', credits: 4, category: 'analyze' },
+    { key: 'competitorSpy', icon: '🕵️', href: '/tools/competitor-spy', credits: 8, category: 'analyze' },
+    { key: 'hashtagResearch', icon: '#️⃣', href: '/tools/hashtag-research', credits: 3, category: 'optimize' },
+    { key: 'contentRepurposer', icon: '♻️', href: '/tools/content-repurposer', credits: 8, category: 'create' },
+    { key: 'abTester', icon: '⚔️', href: '/tools/ab-tester', credits: 5, category: 'analyze' },
+    { key: 'carouselPlanner', icon: '🎠', href: '/tools/carousel-planner', credits: 5, category: 'create' },
+    { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4, category: 'optimize' },
+    { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2, category: 'optimize' },
+    { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5, category: 'create' },
   ]
+
+  const [filter, setFilter] = useState('all')
+  const filteredTools = filter === 'all' ? tools : tools.filter(tool => tool.category === filter)
 
   if (!user) {
     return (
@@ -456,7 +484,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">{t.welcome}, {user.email?.split('@')[0] || 'User'}! 👋</h1>
-          <p className="text-gray-400">{t.credits}: <span className="text-purple-400 font-semibold">{credits}</span></p>
+          <p className="text-gray-400">{t.readyToCreate}</p>
         </div>
 
         {/* Watch Ad Card - Mobile */}
@@ -475,10 +503,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Category Filters */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[
+            { key: 'all', label: t.allTools, icon: '📦' },
+            { key: 'create', label: t.create, icon: '✨' },
+            { key: 'analyze', label: t.analyze, icon: '🔍' },
+            { key: 'optimize', label: t.optimize, icon: '⚡' },
+          ].map(f => (
+            <button 
+              key={f.key} 
+              onClick={() => setFilter(f.key)} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${
+                filter === f.key 
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+                  : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10'
+              }`}
+            >
+              <span>{f.icon}</span> {f.label}
+            </button>
+          ))}
+        </div>
+
         {/* Tools Grid */}
-        <h2 className="text-xl font-semibold mb-4">{t.tools}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {tools.map((tool) => (
+          {filteredTools.map((tool) => (
             <Link
               key={tool.key}
               href={tool.href}
@@ -487,15 +536,19 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{tool.icon}</span>
                 <span className="text-xs px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg">
-                  ✦ {tool.credits} {t.credits.toLowerCase()}
+                  {tool.credits} ✦
                 </span>
               </div>
               <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">
                 {toolT[tool.key]?.name || tool.key}
               </h3>
-              <p className="text-sm text-gray-500">
-                {toolT[tool.key]?.desc || ''}
-              </p>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span className={`w-2 h-2 rounded-full ${
+                  tool.category === 'create' ? 'bg-green-500' : 
+                  tool.category === 'analyze' ? 'bg-blue-500' : 'bg-yellow-500'
+                }`}></span>
+                {tool.category === 'create' ? t.create : tool.category === 'analyze' ? t.analyze : t.optimize}
+              </div>
             </Link>
           ))}
         </div>
