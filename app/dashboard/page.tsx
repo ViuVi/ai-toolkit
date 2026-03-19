@@ -14,6 +14,164 @@ const languageNames: Record<string, string> = {
   fr: '🇫🇷 Français'
 }
 
+// Çeviriler
+const texts: Record<string, Record<string, string>> = {
+  en: {
+    welcome: 'Welcome',
+    credits: 'Credits',
+    tools: 'AI Tools',
+    logout: 'Logout',
+    watchAd: 'Watch Ad',
+    watchAdDesc: 'Watch a short ad to earn credits',
+    watching: 'Watching Ad...',
+    remaining: 'seconds remaining',
+    complete: '+10 Credits Added!',
+    cancel: 'Cancel'
+  },
+  tr: {
+    welcome: 'Hoş Geldin',
+    credits: 'Kredi',
+    tools: 'AI Araçları',
+    logout: 'Çıkış',
+    watchAd: 'Reklam İzle',
+    watchAdDesc: 'Kredi kazanmak için reklam izle',
+    watching: 'Reklam İzleniyor...',
+    remaining: 'saniye kaldı',
+    complete: '+10 Kredi Eklendi!',
+    cancel: 'İptal'
+  },
+  ru: {
+    welcome: 'Добро пожаловать',
+    credits: 'Кредиты',
+    tools: 'AI Инструменты',
+    logout: 'Выход',
+    watchAd: 'Смотреть рекламу',
+    watchAdDesc: 'Смотрите рекламу для кредитов',
+    watching: 'Просмотр рекламы...',
+    remaining: 'секунд осталось',
+    complete: '+10 Кредитов!',
+    cancel: 'Отмена'
+  },
+  de: {
+    welcome: 'Willkommen',
+    credits: 'Credits',
+    tools: 'AI Tools',
+    logout: 'Abmelden',
+    watchAd: 'Werbung ansehen',
+    watchAdDesc: 'Werbung ansehen für Credits',
+    watching: 'Werbung läuft...',
+    remaining: 'Sekunden übrig',
+    complete: '+10 Credits!',
+    cancel: 'Abbrechen'
+  },
+  fr: {
+    welcome: 'Bienvenue',
+    credits: 'Crédits',
+    tools: 'Outils IA',
+    logout: 'Déconnexion',
+    watchAd: 'Voir la pub',
+    watchAdDesc: 'Regardez une pub pour des crédits',
+    watching: 'Pub en cours...',
+    remaining: 'secondes restantes',
+    complete: '+10 Crédits!',
+    cancel: 'Annuler'
+  }
+}
+
+// Tool isimleri
+const toolNames: Record<string, Record<string, { name: string; desc: string }>> = {
+  en: {
+    hookGenerator: { name: 'Hook Generator', desc: 'Create viral hooks' },
+    captionGenerator: { name: 'Caption Generator', desc: 'Write engaging captions' },
+    scriptStudio: { name: 'Script Studio', desc: 'Write video scripts' },
+    viralAnalyzer: { name: 'Viral Analyzer', desc: 'Analyze viral potential' },
+    stealVideo: { name: 'Steal This Video', desc: 'Reverse engineer viral content' },
+    videoFinder: { name: 'Video Finder', desc: 'Find trending videos' },
+    trendRadar: { name: 'Trend Radar', desc: 'Discover trends' },
+    competitorSpy: { name: 'Competitor Spy', desc: 'Analyze competitors' },
+    hashtagResearch: { name: 'Hashtag Research', desc: 'Find best hashtags' },
+    contentPlanner: { name: 'Content Planner', desc: '30-day content calendar' },
+    contentRepurposer: { name: 'Content Repurposer', desc: 'Repurpose your content' },
+    abTester: { name: 'A/B Tester', desc: 'Compare content versions' },
+    carouselPlanner: { name: 'Carousel Planner', desc: 'Plan carousel posts' },
+    engagementBooster: { name: 'Engagement Booster', desc: 'Boost engagement' },
+    postingOptimizer: { name: 'Posting Optimizer', desc: 'Best posting times' },
+    threadComposer: { name: 'Thread Composer', desc: 'Write Twitter threads' }
+  },
+  tr: {
+    hookGenerator: { name: 'Hook Üretici', desc: 'Viral hooklar oluştur' },
+    captionGenerator: { name: 'Açıklama Üretici', desc: 'Etkileyici açıklamalar yaz' },
+    scriptStudio: { name: 'Script Stüdyosu', desc: 'Video scriptleri yaz' },
+    viralAnalyzer: { name: 'Viral Analizci', desc: 'Viral potansiyeli analiz et' },
+    stealVideo: { name: 'Bu Videoyu Çal', desc: 'Viral içerikleri analiz et' },
+    videoFinder: { name: 'Video Bulucu', desc: 'Trend videoları bul' },
+    trendRadar: { name: 'Trend Radarı', desc: 'Trendleri keşfet' },
+    competitorSpy: { name: 'Rakip Casusluğu', desc: 'Rakipleri analiz et' },
+    hashtagResearch: { name: 'Hashtag Araştırma', desc: 'En iyi hashtagleri bul' },
+    contentPlanner: { name: 'İçerik Planlayıcı', desc: '30 günlük içerik takvimi' },
+    contentRepurposer: { name: 'İçerik Dönüştürücü', desc: 'İçeriklerini dönüştür' },
+    abTester: { name: 'A/B Test', desc: 'İçerik versiyonlarını karşılaştır' },
+    carouselPlanner: { name: 'Carousel Planlayıcı', desc: 'Carousel postları planla' },
+    engagementBooster: { name: 'Etkileşim Arttırıcı', desc: 'Etkileşimi arttır' },
+    postingOptimizer: { name: 'Paylaşım Zamanı', desc: 'En iyi paylaşım saatleri' },
+    threadComposer: { name: 'Thread Yazarı', desc: 'Twitter threadleri yaz' }
+  },
+  ru: {
+    hookGenerator: { name: 'Генератор Хуков', desc: 'Создайте вирусные хуки' },
+    captionGenerator: { name: 'Генератор Подписей', desc: 'Пишите подписи' },
+    scriptStudio: { name: 'Студия Скриптов', desc: 'Пишите скрипты' },
+    viralAnalyzer: { name: 'Вирусный Анализатор', desc: 'Анализ потенциала' },
+    stealVideo: { name: 'Украсть Видео', desc: 'Анализ контента' },
+    videoFinder: { name: 'Поиск Видео', desc: 'Найти тренды' },
+    trendRadar: { name: 'Радар Трендов', desc: 'Откройте тренды' },
+    competitorSpy: { name: 'Шпион Конкурентов', desc: 'Анализ конкурентов' },
+    hashtagResearch: { name: 'Исследование Хештегов', desc: 'Лучшие хештеги' },
+    contentPlanner: { name: 'Планировщик Контента', desc: '30-дневный календарь' },
+    contentRepurposer: { name: 'Переработка Контента', desc: 'Переработка' },
+    abTester: { name: 'A/B Тестер', desc: 'Сравнение версий' },
+    carouselPlanner: { name: 'Планер Каруселей', desc: 'Планируйте посты' },
+    engagementBooster: { name: 'Усилитель Вовлечения', desc: 'Увеличьте охват' },
+    postingOptimizer: { name: 'Оптимизатор Постинга', desc: 'Лучшее время' },
+    threadComposer: { name: 'Композитор Тредов', desc: 'Пишите треды' }
+  },
+  de: {
+    hookGenerator: { name: 'Hook Generator', desc: 'Virale Hooks erstellen' },
+    captionGenerator: { name: 'Caption Generator', desc: 'Captions schreiben' },
+    scriptStudio: { name: 'Script Studio', desc: 'Video-Skripte schreiben' },
+    viralAnalyzer: { name: 'Viral Analyzer', desc: 'Viral-Potenzial analysieren' },
+    stealVideo: { name: 'Video Klauen', desc: 'Virale Inhalte analysieren' },
+    videoFinder: { name: 'Video Finder', desc: 'Trend-Videos finden' },
+    trendRadar: { name: 'Trend Radar', desc: 'Trends entdecken' },
+    competitorSpy: { name: 'Konkurrenz Spion', desc: 'Konkurrenz analysieren' },
+    hashtagResearch: { name: 'Hashtag Recherche', desc: 'Beste Hashtags finden' },
+    contentPlanner: { name: 'Content Planer', desc: '30-Tage Kalender' },
+    contentRepurposer: { name: 'Content Umwandler', desc: 'Inhalte umwandeln' },
+    abTester: { name: 'A/B Tester', desc: 'Versionen vergleichen' },
+    carouselPlanner: { name: 'Carousel Planer', desc: 'Carousel planen' },
+    engagementBooster: { name: 'Engagement Booster', desc: 'Engagement steigern' },
+    postingOptimizer: { name: 'Posting Optimierer', desc: 'Beste Posting-Zeit' },
+    threadComposer: { name: 'Thread Komponist', desc: 'Threads schreiben' }
+  },
+  fr: {
+    hookGenerator: { name: 'Générateur de Hooks', desc: 'Créer des hooks viraux' },
+    captionGenerator: { name: 'Générateur de Légendes', desc: 'Écrire des légendes' },
+    scriptStudio: { name: 'Studio de Scripts', desc: 'Écrire des scripts' },
+    viralAnalyzer: { name: 'Analyseur Viral', desc: 'Analyser le potentiel' },
+    stealVideo: { name: 'Voler Cette Vidéo', desc: 'Analyser le contenu' },
+    videoFinder: { name: 'Chercheur de Vidéos', desc: 'Trouver les tendances' },
+    trendRadar: { name: 'Radar des Tendances', desc: 'Découvrir les tendances' },
+    competitorSpy: { name: 'Espion Concurrent', desc: 'Analyser la concurrence' },
+    hashtagResearch: { name: 'Recherche Hashtags', desc: 'Meilleurs hashtags' },
+    contentPlanner: { name: 'Planificateur de Contenu', desc: 'Calendrier 30 jours' },
+    contentRepurposer: { name: 'Recycleur de Contenu', desc: 'Recycler le contenu' },
+    abTester: { name: 'Test A/B', desc: 'Comparer les versions' },
+    carouselPlanner: { name: 'Planificateur Carousel', desc: 'Planifier les carousels' },
+    engagementBooster: { name: 'Booster d\'Engagement', desc: 'Augmenter l\'engagement' },
+    postingOptimizer: { name: 'Optimiseur de Posts', desc: 'Meilleur moment' },
+    threadComposer: { name: 'Compositeur de Threads', desc: 'Écrire des threads' }
+  }
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
@@ -24,7 +182,10 @@ export default function DashboardPage() {
   const [adComplete, setAdComplete] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
   const router = useRouter()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+  
+  const t = texts[language] || texts.en
+  const toolT = toolNames[language] || toolNames.en
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -56,7 +217,6 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  // Watch Ad for Credits
   const startWatchingAd = () => {
     setShowAdModal(true)
     setAdCountdown(30)
@@ -91,22 +251,22 @@ export default function DashboardPage() {
   }
 
   const tools = [
-    { key: 'hookGenerator', icon: '🎣', href: '/tools/hook-generator', credits: 3, color: 'purple' },
-    { key: 'captionGenerator', icon: '✍️', href: '/tools/caption-generator', credits: 3, color: 'pink' },
-    { key: 'scriptStudio', icon: '🎬', href: '/tools/script-studio', credits: 6, color: 'blue' },
-    { key: 'viralAnalyzer', icon: '📊', href: '/tools/viral-analyzer', credits: 5, color: 'green' },
-    { key: 'stealVideo', icon: '🎯', href: '/tools/steal-video', credits: 8, color: 'orange' },
-    { key: 'videoFinder', icon: '🔍', href: '/tools/video-finder', credits: 5, color: 'cyan' },
-    { key: 'trendRadar', icon: '📡', href: '/tools/trend-radar', credits: 4, color: 'red' },
-    { key: 'competitorSpy', icon: '🕵️', href: '/tools/competitor-spy', credits: 8, color: 'yellow' },
-    { key: 'hashtagResearch', icon: '#️⃣', href: '/tools/hashtag-research', credits: 3, color: 'indigo' },
-    { key: 'contentPlanner', icon: '📅', href: '/tools/content-planner', credits: 10, color: 'emerald' },
-    { key: 'contentRepurposer', icon: '♻️', href: '/tools/content-repurposer', credits: 8, color: 'violet' },
-    { key: 'abTester', icon: '⚔️', href: '/tools/ab-tester', credits: 5, color: 'rose' },
-    { key: 'carouselPlanner', icon: '🎠', href: '/tools/carousel-planner', credits: 5, color: 'amber' },
-    { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4, color: 'sky' },
-    { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2, color: 'lime' },
-    { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5, color: 'fuchsia' },
+    { key: 'hookGenerator', icon: '🎣', href: '/tools/hook-generator', credits: 3 },
+    { key: 'captionGenerator', icon: '✍️', href: '/tools/caption-generator', credits: 3 },
+    { key: 'scriptStudio', icon: '🎬', href: '/tools/script-studio', credits: 6 },
+    { key: 'viralAnalyzer', icon: '📊', href: '/tools/viral-analyzer', credits: 5 },
+    { key: 'stealVideo', icon: '🎯', href: '/tools/steal-video', credits: 8 },
+    { key: 'videoFinder', icon: '🔍', href: '/tools/video-finder', credits: 5 },
+    { key: 'trendRadar', icon: '📡', href: '/tools/trend-radar', credits: 4 },
+    { key: 'competitorSpy', icon: '🕵️', href: '/tools/competitor-spy', credits: 8 },
+    { key: 'hashtagResearch', icon: '#️⃣', href: '/tools/hashtag-research', credits: 3 },
+    { key: 'contentPlanner', icon: '📅', href: '/tools/content-planner', credits: 10 },
+    { key: 'contentRepurposer', icon: '♻️', href: '/tools/content-repurposer', credits: 8 },
+    { key: 'abTester', icon: '⚔️', href: '/tools/ab-tester', credits: 5 },
+    { key: 'carouselPlanner', icon: '🎠', href: '/tools/carousel-planner', credits: 5 },
+    { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4 },
+    { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2 },
+    { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5 },
   ]
 
   if (!user) {
@@ -122,7 +282,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo - Ana sayfaya yönlendir */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">M</span>
@@ -138,7 +298,7 @@ export default function DashboardPage() {
                 onClick={() => setShowLangMenu(!showLangMenu)}
                 className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition text-sm"
               >
-                {languageNames[language].split(' ')[0]}
+                {languageNames[language]?.split(' ')[0] || '🌐'}
               </button>
               {showLangMenu && (
                 <div className="absolute right-0 mt-2 w-40 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
@@ -163,7 +323,7 @@ export default function DashboardPage() {
             {/* Watch Ad Button */}
             <button
               onClick={startWatchingAd}
-              className="px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:from-green-500/30 hover:to-emerald-500/30 transition hidden sm:block"
+              className="px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:from-green-500/30 hover:to-emerald-500/30 transition hidden sm:flex items-center gap-1"
             >
               🎬 +10
             </button>
@@ -174,14 +334,14 @@ export default function DashboardPage() {
                 <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
               ) : (
                 <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-purple-400 text-sm">{user.email?.[0].toUpperCase()}</span>
+                  <span className="text-purple-400 text-sm">{user.email?.[0]?.toUpperCase() || 'U'}</span>
                 </div>
               )}
               <button
                 onClick={handleLogout}
                 className="text-sm text-gray-400 hover:text-white transition hidden sm:block"
               >
-                {t('nav.logout')}
+                {t.logout}
               </button>
             </div>
           </div>
@@ -192,16 +352,16 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">{t('dashboard.welcome')}, {user.email?.split('@')[0]}! 👋</h1>
-          <p className="text-gray-400">{t('dashboard.credits')}: <span className="text-purple-400 font-semibold">{credits}</span></p>
+          <h1 className="text-2xl font-bold mb-2">{t.welcome}, {user.email?.split('@')[0] || 'User'}! 👋</h1>
+          <p className="text-gray-400">{t.credits}: <span className="text-purple-400 font-semibold">{credits}</span></p>
         </div>
 
         {/* Watch Ad Card - Mobile */}
         <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl sm:hidden">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-green-400">{t('ad.title')}</h3>
-              <p className="text-sm text-gray-400">{t('ad.description')}</p>
+              <h3 className="font-semibold text-green-400">{t.watchAd}</h3>
+              <p className="text-sm text-gray-400">{t.watchAdDesc}</p>
             </div>
             <button
               onClick={startWatchingAd}
@@ -213,7 +373,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Tools Grid */}
-        <h2 className="text-xl font-semibold mb-4">{t('dashboard.tools')}</h2>
+        <h2 className="text-xl font-semibold mb-4">{t.tools}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {tools.map((tool) => (
             <Link
@@ -224,14 +384,14 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{tool.icon}</span>
                 <span className="text-xs px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg">
-                  {tool.credits} {t('dashboard.credits').toLowerCase()}
+                  {tool.credits} {t.credits.toLowerCase()}
                 </span>
               </div>
               <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">
-                {t(`tool.${tool.key}`)}
+                {toolT[tool.key]?.name || tool.key}
               </h3>
               <p className="text-sm text-gray-500">
-                {t(`tool.${tool.key}.desc`)}
+                {toolT[tool.key]?.desc || ''}
               </p>
             </Link>
           ))}
@@ -245,7 +405,7 @@ export default function DashboardPage() {
             {!adComplete ? (
               <>
                 <div className="text-6xl mb-4">📺</div>
-                <h3 className="text-xl font-bold mb-2">{t('ad.watching')}</h3>
+                <h3 className="text-xl font-bold mb-2">{t.watching}</h3>
                 
                 {/* Fake Ad Content */}
                 <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl">
@@ -261,21 +421,21 @@ export default function DashboardPage() {
                       style={{ width: `${((30 - adCountdown) / 30) * 100}%` }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-400">{adCountdown} {t('ad.remaining')}</p>
+                  <p className="text-sm text-gray-400">{adCountdown} {t.remaining}</p>
                 </div>
 
                 <button
                   onClick={() => setShowAdModal(false)}
                   className="text-sm text-gray-500 hover:text-gray-300 transition"
                 >
-                  {t('common.cancel')}
+                  {t.cancel}
                 </button>
               </>
             ) : (
               <>
                 <div className="text-6xl mb-4">🎉</div>
-                <h3 className="text-xl font-bold text-green-400 mb-2">{t('ad.complete')}</h3>
-                <p className="text-gray-400">+10 {t('dashboard.credits')}</p>
+                <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
+                <p className="text-gray-400">+10 {t.credits}</p>
               </>
             )}
           </div>
