@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -26,7 +26,14 @@ const texts: Record<string, Record<string, string>> = {
     watching: 'Watching Ad...',
     remaining: 'seconds remaining',
     complete: '+10 Credits Added!',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    changePhoto: 'Change Photo',
+    uploadPhoto: 'Upload Photo',
+    uploading: 'Uploading...',
+    removePhoto: 'Remove Photo',
+    uploadError: 'Upload failed',
+    uploadSuccess: 'Photo updated',
+    photoRemoved: 'Photo removed'
   },
   tr: {
     welcome: 'Hoş Geldin',
@@ -38,7 +45,14 @@ const texts: Record<string, Record<string, string>> = {
     watching: 'Reklam İzleniyor...',
     remaining: 'saniye kaldı',
     complete: '+10 Kredi Eklendi!',
-    cancel: 'İptal'
+    cancel: 'İptal',
+    changePhoto: 'Fotoğraf Değiştir',
+    uploadPhoto: 'Fotoğraf Yükle',
+    uploading: 'Yükleniyor...',
+    removePhoto: 'Fotoğrafı Kaldır',
+    uploadError: 'Yükleme hatası',
+    uploadSuccess: 'Fotoğraf güncellendi',
+    photoRemoved: 'Fotoğraf kaldırıldı'
   },
   ru: {
     welcome: 'Добро пожаловать',
@@ -50,7 +64,14 @@ const texts: Record<string, Record<string, string>> = {
     watching: 'Просмотр рекламы...',
     remaining: 'секунд осталось',
     complete: '+10 Кредитов!',
-    cancel: 'Отмена'
+    cancel: 'Отмена',
+    changePhoto: 'Изменить фото',
+    uploadPhoto: 'Загрузить',
+    uploading: 'Загрузка...',
+    removePhoto: 'Удалить фото',
+    uploadError: 'Ошибка загрузки',
+    uploadSuccess: 'Фото обновлено',
+    photoRemoved: 'Фото удалено'
   },
   de: {
     welcome: 'Willkommen',
@@ -62,7 +83,14 @@ const texts: Record<string, Record<string, string>> = {
     watching: 'Werbung läuft...',
     remaining: 'Sekunden übrig',
     complete: '+10 Credits!',
-    cancel: 'Abbrechen'
+    cancel: 'Abbrechen',
+    changePhoto: 'Foto ändern',
+    uploadPhoto: 'Hochladen',
+    uploading: 'Lädt...',
+    removePhoto: 'Foto entfernen',
+    uploadError: 'Upload fehlgeschlagen',
+    uploadSuccess: 'Foto aktualisiert',
+    photoRemoved: 'Foto entfernt'
   },
   fr: {
     welcome: 'Bienvenue',
@@ -74,7 +102,14 @@ const texts: Record<string, Record<string, string>> = {
     watching: 'Pub en cours...',
     remaining: 'secondes restantes',
     complete: '+10 Crédits!',
-    cancel: 'Annuler'
+    cancel: 'Annuler',
+    changePhoto: 'Changer la photo',
+    uploadPhoto: 'Télécharger',
+    uploading: 'Téléchargement...',
+    removePhoto: 'Supprimer',
+    uploadError: 'Échec du téléchargement',
+    uploadSuccess: 'Photo mise à jour',
+    photoRemoved: 'Photo supprimée'
   }
 }
 
@@ -181,6 +216,10 @@ export default function DashboardPage() {
   const [adCountdown, setAdCountdown] = useState(30)
   const [adComplete, setAdComplete] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
+  const [showAvatarModal, setShowAvatarModal] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   
@@ -248,6 +287,56 @@ export default function DashboardPage() {
     setTimeout(() => {
       setShowAdModal(false)
     }, 2000)
+  }
+
+  // Avatar Upload
+  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    setUploading(true)
+    setUploadMessage(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user.id)
+
+      const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        setAvatarUrl(data.url)
+        setUploadMessage({ type: 'success', text: t.uploadSuccess || 'Photo updated!' })
+      } else {
+        setUploadMessage({ type: 'error', text: data.error || t.uploadError || 'Upload failed' })
+      }
+    } catch (err) {
+      setUploadMessage({ type: 'error', text: t.uploadError || 'Upload failed' })
+    }
+
+    setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeAvatar = async () => {
+    if (!user) return
+    setUploading(true)
+
+    const { error } = await supabase
+      .from('credits')
+      .update({ avatar_url: null })
+      .eq('user_id', user.id)
+
+    if (!error) {
+      setAvatarUrl(null)
+      setUploadMessage({ type: 'success', text: t.photoRemoved || 'Photo removed' })
+    }
+    setUploading(false)
   }
 
   const tools = [
@@ -344,6 +433,12 @@ export default function DashboardPage() {
                   <div className="font-semibold text-white">{user.email?.split('@')[0] || 'User'}</div>
                   <div className="text-sm text-gray-500">{user.email}</div>
                 </div>
+                <button 
+                  onClick={() => setShowAvatarModal(true)} 
+                  className="w-full px-4 py-2.5 text-left text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition"
+                >
+                  {t.changePhoto}
+                </button>
                 <button 
                   onClick={handleLogout} 
                   className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-gray-800 transition"
@@ -445,6 +540,70 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
                 <p className="text-gray-400">+10 {t.credits}</p>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Modal */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowAvatarModal(false)}>
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">{t.changePhoto}</h2>
+              <button onClick={() => setShowAvatarModal(false)} className="text-gray-500 hover:text-white transition">✕</button>
+            </div>
+
+            {/* Current Avatar Preview */}
+            <div className="flex justify-center mb-6">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-2xl object-cover" />
+              ) : (
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-3xl">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
+            </div>
+
+            {/* Upload Message */}
+            {uploadMessage && (
+              <div className={`mb-4 p-3 rounded-xl text-sm ${uploadMessage.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
+                {uploadMessage.text}
+              </div>
+            )}
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              onChange={uploadAvatar}
+              className="hidden"
+            />
+
+            {/* Upload Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 mb-3"
+            >
+              {uploading ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  {t.uploading}
+                </>
+              ) : (
+                t.uploadPhoto
+              )}
+            </button>
+
+            <p className="text-center text-gray-500 text-xs mb-4">JPG, PNG, GIF, WebP • Max 5MB</p>
+
+            {/* Remove Button */}
+            {avatarUrl && (
+              <button onClick={removeAvatar} disabled={uploading} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-red-400 hover:border-red-500/30 transition disabled:opacity-50">
+                {t.removePhoto}
+              </button>
             )}
           </div>
         </div>
