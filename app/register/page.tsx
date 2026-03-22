@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -217,5 +217,23 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Loading fallback
+function RegisterLoading() {
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+    </div>
+  )
+}
+
+// Main export with Suspense
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterLoading />}>
+      <RegisterForm />
+    </Suspense>
   )
 }
