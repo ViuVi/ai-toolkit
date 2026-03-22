@@ -38,7 +38,23 @@ const texts: Record<string, Record<string, string>> = {
     allTools: 'All Tools',
     create: 'Create',
     analyze: 'Analyze',
-    optimize: 'Optimize'
+    optimize: 'Optimize',
+    stats: 'Your Stats',
+    totalUses: 'Total Uses',
+    creditsSpent: 'Credits Spent',
+    thisMonth: 'This Month',
+    recentActivity: 'Recent Activity',
+    weeklyUsage: 'Weekly Usage',
+    noActivity: 'No activity yet',
+    usedTool: 'Used',
+    referral: 'Invite Friends',
+    referralDesc: 'Share your code & earn 50 credits for each friend!',
+    yourCode: 'Your Code',
+    copyCode: 'Copy',
+    codeCopied: 'Copied!',
+    friendsInvited: 'Friends Invited',
+    creditsEarned: 'Credits Earned',
+    shareOn: 'Share on'
   },
   tr: {
     welcome: 'Hoş Geldin',
@@ -62,7 +78,23 @@ const texts: Record<string, Record<string, string>> = {
     allTools: 'Tüm Araçlar',
     create: 'Oluştur',
     analyze: 'Analiz',
-    optimize: 'Optimize'
+    optimize: 'Optimize',
+    stats: 'İstatistiklerin',
+    totalUses: 'Toplam Kullanım',
+    creditsSpent: 'Harcanan Kredi',
+    thisMonth: 'Bu Ay',
+    recentActivity: 'Son Aktivite',
+    weeklyUsage: 'Haftalık Kullanım',
+    noActivity: 'Henüz aktivite yok',
+    usedTool: 'Kullanıldı',
+    referral: 'Arkadaşını Davet Et',
+    referralDesc: 'Kodunu paylaş, her arkadaş için 50 kredi kazan!',
+    yourCode: 'Senin Kodun',
+    copyCode: 'Kopyala',
+    codeCopied: 'Kopyalandı!',
+    friendsInvited: 'Davet Edilen',
+    creditsEarned: 'Kazanılan Kredi',
+    shareOn: 'Paylaş'
   },
   ru: {
     welcome: 'Добро пожаловать',
@@ -86,7 +118,23 @@ const texts: Record<string, Record<string, string>> = {
     allTools: 'Все',
     create: 'Создать',
     analyze: 'Анализ',
-    optimize: 'Оптимизация'
+    optimize: 'Оптимизация',
+    stats: 'Ваша статистика',
+    totalUses: 'Всего использований',
+    creditsSpent: 'Потрачено кредитов',
+    thisMonth: 'В этом месяце',
+    recentActivity: 'Недавняя активность',
+    weeklyUsage: 'За неделю',
+    noActivity: 'Пока нет активности',
+    usedTool: 'Использовано',
+    referral: 'Пригласить друзей',
+    referralDesc: 'Поделитесь кодом и получите 50 кредитов за друга!',
+    yourCode: 'Ваш код',
+    copyCode: 'Копировать',
+    codeCopied: 'Скопировано!',
+    friendsInvited: 'Приглашено',
+    creditsEarned: 'Заработано',
+    shareOn: 'Поделиться'
   },
   de: {
     welcome: 'Willkommen',
@@ -110,7 +158,23 @@ const texts: Record<string, Record<string, string>> = {
     allTools: 'Alle',
     create: 'Erstellen',
     analyze: 'Analysieren',
-    optimize: 'Optimieren'
+    optimize: 'Optimieren',
+    stats: 'Deine Statistiken',
+    totalUses: 'Gesamtnutzung',
+    creditsSpent: 'Credits verbraucht',
+    thisMonth: 'Diesen Monat',
+    recentActivity: 'Letzte Aktivität',
+    weeklyUsage: 'Wöchentliche Nutzung',
+    noActivity: 'Noch keine Aktivität',
+    usedTool: 'Verwendet',
+    referral: 'Freunde einladen',
+    referralDesc: 'Teile deinen Code & erhalte 50 Credits pro Freund!',
+    yourCode: 'Dein Code',
+    copyCode: 'Kopieren',
+    codeCopied: 'Kopiert!',
+    friendsInvited: 'Eingeladen',
+    creditsEarned: 'Verdient',
+    shareOn: 'Teilen auf'
   },
   fr: {
     welcome: 'Bienvenue',
@@ -134,7 +198,23 @@ const texts: Record<string, Record<string, string>> = {
     allTools: 'Tous',
     create: 'Créer',
     analyze: 'Analyser',
-    optimize: 'Optimiser'
+    optimize: 'Optimiser',
+    stats: 'Vos statistiques',
+    totalUses: 'Utilisations totales',
+    creditsSpent: 'Crédits dépensés',
+    thisMonth: 'Ce mois-ci',
+    recentActivity: 'Activité récente',
+    weeklyUsage: 'Utilisation hebdomadaire',
+    noActivity: 'Pas encore d\'activité',
+    usedTool: 'Utilisé',
+    referral: 'Inviter des amis',
+    referralDesc: 'Partagez votre code et gagnez 50 crédits par ami!',
+    yourCode: 'Votre code',
+    copyCode: 'Copier',
+    codeCopied: 'Copié!',
+    friendsInvited: 'Amis invités',
+    creditsEarned: 'Crédits gagnés',
+    shareOn: 'Partager sur'
   }
 }
 
@@ -244,6 +324,11 @@ export default function DashboardPage() {
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [stats, setStats] = useState<any>(null)
+  const [showStats, setShowStats] = useState(false)
+  const [referralData, setReferralData] = useState<{referralCode: string, referralCount: number, totalEarned: number} | null>(null)
+  const [showReferral, setShowReferral] = useState(false)
+  const [codeCopied, setCodeCopied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
@@ -258,6 +343,8 @@ export default function DashboardPage() {
       } else {
         setUser(session.user)
         fetchCredits(session.user.id)
+        fetchStats(session.user.id)
+        fetchReferral(session.user.id)
       }
     })
   }, [router])
@@ -273,6 +360,50 @@ export default function DashboardPage() {
       setCredits(data.balance || 0)
       setPlan(data.plan || 'free')
       setAvatarUrl(data.avatar_url)
+    }
+  }
+
+  const fetchReferral = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/referral?userId=${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setReferralData(data)
+      }
+    } catch (err) {
+      console.error('Error fetching referral:', err)
+    }
+  }
+
+  const copyReferralCode = () => {
+    if (referralData?.referralCode) {
+      const referralLink = `https://mediatoolkit.site/register?ref=${referralData.referralCode}`
+      navigator.clipboard.writeText(referralLink)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    }
+  }
+
+  const shareOnTwitter = () => {
+    const text = `I'm using MediaToolKit to create viral content with AI! 🚀 Use my referral code and get 50 FREE credits: `
+    const url = `https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+  }
+
+  const shareOnWhatsApp = () => {
+    const text = `Hey! I'm using MediaToolKit to create viral content. Use my code ${referralData?.referralCode} and get 50 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const fetchStats = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/user-stats?userId=${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setStats(data)
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err)
     }
   }
 
@@ -482,10 +613,139 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">{t.welcome}, {user.email?.split('@')[0] || 'User'}! 👋</h1>
-          <p className="text-gray-400">{t.readyToCreate}</p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">{t.welcome}, {user.email?.split('@')[0] || 'User'}! 👋</h1>
+            <p className="text-gray-400">{t.readyToCreate}</p>
+          </div>
+          <div className="flex gap-2 self-start">
+            <button
+              onClick={() => setShowStats(!showStats)}
+              className={`px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${showStats ? 'bg-purple-500/20 border-purple-500/30 text-purple-400' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}`}
+            >
+              📊 {t.stats}
+            </button>
+            <button
+              onClick={() => setShowReferral(!showReferral)}
+              className={`px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${showReferral ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}`}
+            >
+              🎁 {t.referral}
+            </button>
+          </div>
         </div>
+
+        {/* Referral Panel */}
+        {showReferral && referralData && (
+          <div className="mb-8 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              {/* Left - Info */}
+              <div>
+                <h3 className="text-lg font-semibold text-green-400 mb-1">🎁 {t.referral}</h3>
+                <p className="text-sm text-gray-400 mb-4">{t.referralDesc}</p>
+                
+                {/* Referral Code */}
+                <div className="flex items-center gap-3">
+                  <div className="px-4 py-2 bg-black/30 border border-green-500/30 rounded-xl">
+                    <span className="text-xs text-gray-400">{t.yourCode}:</span>
+                    <span className="ml-2 text-lg font-mono font-bold text-green-400">{referralData.referralCode}</span>
+                  </div>
+                  <button
+                    onClick={copyReferralCode}
+                    className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400 text-sm font-medium hover:bg-green-500/30 transition"
+                  >
+                    {codeCopied ? '✓ ' + t.codeCopied : '📋 ' + t.copyCode}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right - Stats & Share */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Stats */}
+                <div className="flex gap-4">
+                  <div className="text-center px-4 py-2 bg-black/20 rounded-xl">
+                    <div className="text-2xl font-bold text-green-400">{referralData.referralCount}</div>
+                    <div className="text-xs text-gray-400">{t.friendsInvited}</div>
+                  </div>
+                  <div className="text-center px-4 py-2 bg-black/20 rounded-xl">
+                    <div className="text-2xl font-bold text-green-400">+{referralData.totalEarned}</div>
+                    <div className="text-xs text-gray-400">{t.creditsEarned}</div>
+                  </div>
+                </div>
+
+                {/* Share Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={shareOnTwitter}
+                    className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    𝕏
+                  </button>
+                  <button
+                    onClick={shareOnWhatsApp}
+                    className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    💬 WhatsApp
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Panel */}
+        {showStats && stats && (
+          <div className="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Uses */}
+            <div className="p-4 bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-2xl">
+              <div className="text-3xl font-bold text-purple-400">{stats.totalUses}</div>
+              <div className="text-sm text-gray-400">{t.totalUses}</div>
+              <div className="text-xs text-gray-500 mt-1">{t.thisMonth}</div>
+            </div>
+            
+            {/* Credits Spent */}
+            <div className="p-4 bg-gradient-to-br from-pink-500/10 to-pink-500/5 border border-pink-500/20 rounded-2xl">
+              <div className="text-3xl font-bold text-pink-400">{stats.totalCreditsSpent}</div>
+              <div className="text-sm text-gray-400">{t.creditsSpent}</div>
+              <div className="text-xs text-gray-500 mt-1">{t.thisMonth}</div>
+            </div>
+
+            {/* Weekly Chart */}
+            <div className="col-span-2 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div className="text-sm text-gray-400 mb-3">{t.weeklyUsage}</div>
+              <div className="flex items-end gap-2 h-20">
+                {stats.weeklyUsage?.map((day: {day: string, count: number}, i: number) => {
+                  const maxCount = Math.max(...stats.weeklyUsage.map((d: any) => d.count), 1)
+                  const height = (day.count / maxCount) * 100
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div 
+                        className="w-full bg-gradient-to-t from-purple-500 to-pink-500 rounded-t transition-all"
+                        style={{ height: `${Math.max(height, 5)}%` }}
+                      ></div>
+                      <span className="text-xs text-gray-500">{day.day}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            {stats.recentTools?.length > 0 && (
+              <div className="col-span-2 lg:col-span-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+                <div className="text-sm text-gray-400 mb-3">{t.recentActivity}</div>
+                <div className="flex flex-wrap gap-2">
+                  {stats.recentTools.slice(0, 5).map((tool: any, i: number) => (
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg text-sm">
+                      <span className="text-purple-400">{toolT[tool.tool_name.replace(/-/g, '').replace(/([A-Z])/g, (m: string) => m.toLowerCase())]?.name || tool.tool_name}</span>
+                      <span className="text-gray-500">•</span>
+                      <span className="text-gray-400">{tool.credits_used} ✦</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Watch Ad Card - Mobile */}
         <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl sm:hidden">

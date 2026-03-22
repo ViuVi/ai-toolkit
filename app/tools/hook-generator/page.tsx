@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const toolTexts: Record<string, Record<string, string>> = {
-  tr: { title: 'Hook Üretici Pro', topic: 'Konu / Niş', topicPlaceholder: 'örn: Yapay zeka, Fitness, Para kazanma...', platform: 'Platform', tone: 'Ton', generate: '20 Viral Hook Üret', generating: '20 Hook Üretiliyor...', bestHook: 'En İyi Hook', topicInsight: 'Konu Analizi', copy: 'Kopyala', copied: '✓', professional: 'Profesyonel', casual: 'Samimi', humorous: 'Esprili', dramatic: 'Dramatik', emptyTitle: '20 Viral Hook', emptyDesc: 'Konunuzu girin, scroll-durduran hook\'lar üretelim' },
-  en: { title: 'Hook Generator Pro', topic: 'Topic / Niche', topicPlaceholder: 'e.g: AI, Fitness, Making money...', platform: 'Platform', tone: 'Tone', generate: 'Generate 20 Viral Hooks', generating: 'Generating 20 Hooks...', bestHook: 'Best Hook', topicInsight: 'Topic Insight', copy: 'Copy', copied: '✓', professional: 'Professional', casual: 'Casual', humorous: 'Humorous', dramatic: 'Dramatic', emptyTitle: '20 Viral Hooks', emptyDesc: 'Enter your topic to generate scroll-stopping hooks' },
-  ru: { title: 'Генератор Хуков Pro', topic: 'Тема / Ниша', topicPlaceholder: 'напр: ИИ, Фитнес, Заработок...', platform: 'Платформа', tone: 'Тон', generate: 'Создать 20 Хуков', generating: 'Создаём 20 хуков...', bestHook: 'Лучший Хук', topicInsight: 'Анализ Темы', copy: 'Копировать', copied: '✓', professional: 'Профессиональный', casual: 'Дружеский', humorous: 'Юмор', dramatic: 'Драматический', emptyTitle: '20 Вирусных Хуков', emptyDesc: 'Введите тему для генерации хуков' },
-  de: { title: 'Hook Generator Pro', topic: 'Thema / Nische', topicPlaceholder: 'z.B: KI, Fitness, Geld verdienen...', platform: 'Plattform', tone: 'Ton', generate: '20 Virale Hooks Erstellen', generating: '20 Hooks werden erstellt...', bestHook: 'Bester Hook', topicInsight: 'Themen-Einblick', copy: 'Kopieren', copied: '✓', professional: 'Professionell', casual: 'Locker', humorous: 'Humorvoll', dramatic: 'Dramatisch', emptyTitle: '20 Virale Hooks', emptyDesc: 'Geben Sie Ihr Thema ein' },
-  fr: { title: 'Générateur de Hooks Pro', topic: 'Sujet / Niche', topicPlaceholder: 'ex: IA, Fitness, Gagner de l\'argent...', platform: 'Plateforme', tone: 'Ton', generate: 'Générer 20 Hooks Viraux', generating: 'Génération de 20 hooks...', bestHook: 'Meilleur Hook', topicInsight: 'Analyse du Sujet', copy: 'Copier', copied: '✓', professional: 'Professionnel', casual: 'Décontracté', humorous: 'Humoristique', dramatic: 'Dramatique', emptyTitle: '20 Hooks Viraux', emptyDesc: 'Entrez votre sujet pour générer des hooks' }
+  tr: { title: 'Hook Üretici Pro', topic: 'Konu / Niş', topicPlaceholder: 'örn: Yapay zeka, Fitness, Para kazanma...', platform: 'Platform', tone: 'Ton', generate: '20 Viral Hook Üret', generating: '20 Hook Üretiliyor...', bestHook: 'En İyi Hook', topicInsight: 'Konu Analizi', copy: 'Kopyala', copied: '✓', copyAll: 'Tümünü Kopyala', download: 'TXT İndir', professional: 'Profesyonel', casual: 'Samimi', humorous: 'Esprili', dramatic: 'Dramatik', emptyTitle: '20 Viral Hook', emptyDesc: 'Konunuzu girin, scroll-durduran hook\'lar üretelim' },
+  en: { title: 'Hook Generator Pro', topic: 'Topic / Niche', topicPlaceholder: 'e.g: AI, Fitness, Making money...', platform: 'Platform', tone: 'Tone', generate: 'Generate 20 Viral Hooks', generating: 'Generating 20 Hooks...', bestHook: 'Best Hook', topicInsight: 'Topic Insight', copy: 'Copy', copied: '✓', copyAll: 'Copy All', download: 'Download TXT', professional: 'Professional', casual: 'Casual', humorous: 'Humorous', dramatic: 'Dramatic', emptyTitle: '20 Viral Hooks', emptyDesc: 'Enter your topic to generate scroll-stopping hooks' },
+  ru: { title: 'Генератор Хуков Pro', topic: 'Тема / Ниша', topicPlaceholder: 'напр: ИИ, Фитнес, Заработок...', platform: 'Платформа', tone: 'Тон', generate: 'Создать 20 Хуков', generating: 'Создаём 20 хуков...', bestHook: 'Лучший Хук', topicInsight: 'Анализ Темы', copy: 'Копировать', copied: '✓', copyAll: 'Копировать всё', download: 'Скачать TXT', professional: 'Профессиональный', casual: 'Дружеский', humorous: 'Юмор', dramatic: 'Драматический', emptyTitle: '20 Вирусных Хуков', emptyDesc: 'Введите тему для генерации хуков' },
+  de: { title: 'Hook Generator Pro', topic: 'Thema / Nische', topicPlaceholder: 'z.B: KI, Fitness, Geld verdienen...', platform: 'Plattform', tone: 'Ton', generate: '20 Virale Hooks Erstellen', generating: '20 Hooks werden erstellt...', bestHook: 'Bester Hook', topicInsight: 'Themen-Einblick', copy: 'Kopieren', copied: '✓', copyAll: 'Alle kopieren', download: 'TXT Herunterladen', professional: 'Professionell', casual: 'Locker', humorous: 'Humorvoll', dramatic: 'Dramatisch', emptyTitle: '20 Virale Hooks', emptyDesc: 'Geben Sie Ihr Thema ein' },
+  fr: { title: 'Générateur de Hooks Pro', topic: 'Sujet / Niche', topicPlaceholder: 'ex: IA, Fitness, Gagner de l\'argent...', platform: 'Plateforme', tone: 'Ton', generate: 'Générer 20 Hooks Viraux', generating: 'Génération de 20 hooks...', bestHook: 'Meilleur Hook', topicInsight: 'Analyse du Sujet', copy: 'Copier', copied: '✓', copyAll: 'Tout copier', download: 'Télécharger TXT', professional: 'Professionnel', casual: 'Décontracté', humorous: 'Humoristique', dramatic: 'Dramatique', emptyTitle: '20 Hooks Viraux', emptyDesc: 'Entrez votre sujet pour générer des hooks' }
 }
 
 export default function HookGeneratorPage() {
@@ -23,6 +23,7 @@ export default function HookGeneratorPage() {
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [copiedAll, setCopiedAll] = useState(false)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = toolTexts[language] || toolTexts.en
@@ -69,6 +70,46 @@ export default function HookGeneratorPage() {
     setTimeout(() => setCopiedIndex(null), 2000)
   }
 
+  const copyAllHooks = () => {
+    if (!result?.hooks) return
+    const allText = result.hooks.map((h: any, i: number) => `${i + 1}. ${h.text}`).join('\n\n')
+    navigator.clipboard.writeText(allText)
+    setCopiedAll(true)
+    setTimeout(() => setCopiedAll(false), 2000)
+  }
+
+  const downloadAsTxt = () => {
+    if (!result?.hooks) return
+    let content = `${t.title}\n${'='.repeat(30)}\n\n`
+    content += `Topic: ${topic}\nPlatform: ${platform}\nTone: ${tone}\n\n`
+    content += `${'='.repeat(30)}\n\n`
+    
+    if (result.best_hook) {
+      content += `🏆 ${t.bestHook}:\n${result.best_hook.text}\n\n`
+    }
+    
+    result.hooks.forEach((h: any, i: number) => {
+      content += `${i + 1}. ${h.text}\n`
+      if (h.pattern) content += `   Pattern: ${h.pattern}\n`
+      if (h.virality_score) content += `   Virality: ${h.virality_score}/10\n`
+      content += '\n'
+    })
+    
+    if (result.topic_insight) {
+      content += `\n💡 ${t.topicInsight}:\n${result.topic_insight}\n`
+    }
+    
+    content += `\n${'='.repeat(30)}\nGenerated by MediaToolKit\nhttps://mediatoolkit.site`
+    
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `hooks-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const platforms = [
     { value: 'tiktok', label: 'TikTok', icon: '🎵' },
     { value: 'instagram', label: 'Instagram', icon: '📸' },
@@ -91,7 +132,7 @@ export default function HookGeneratorPage() {
             <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Dashboard</Link>
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎣</span>
-              <h1 className="font-bold text-lg">{t.title}</h1>
+              <h1 className="font-bold text-lg hidden sm:block">{t.title}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -149,17 +190,17 @@ export default function HookGeneratorPage() {
               <div>
                 <label className="block text-sm text-gray-400 mb-2">{t.tone}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {tones.map((t) => (
+                  {tones.map((tn) => (
                     <button
-                      key={t.value}
-                      onClick={() => setTone(t.value)}
+                      key={tn.value}
+                      onClick={() => setTone(tn.value)}
                       className={`p-3 rounded-xl border text-sm font-medium transition ${
-                        tone === t.value
+                        tone === tn.value
                           ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                       }`}
                     >
-                      {t.label}
+                      {tn.label}
                     </button>
                   ))}
                 </div>
@@ -189,7 +230,7 @@ export default function HookGeneratorPage() {
           </div>
 
           {/* Results Panel - Sağ */}
-          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+          <div className="lg:col-span-3 space-y-4">
             {!result && !loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
                 <div className="text-5xl mb-4">🎣</div>
@@ -200,13 +241,38 @@ export default function HookGeneratorPage() {
 
             {loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
-                <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
                 <p className="text-gray-400">{t.generating}</p>
+                <div className="mt-4 flex justify-center gap-1">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}></div>
+                  ))}
+                </div>
               </div>
             )}
 
             {result && (
               <div className="space-y-3">
+                {/* Action Buttons */}
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={copyAllHooks}
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    {copiedAll ? '✓' : '📋'} {copiedAll ? t.copied : t.copyAll}
+                  </button>
+                  <button
+                    onClick={downloadAsTxt}
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    📥 {t.download}
+                  </button>
+                </div>
+
                 {/* Best Hook */}
                 {result.best_hook && (
                   <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl">
@@ -220,47 +286,49 @@ export default function HookGeneratorPage() {
                 )}
 
                 {/* All Hooks */}
-                {result.hooks && result.hooks.map((hook: any, index: number) => (
-                  <div key={index} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl hover:border-purple-500/30 transition">
-                    <div className="flex justify-between items-start gap-3 mb-3">
-                      <div className="flex items-start gap-3">
-                        <span className="w-7 h-7 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
-                          {index + 1}
-                        </span>
-                        <p className="font-medium">{hook.text}</p>
+                <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-2">
+                  {result.hooks && result.hooks.map((hook: any, index: number) => (
+                    <div key={index} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl hover:border-purple-500/30 transition group">
+                      <div className="flex justify-between items-start gap-3 mb-3">
+                        <div className="flex items-start gap-3">
+                          <span className="w-7 h-7 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
+                            {index + 1}
+                          </span>
+                          <p className="font-medium">{hook.text}</p>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(hook.text, index)}
+                          className="px-3 py-1 bg-white/5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-white/10 transition shrink-0 opacity-0 group-hover:opacity-100"
+                        >
+                          {copiedIndex === index ? '✓' : t.copy}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => copyToClipboard(hook.text, index)}
-                        className="px-3 py-1 bg-white/5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-white/10 transition shrink-0"
-                      >
-                        {copiedIndex === index ? '✓' : 'Copy'}
-                      </button>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 ml-10">
-                      {hook.pattern && (
-                        <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-xs">
-                          {hook.pattern}
-                        </span>
-                      )}
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span>Virality: <span className="text-orange-400 font-semibold">{hook.virality_score}/10</span></span>
-                        <span>Curiosity: <span className="text-blue-400 font-semibold">{hook.curiosity_score}/10</span></span>
+                      
+                      <div className="flex items-center gap-3 ml-10 flex-wrap">
+                        {hook.pattern && (
+                          <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-xs">
+                            {hook.pattern}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          {hook.virality_score && <span>Virality: <span className="text-orange-400 font-semibold">{hook.virality_score}/10</span></span>}
+                          {hook.curiosity_score && <span>Curiosity: <span className="text-blue-400 font-semibold">{hook.curiosity_score}/10</span></span>}
+                        </div>
                       </div>
-                    </div>
 
-                    {hook.why_it_works && (
-                      <p className="mt-2 ml-10 text-xs text-gray-500">{hook.why_it_works}</p>
-                    )}
-                  </div>
-                ))}
+                      {hook.why_it_works && (
+                        <p className="mt-2 ml-10 text-xs text-gray-500">{hook.why_it_works}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
 
                 {/* Topic Insight */}
                 {result.topic_insight && (
                   <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <span>💡</span>
-                      <span className="font-medium text-purple-400">Konu Analizi</span>
+                      <span className="font-medium text-purple-400">{t.topicInsight}</span>
                     </div>
                     <p className="text-sm text-gray-300">{result.topic_insight}</p>
                   </div>

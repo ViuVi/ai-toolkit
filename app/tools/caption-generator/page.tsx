@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const toolTexts: Record<string, Record<string, string>> = {
-  tr: { title: 'Açıklama Üretici', topic: 'Konu', topicPlaceholder: 'örn: Yeni ürün lansmanı, Motivasyon...', platform: 'Platform', tone: 'Ton', generate: '5 Caption Üret', generating: 'Üretiliyor...', copy: 'Kopyala', emptyTitle: 'Caption\'lar', emptyDesc: 'Konunuzu girin', professional: 'Profesyonel', casual: 'Samimi', humorous: 'Esprili', inspiring: 'İlham Verici', hashtags: 'Hashtag\'ler' },
-  en: { title: 'Caption Generator', topic: 'Topic', topicPlaceholder: 'e.g: Product launch, Motivation...', platform: 'Platform', tone: 'Tone', generate: 'Generate 5 Captions', generating: 'Generating...', copy: 'Copy', emptyTitle: 'Captions', emptyDesc: 'Enter your topic', professional: 'Professional', casual: 'Casual', humorous: 'Humorous', inspiring: 'Inspiring', hashtags: 'Hashtags' },
-  ru: { title: 'Генератор Подписей', topic: 'Тема', topicPlaceholder: 'напр: Запуск продукта...', platform: 'Платформа', tone: 'Тон', generate: 'Создать 5 Подписей', generating: 'Создание...', copy: 'Копировать', emptyTitle: 'Подписи', emptyDesc: 'Введите тему', professional: 'Профессиональный', casual: 'Дружеский', humorous: 'Юмор', inspiring: 'Вдохновляющий', hashtags: 'Хештеги' },
-  de: { title: 'Caption Generator', topic: 'Thema', topicPlaceholder: 'z.B: Produktstart...', platform: 'Plattform', tone: 'Ton', generate: '5 Captions Erstellen', generating: 'Wird erstellt...', copy: 'Kopieren', emptyTitle: 'Captions', emptyDesc: 'Thema eingeben', professional: 'Professionell', casual: 'Locker', humorous: 'Humorvoll', inspiring: 'Inspirierend', hashtags: 'Hashtags' },
-  fr: { title: 'Générateur de Légendes', topic: 'Sujet', topicPlaceholder: 'ex: Lancement produit...', platform: 'Plateforme', tone: 'Ton', generate: 'Générer 5 Légendes', generating: 'Génération...', copy: 'Copier', emptyTitle: 'Légendes', emptyDesc: 'Entrez votre sujet', professional: 'Professionnel', casual: 'Décontracté', humorous: 'Humoristique', inspiring: 'Inspirant', hashtags: 'Hashtags' }
+  tr: { title: 'Açıklama Üretici', topic: 'Konu', topicPlaceholder: 'örn: Yeni ürün lansmanı, Motivasyon...', platform: 'Platform', tone: 'Ton', generate: '5 Caption Üret', generating: 'Üretiliyor...', copy: 'Kopyala', copyAll: 'Tümünü Kopyala', download: 'TXT İndir', emptyTitle: 'Caption\'lar', emptyDesc: 'Konunuzu girin', professional: 'Profesyonel', casual: 'Samimi', humorous: 'Esprili', inspiring: 'İlham Verici', hashtags: 'Hashtag\'ler' },
+  en: { title: 'Caption Generator', topic: 'Topic', topicPlaceholder: 'e.g: Product launch, Motivation...', platform: 'Platform', tone: 'Tone', generate: 'Generate 5 Captions', generating: 'Generating...', copy: 'Copy', copyAll: 'Copy All', download: 'Download TXT', emptyTitle: 'Captions', emptyDesc: 'Enter your topic', professional: 'Professional', casual: 'Casual', humorous: 'Humorous', inspiring: 'Inspiring', hashtags: 'Hashtags' },
+  ru: { title: 'Генератор Подписей', topic: 'Тема', topicPlaceholder: 'напр: Запуск продукта...', platform: 'Платформа', tone: 'Тон', generate: 'Создать 5 Подписей', generating: 'Создание...', copy: 'Копировать', copyAll: 'Копировать всё', download: 'Скачать TXT', emptyTitle: 'Подписи', emptyDesc: 'Введите тему', professional: 'Профессиональный', casual: 'Дружеский', humorous: 'Юмор', inspiring: 'Вдохновляющий', hashtags: 'Хештеги' },
+  de: { title: 'Caption Generator', topic: 'Thema', topicPlaceholder: 'z.B: Produktstart...', platform: 'Plattform', tone: 'Ton', generate: '5 Captions Erstellen', generating: 'Wird erstellt...', copy: 'Kopieren', copyAll: 'Alle kopieren', download: 'TXT Herunterladen', emptyTitle: 'Captions', emptyDesc: 'Thema eingeben', professional: 'Professionell', casual: 'Locker', humorous: 'Humorvoll', inspiring: 'Inspirierend', hashtags: 'Hashtags' },
+  fr: { title: 'Générateur de Légendes', topic: 'Sujet', topicPlaceholder: 'ex: Lancement produit...', platform: 'Plateforme', tone: 'Ton', generate: 'Générer 5 Légendes', generating: 'Génération...', copy: 'Copier', copyAll: 'Tout copier', download: 'Télécharger TXT', emptyTitle: 'Légendes', emptyDesc: 'Entrez votre sujet', professional: 'Professionnel', casual: 'Décontracté', humorous: 'Humoristique', inspiring: 'Inspirant', hashtags: 'Hashtags' }
 }
 
 export default function CaptionGeneratorPage() {
@@ -23,6 +23,7 @@ export default function CaptionGeneratorPage() {
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [copiedAll, setCopiedAll] = useState(false)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = toolTexts[language] || toolTexts.en
@@ -62,6 +63,42 @@ export default function CaptionGeneratorPage() {
     setTimeout(() => setCopiedIndex(null), 2000)
   }
 
+  const copyAllCaptions = () => {
+    if (!result?.captions) return
+    const allText = result.captions.map((c: any, i: number) => `${i + 1}.\n${c.caption}`).join('\n\n---\n\n')
+    const hashtagText = result.hashtags ? `\n\n${t.hashtags}:\n${result.hashtags.join(' ')}` : ''
+    navigator.clipboard.writeText(allText + hashtagText)
+    setCopiedAll(true)
+    setTimeout(() => setCopiedAll(false), 2000)
+  }
+
+  const downloadAsTxt = () => {
+    if (!result?.captions) return
+    let content = `${t.title}\n${'='.repeat(30)}\n\n`
+    content += `Topic: ${topic}\nPlatform: ${platform}\nTone: ${tone}\n\n${'='.repeat(30)}\n\n`
+    
+    result.captions.forEach((c: any, i: number) => {
+      content += `--- Caption ${i + 1} ---\n`
+      if (c.emotion) content += `Emotion: ${c.emotion}\n`
+      if (c.cta_type) content += `CTA: ${c.cta_type}\n`
+      content += `\n${c.caption}\n\n`
+    })
+    
+    if (result.hashtags) {
+      content += `\n${t.hashtags}:\n${result.hashtags.join(' ')}\n`
+    }
+    
+    content += `\n${'='.repeat(30)}\nGenerated by MediaToolKit\nhttps://mediatoolkit.site`
+    
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `captions-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const tones = [
     { value: 'professional', label: t.professional },
     { value: 'casual', label: t.casual },
@@ -75,7 +112,7 @@ export default function CaptionGeneratorPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
-            <h1 className="font-bold">✍️ {t.title}</h1>
+            <h1 className="font-bold hidden sm:block">✍️ {t.title}</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative group">
@@ -120,29 +157,56 @@ export default function CaptionGeneratorPage() {
               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
-          <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+          <div className="lg:col-span-3 space-y-4">
             {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">✍️</div><h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3><p className="text-gray-500">{t.emptyDesc}</p></div>}
-            {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
+            {loading && (
+              <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
+                <p className="text-gray-400">{t.generating}</p>
+                <div className="mt-4 flex justify-center gap-1">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}></div>
+                  ))}
+                </div>
+              </div>
+            )}
             {result && (
               <div className="space-y-4">
-                {result.captions?.map((cap: any, i: number) => (
-                  <div key={i} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex gap-2">
-                        <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">{cap.emotion}</span>
-                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{cap.cta_type}</span>
+                {/* Action Buttons */}
+                <div className="flex gap-2 justify-end">
+                  <button onClick={copyAllCaptions} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition flex items-center gap-2">
+                    {copiedAll ? '✓' : '📋'} {copiedAll ? '✓' : t.copyAll}
+                  </button>
+                  <button onClick={downloadAsTxt} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition flex items-center gap-2">
+                    📥 {t.download}
+                  </button>
+                </div>
+
+                <div className="max-h-[60vh] overflow-y-auto space-y-4 pr-2">
+                  {result.captions?.map((cap: any, i: number) => (
+                    <div key={i} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl group hover:border-purple-500/30 transition">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex gap-2">
+                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">{cap.emotion}</span>
+                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{cap.cta_type}</span>
+                        </div>
+                        <button onClick={() => copyCaption(cap.caption, i)} className="px-3 py-1 bg-white/5 text-gray-400 rounded text-sm hover:bg-white/10 opacity-0 group-hover:opacity-100 transition">{copiedIndex === i ? '✓' : t.copy}</button>
                       </div>
-                      <button onClick={() => copyCaption(cap.caption, i)} className="px-3 py-1 bg-white/5 text-gray-400 rounded text-sm hover:bg-white/10">{copiedIndex === i ? '✓' : t.copy}</button>
+                      <p className="text-gray-200 whitespace-pre-wrap">{cap.caption}</p>
+                      {cap.hook_line && <p className="mt-2 text-sm text-purple-400">🎯 Hook: {cap.hook_line}</p>}
                     </div>
-                    <p className="text-gray-200 whitespace-pre-wrap">{cap.caption}</p>
-                    {cap.hook_line && <p className="mt-2 text-sm text-purple-400">🎯 Hook: {cap.hook_line}</p>}
-                  </div>
-                ))}
+                  ))}
+                </div>
+                
                 {result.hashtags && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">#️⃣ {t.hashtags}</h4>
                     <div className="flex flex-wrap gap-2">
-                      {result.hashtags.map((tag: string, i: number) => <span key={i} className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-sm">{tag}</span>)}
+                      {result.hashtags.map((tag: string, i: number) => <span key={i} className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-sm cursor-pointer hover:bg-purple-500/20" onClick={() => navigator.clipboard.writeText(tag)}>{tag}</span>)}
                     </div>
                   </div>
                 )}

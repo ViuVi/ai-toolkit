@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
@@ -8,10 +8,20 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // URL'den referral kodunu al
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setReferralCode(ref.toUpperCase())
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,18 +42,41 @@ export default function RegisterPage() {
       setError(error.message)
       setLoading(false)
     } else if (data.user) {
-      // Credits tablosuna kullanıcı ekle
+      // Credits tablosuna kullanıcı ekle (başlangıç 100 kredi)
+      const initialCredits = referralCode ? 150 : 100 // Referral ile +50 bonus
+      
       await supabase.from('credits').insert({
         user_id: data.user.id,
-        balance: 50,
+        balance: initialCredits,
         total_used: 0,
         plan: 'free'
       })
+
+      // Referral kodu varsa işle
+      if (referralCode) {
+        try {
+          await fetch('/api/referral', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              referralCode: referralCode,
+              newUserId: data.user.id
+            })
+          })
+        } catch (err) {
+          console.error('Referral error:', err)
+        }
+      }
+
       setSuccess(true)
     }
   }
 
   const handleGoogleLogin = async () => {
+    // Referral kodunu localStorage'a kaydet (Google OAuth sonrası kullanmak için)
+    if (referralCode) {
+      localStorage.setItem('pending_referral', referralCode)
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/dashboard` }
@@ -58,7 +91,12 @@ export default function RegisterPage() {
             <span className="text-4xl">✅</span>
           </div>
           <h1 className="text-3xl font-bold mb-4">Check your email!</h1>
-          <p className="text-gray-400 mb-8">We sent a confirmation link to <span className="text-white font-medium">{email}</span>. Click the link to activate your account.</p>
+          <p className="text-gray-400 mb-4">We sent a confirmation link to <span className="text-white font-medium">{email}</span>. Click the link to activate your account.</p>
+          {referralCode && (
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm mb-4">
+              🎁 +50 bonus credits applied from referral!
+            </div>
+          )}
           <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition">
             Go to Login
           </Link>
@@ -80,7 +118,14 @@ export default function RegisterPage() {
 
           {/* Header */}
           <h1 className="text-3xl font-bold mb-2">Create account</h1>
-          <p className="text-gray-400 mb-8">Start your journey to viral content</p>
+          <p className="text-gray-400 mb-4">Start your journey to viral content</p>
+
+          {/* Referral Badge */}
+          {referralCode && (
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm mb-6 flex items-center gap-2">
+              🎁 Referral code applied: <span className="font-mono font-bold">{referralCode}</span> (+50 bonus credits!)
+            </div>
+          )}
 
           {/* Google Button */}
           <button onClick={handleGoogleLogin} className="w-full py-3 px-4 bg-white/5 border border-white/10 rounded-xl font-medium hover:bg-white/10 transition flex items-center justify-center gap-3 mb-6">
@@ -111,6 +156,15 @@ export default function RegisterPage() {
               <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
             </div>
 
+            {/* Referral Code Input (if not from URL) */}
+            {!referralCode && (
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Referral Code (optional)</label>
+                <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition font-mono" placeholder="XXXXXXXX" maxLength={8} />
+                <p className="text-xs text-gray-500 mt-1">Get +50 bonus credits with a referral code</p>
+              </div>
+            )}
+
             {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">{error}</div>}
 
             <button type="submit" disabled={loading} className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2">
@@ -140,7 +194,7 @@ export default function RegisterPage() {
         </div>
         <div className="relative text-center max-w-md">
           <div className="text-6xl mb-6">✨</div>
-          <h2 className="text-3xl font-bold mb-4">50 Free Credits</h2>
+          <h2 className="text-3xl font-bold mb-4">100 Free Credits</h2>
           <p className="text-gray-400 text-lg mb-8">Start creating viral content today with our free plan</p>
           <div className="grid grid-cols-2 gap-4 text-left">
             <div className="p-4 bg-white/5 rounded-xl border border-white/5">
