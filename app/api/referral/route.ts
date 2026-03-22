@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       .eq('user_id', userId)
       .single()
 
-    if (userError) {
+    if (userError || !userData?.referral_code) {
       // Eğer referral kodu yoksa oluştur
       const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
       await supabase
@@ -39,13 +39,13 @@ export async function GET(request: Request) {
     }
 
     // Referral istatistiklerini al
-    const { data: referrals, error: refError } = await supabase
+    const { data: referrals } = await supabase
       .from('referrals')
       .select('id, created_at')
       .eq('referrer_id', userId)
 
     const referralCount = referrals?.length || 0
-    const totalEarned = referralCount * 50 // Her referral 50 kredi
+    const totalEarned = referralCount * 50
 
     return NextResponse.json({
       referralCode: userData?.referral_code || '',
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     // Referral kodunun sahibini bul
     const { data: referrer, error: findError } = await supabase
       .from('credits')
-      .select('user_id')
+      .select('user_id, balance')
       .eq('referral_code', referralCode.toUpperCase())
       .single()
 
@@ -113,46 +113,28 @@ export async function POST(request: Request) {
     }
 
     // Referrer'a bonus ver
-    await supabase.rpc('increment_credits', { 
-      user_id_input: referrer.user_id, 
-      amount: bonusAmount 
-    }).catch(() => {
-      // Fallback: direkt update
-      return supabase
-        .from('credits')
-        .update({ balance: supabase.rpc('', {}) })
-        .eq('user_id', referrer.user_id)
-    })
-
-    // Direkt SQL ile bonus ver (daha güvenilir)
-    await supabase
+    const { error: referrerError } = await supabase
       .from('credits')
-      .select('balance')
+      .update({ balance: (referrer.balance || 0) + bonusAmount })
       .eq('user_id', referrer.user_id)
-      .single()
-      .then(async ({ data }) => {
-        if (data) {
-          await supabase
-            .from('credits')
-            .update({ balance: (data.balance || 0) + bonusAmount })
-            .eq('user_id', referrer.user_id)
-        }
-      })
+
+    if (referrerError) {
+      console.error('Referrer bonus error:', referrerError)
+    }
 
     // Yeni kullanıcıya da bonus ver
-    await supabase
+    const { data: newUserData } = await supabase
       .from('credits')
       .select('balance')
       .eq('user_id', newUserId)
       .single()
-      .then(async ({ data }) => {
-        if (data) {
-          await supabase
-            .from('credits')
-            .update({ balance: (data.balance || 0) + bonusAmount })
-            .eq('user_id', newUserId)
-        }
-      })
+
+    if (newUserData) {
+      await supabase
+        .from('credits')
+        .update({ balance: (newUserData.balance || 0) + bonusAmount })
+        .eq('user_id', newUserId)
+    }
 
     return NextResponse.json({ 
       success: true, 
