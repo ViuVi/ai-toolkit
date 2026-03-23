@@ -11,25 +11,6 @@ export const metadata: Metadata = {
     template: '%s | MediaToolKit'
   },
   description: 'The ultimate AI toolkit for content creators. Generate viral hooks, scripts, captions with 16+ AI-powered tools.',
-  keywords: 'AI tools, content creator, viral content, TikTok, Instagram, YouTube, hook generator, caption generator',
-  metadataBase: new URL('https://mediatoolkit.site'),
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://mediatoolkit.site',
-    siteName: 'MediaToolKit',
-    title: 'MediaToolKit - AI Tools for Content Creators',
-    description: 'Generate viral hooks, scripts, captions with 16+ AI-powered tools.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MediaToolKit - AI Tools for Content Creators',
-    description: 'Generate viral hooks, scripts, captions with 16+ AI-powered tools.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
 }
 
 export default function RootLayout({
