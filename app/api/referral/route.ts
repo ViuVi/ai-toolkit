@@ -6,6 +6,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Referral bonus miktarı
+const REFERRAL_BONUS = 100
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -35,7 +38,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       referralCode: userData.referral_code,
       referralCount: referrals?.length || 0,
-      totalEarned: (referrals?.length || 0) * 50
+      totalEarned: (referrals?.length || 0) * REFERRAL_BONUS
     })
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
@@ -74,6 +77,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Already used' }, { status: 400 })
     }
 
+    // Referral kaydı oluştur
     await supabase.from('referrals').insert({
       referrer_id: referrer.user_id,
       referred_id: newUserId,
@@ -81,11 +85,13 @@ export async function POST(request: Request) {
       bonus_given: true
     })
 
+    // Davet edene +100 kredi
     await supabase
       .from('credits')
-      .update({ balance: (referrer.balance || 0) + 50 })
+      .update({ balance: (referrer.balance || 0) + REFERRAL_BONUS })
       .eq('user_id', referrer.user_id)
 
+    // Davet edilene +100 kredi
     const { data: newUser } = await supabase
       .from('credits')
       .select('balance')
@@ -95,11 +101,11 @@ export async function POST(request: Request) {
     if (newUser) {
       await supabase
         .from('credits')
-        .update({ balance: (newUser.balance || 0) + 50 })
+        .update({ balance: (newUser.balance || 0) + REFERRAL_BONUS })
         .eq('user_id', newUserId)
     }
 
-    return NextResponse.json({ success: true, bonus: 50 })
+    return NextResponse.json({ success: true, bonus: REFERRAL_BONUS })
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
