@@ -337,7 +337,7 @@ export default function DashboardPage() {
   const toolT = toolNames[language] || toolNames.en
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.push('/login')
       } else {
@@ -345,6 +345,26 @@ export default function DashboardPage() {
         fetchCredits(session.user.id)
         fetchStats(session.user.id)
         fetchReferral(session.user.id)
+        
+        // Google OAuth sonrası pending referral kontrolü
+        const pendingReferral = localStorage.getItem('pending_referral')
+        if (pendingReferral) {
+          try {
+            await fetch('/api/referral', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                referralCode: pendingReferral,
+                newUserId: session.user.id
+              })
+            })
+            localStorage.removeItem('pending_referral')
+            // Kredileri yenile
+            fetchCredits(session.user.id)
+          } catch (err) {
+            console.error('Referral error:', err)
+          }
+        }
       }
     })
   }, [router])
@@ -385,13 +405,13 @@ export default function DashboardPage() {
   }
 
   const shareOnTwitter = () => {
-    const text = `I'm using MediaToolKit to create viral content with AI! 🚀 Use my referral code and get 50 FREE credits: `
+    const text = `I'm using MediaToolKit to create viral content with AI! 🚀 Use my referral code and get 100 FREE credits: `
     const url = `https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
   }
 
   const shareOnWhatsApp = () => {
-    const text = `Hey! I'm using MediaToolKit to create viral content. Use my code ${referralData?.referralCode} and get 50 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+    const text = `Hey! I'm using MediaToolKit to create viral content. Use my code ${referralData?.referralCode} and get 100 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
