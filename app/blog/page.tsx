@@ -1,248 +1,240 @@
 'use client'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
+import PageHeader from '@/components/PageHeader'
+import Footer from '@/components/Footer'
 
-const texts: Record<string, Record<string, string>> = {
+const content: Record<string, any> = {
   en: {
     title: 'Blog',
-    subtitle: 'Tips, tricks, and strategies to grow your social media presence',
+    subtitle: 'Tips, tricks, and insights for content creators',
     readMore: 'Read More',
-    minRead: 'min read'
+    minRead: 'min read',
+    categories: ['All', 'Tips & Tricks', 'Trends', 'Case Studies', 'Product Updates']
   },
   tr: {
     title: 'Blog',
-    subtitle: 'Sosyal medya varlığınızı büyütmek için ipuçları, püf noktaları ve stratejiler',
+    subtitle: 'İçerik üreticileri için ipuçları, püf noktaları ve içgörüler',
     readMore: 'Devamını Oku',
-    minRead: 'dk okuma'
+    minRead: 'dk okuma',
+    categories: ['Tümü', 'İpuçları', 'Trendler', 'Başarı Hikayeleri', 'Ürün Güncellemeleri']
   },
   ru: {
     title: 'Блог',
-    subtitle: 'Советы и стратегии для роста в социальных сетях',
+    subtitle: 'Советы и идеи для создателей контента',
     readMore: 'Читать далее',
-    minRead: 'мин чтения'
+    minRead: 'мин чтения',
+    categories: ['Все', 'Советы', 'Тренды', 'Кейсы', 'Обновления']
   },
   de: {
     title: 'Blog',
-    subtitle: 'Tipps und Strategien für Ihr Social-Media-Wachstum',
+    subtitle: 'Tipps und Einblicke für Content-Ersteller',
     readMore: 'Weiterlesen',
-    minRead: 'Min. Lesezeit'
+    minRead: 'Min. Lesezeit',
+    categories: ['Alle', 'Tipps', 'Trends', 'Fallstudien', 'Updates']
   },
   fr: {
     title: 'Blog',
-    subtitle: 'Conseils et stratégies pour développer votre présence sur les réseaux sociaux',
+    subtitle: 'Conseils et astuces pour les créateurs de contenu',
     readMore: 'Lire la suite',
-    minRead: 'min de lecture'
+    minRead: 'min de lecture',
+    categories: ['Tout', 'Conseils', 'Tendances', 'Études de cas', 'Mises à jour']
   }
 }
 
-const blogPosts = [
+const posts = [
   {
-    slug: 'how-to-go-viral-on-tiktok',
-    image: '🚀',
-    category: 'TikTok',
-    date: '2025-03-20',
+    slug: '10-viral-hook-formulas',
+    image: '🎣',
+    category: 'Tips & Tricks',
+    date: '2026-01-15',
     readTime: 5,
     title: {
-      en: 'How to Go Viral on TikTok in 2025',
-      tr: '2025\'te TikTok\'ta Nasıl Viral Olunur',
-      ru: 'Как стать вирусным в TikTok в 2025',
-      de: 'Wie man 2025 auf TikTok viral geht',
-      fr: 'Comment devenir viral sur TikTok en 2025'
+      en: '10 Viral Hook Formulas That Actually Work',
+      tr: 'Gerçekten İşe Yarayan 10 Viral Hook Formülü',
+      ru: '10 формул вирусных хуков, которые работают',
+      de: '10 virale Hook-Formeln, die funktionieren',
+      fr: '10 formules de hooks viraux qui marchent'
     },
     excerpt: {
-      en: 'Learn the secrets behind viral TikTok videos and how to create content that gets millions of views.',
-      tr: 'Viral TikTok videolarının arkasındaki sırları ve milyonlarca izlenme alan içerikler oluşturmayı öğrenin.',
-      ru: 'Узнайте секреты вирусных видео TikTok и как создавать контент с миллионами просмотров.',
-      de: 'Lernen Sie die Geheimnisse viraler TikTok-Videos und wie Sie Inhalte mit Millionen von Aufrufen erstellen.',
-      fr: 'Découvrez les secrets des vidéos TikTok virales et comment créer du contenu avec des millions de vues.'
+      en: 'Discover the secret formulas top creators use to grab attention in the first 3 seconds.',
+      tr: 'En iyi içerik üreticilerinin ilk 3 saniyede dikkat çekmek için kullandığı gizli formülleri keşfedin.',
+      ru: 'Узнайте секретные формулы, которые используют топ-создатели для привлечения внимания.',
+      de: 'Entdecken Sie die geheimen Formeln, die Top-Creator verwenden.',
+      fr: 'Découvrez les formules secrètes utilisées par les meilleurs créateurs.'
     }
   },
   {
-    slug: 'best-hooks-for-reels',
-    image: '🎣',
-    category: 'Instagram',
-    date: '2025-03-18',
-    readTime: 4,
+    slug: 'tiktok-algorithm-2026',
+    image: '📱',
+    category: 'Trends',
+    date: '2026-01-10',
+    readTime: 8,
     title: {
-      en: '10 Powerful Hooks That Stop the Scroll',
-      tr: 'Kaydırmayı Durduran 10 Güçlü Hook',
-      ru: '10 мощных хуков, которые останавливают прокрутку',
-      de: '10 starke Hooks, die das Scrollen stoppen',
-      fr: '10 accroches puissantes qui arrêtent le défilement'
+      en: 'TikTok Algorithm 2026: What You Need to Know',
+      tr: 'TikTok Algoritması 2026: Bilmeniz Gerekenler',
+      ru: 'Алгоритм TikTok 2026: что нужно знать',
+      de: 'TikTok-Algorithmus 2026: Was Sie wissen müssen',
+      fr: 'Algorithme TikTok 2026: Ce que vous devez savoir'
     },
     excerpt: {
-      en: 'The first 3 seconds decide everything. Here are the hook formulas that work every time.',
-      tr: 'İlk 3 saniye her şeyi belirler. İşte her seferinde işe yarayan hook formülleri.',
-      ru: 'Первые 3 секунды решают всё. Вот формулы хуков, которые работают каждый раз.',
-      de: 'Die ersten 3 Sekunden entscheiden alles. Hier sind Hook-Formeln, die jedes Mal funktionieren.',
-      fr: 'Les 3 premières secondes décident de tout. Voici les formules d\'accroche qui fonctionnent à chaque fois.'
+      en: 'Everything changed this year. Here\'s your complete guide to the new TikTok algorithm.',
+      tr: 'Bu yıl her şey değişti. İşte yeni TikTok algoritmasına dair kapsamlı rehberiniz.',
+      ru: 'В этом году всё изменилось. Полное руководство по новому алгоритму TikTok.',
+      de: 'Dieses Jahr hat sich alles geändert. Ihr Leitfaden zum neuen Algorithmus.',
+      fr: 'Tout a changé cette année. Votre guide complet du nouvel algorithme.'
     }
   },
   {
-    slug: 'content-calendar-strategy',
-    image: '📅',
-    category: 'Strategy',
-    date: '2025-03-15',
+    slug: 'ai-content-creation-guide',
+    image: '🤖',
+    category: 'Tips & Tricks',
+    date: '2026-01-05',
     readTime: 6,
     title: {
-      en: 'The Perfect Content Calendar for Creators',
-      tr: 'İçerik Üreticileri İçin Mükemmel İçerik Takvimi',
-      ru: 'Идеальный контент-календарь для создателей',
-      de: 'Der perfekte Content-Kalender für Creator',
-      fr: 'Le calendrier de contenu parfait pour les créateurs'
+      en: 'The Complete Guide to AI Content Creation',
+      tr: 'AI İçerik Oluşturma Rehberi',
+      ru: 'Полное руководство по созданию контента с ИИ',
+      de: 'Der komplette Leitfaden zur KI-Inhaltserstellung',
+      fr: 'Le guide complet de la création de contenu IA'
     },
     excerpt: {
-      en: 'How to plan 30 days of content in just 2 hours. A step-by-step guide to batch content creation.',
-      tr: '30 günlük içeriği sadece 2 saatte nasıl planlanır. Toplu içerik oluşturma için adım adım rehber.',
-      ru: 'Как спланировать 30 дней контента всего за 2 часа. Пошаговое руководство.',
-      de: 'Wie Sie 30 Tage Content in nur 2 Stunden planen. Eine Schritt-für-Schritt-Anleitung.',
-      fr: 'Comment planifier 30 jours de contenu en seulement 2 heures. Guide étape par étape.'
+      en: 'Learn how to use AI tools effectively without losing your authentic voice.',
+      tr: 'Otantik sesinizi kaybetmeden AI araçlarını etkili bir şekilde nasıl kullanacağınızı öğrenin.',
+      ru: 'Узнайте, как эффективно использовать инструменты ИИ, сохраняя свой стиль.',
+      de: 'Erfahren Sie, wie Sie KI-Tools effektiv nutzen können.',
+      fr: 'Apprenez à utiliser les outils IA efficacement.'
     }
   },
   {
-    slug: 'hashtag-strategy-2025',
-    image: '#️⃣',
-    category: 'Growth',
-    date: '2025-03-12',
-    readTime: 5,
-    title: {
-      en: 'Hashtag Strategy That Actually Works',
-      tr: 'Gerçekten İşe Yarayan Hashtag Stratejisi',
-      ru: 'Стратегия хештегов, которая реально работает',
-      de: 'Hashtag-Strategie, die wirklich funktioniert',
-      fr: 'Stratégie de hashtags qui fonctionne vraiment'
-    },
-    excerpt: {
-      en: 'Forget what you know about hashtags. Here\'s the data-driven approach to hashtag research.',
-      tr: 'Hashtag\'ler hakkında bildiklerinizi unutun. İşte veri odaklı hashtag araştırma yaklaşımı.',
-      ru: 'Забудьте всё, что вы знали о хештегах. Вот подход, основанный на данных.',
-      de: 'Vergessen Sie alles über Hashtags. Hier ist der datengetriebene Ansatz.',
-      fr: 'Oubliez ce que vous savez sur les hashtags. Voici l\'approche basée sur les données.'
-    }
-  },
-  {
-    slug: 'ai-tools-for-creators',
-    image: '🤖',
-    category: 'Tools',
-    date: '2025-03-10',
+    slug: 'instagram-reels-vs-tiktok',
+    image: '⚔️',
+    category: 'Trends',
+    date: '2025-12-28',
     readTime: 7,
     title: {
-      en: 'Top AI Tools Every Creator Needs in 2025',
-      tr: '2025\'te Her İçerik Üreticisinin İhtiyacı Olan AI Araçları',
-      ru: 'Лучшие AI-инструменты для создателей контента в 2025',
-      de: 'Top AI-Tools, die jeder Creator 2025 braucht',
-      fr: 'Les meilleurs outils IA dont chaque créateur a besoin en 2025'
+      en: 'Instagram Reels vs TikTok: Where Should You Post?',
+      tr: 'Instagram Reels vs TikTok: Nerede Paylaşmalısınız?',
+      ru: 'Instagram Reels vs TikTok: Где публиковать?',
+      de: 'Instagram Reels vs TikTok: Wo sollten Sie posten?',
+      fr: 'Instagram Reels vs TikTok: Où publier?'
     },
     excerpt: {
-      en: 'From scriptwriting to analytics, these AI tools will 10x your productivity as a content creator.',
-      tr: 'Senaryo yazımından analize kadar, bu AI araçları içerik üreticisi olarak verimliliğinizi 10 kat artıracak.',
-      ru: 'От написания сценариев до аналитики — эти AI-инструменты увеличат вашу продуктивность в 10 раз.',
-      de: 'Von Skripten bis Analytics — diese AI-Tools steigern Ihre Produktivität um das 10-fache.',
-      fr: 'De l\'écriture de scripts à l\'analyse, ces outils IA multiplieront votre productivité par 10.'
+      en: 'A data-driven comparison to help you decide where to focus your energy.',
+      tr: 'Enerjinizi nereye odaklayacağınıza karar vermenize yardımcı olacak veri odaklı bir karşılaştırma.',
+      ru: 'Сравнение на основе данных, чтобы помочь вам решить, где сосредоточить усилия.',
+      de: 'Ein datengestützter Vergleich zur Entscheidungshilfe.',
+      fr: 'Une comparaison basée sur les données pour vous aider à décider.'
     }
   },
   {
-    slug: 'youtube-shorts-vs-tiktok',
-    image: '⚔️',
-    category: 'Comparison',
-    date: '2025-03-08',
-    readTime: 6,
+    slug: 'how-sarah-grew-100k',
+    image: '📈',
+    category: 'Case Studies',
+    date: '2025-12-20',
+    readTime: 10,
     title: {
-      en: 'YouTube Shorts vs TikTok: Which is Better?',
-      tr: 'YouTube Shorts vs TikTok: Hangisi Daha İyi?',
-      ru: 'YouTube Shorts vs TikTok: Что лучше?',
-      de: 'YouTube Shorts vs TikTok: Was ist besser?',
-      fr: 'YouTube Shorts vs TikTok: Lequel est meilleur?'
+      en: 'How Sarah Grew from 1K to 100K in 3 Months',
+      tr: 'Sarah 3 Ayda 1K\'dan 100K\'ya Nasıl Büyüdü',
+      ru: 'Как Сара выросла с 1K до 100K за 3 месяца',
+      de: 'Wie Sarah in 3 Monaten von 1K auf 100K wuchs',
+      fr: 'Comment Sarah est passée de 1K à 100K en 3 mois'
     },
     excerpt: {
-      en: 'A detailed comparison of both platforms. Algorithm, monetization, and growth potential analyzed.',
-      tr: 'Her iki platformun detaylı karşılaştırması. Algoritma, para kazanma ve büyüme potansiyeli analizi.',
-      ru: 'Детальное сравнение обеих платформ. Анализ алгоритма, монетизации и потенциала роста.',
-      de: 'Ein detaillierter Vergleich beider Plattformen. Algorithmus, Monetarisierung und Wachstumspotenzial.',
-      fr: 'Une comparaison détaillée des deux plateformes. Algorithme, monétisation et potentiel de croissance.'
+      en: 'A real case study of a creator who used MediaToolKit to 100x her following.',
+      tr: 'MediaToolKit kullanarak takipçi sayısını 100 kat artıran bir içerik üreticisinin gerçek hikayesi.',
+      ru: 'Реальный кейс создателя, который использовал MediaToolKit для роста в 100 раз.',
+      de: 'Eine echte Fallstudie einer Creatorin, die ihre Follower ver-100-facht hat.',
+      fr: 'Une étude de cas réelle d\'une créatrice qui a multiplié ses abonnés par 100.'
+    }
+  },
+  {
+    slug: 'best-posting-times-2026',
+    image: '⏰',
+    category: 'Tips & Tricks',
+    date: '2025-12-15',
+    readTime: 4,
+    title: {
+      en: 'Best Posting Times for Every Platform in 2026',
+      tr: '2026\'da Her Platform İçin En İyi Paylaşım Zamanları',
+      ru: 'Лучшее время для публикации на каждой платформе в 2026',
+      de: 'Beste Posting-Zeiten für jede Plattform 2026',
+      fr: 'Meilleurs moments pour publier sur chaque plateforme en 2026'
+    },
+    excerpt: {
+      en: 'We analyzed millions of posts to find the optimal posting times for maximum engagement.',
+      tr: 'Maksimum etkileşim için optimal paylaşım zamanlarını bulmak için milyonlarca gönderiyi analiz ettik.',
+      ru: 'Мы проанализировали миллионы постов, чтобы найти оптимальное время.',
+      de: 'Wir haben Millionen von Posts analysiert, um optimale Zeiten zu finden.',
+      fr: 'Nous avons analysé des millions de posts pour trouver les heures optimales.'
     }
   }
 ]
 
 export default function BlogPage() {
   const { language } = useLanguage()
-  const t = texts[language] || texts.en
+  const t = content[language] || content.en
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">M</span>
-            </div>
-            <span className="font-bold text-lg">MediaToolKit</span>
-          </Link>
-          <Link href="/dashboard" className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-500/30 transition">
-            Dashboard
-          </Link>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t.title}</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">{t.subtitle}</p>
-        </div>
-      </section>
-
-      {/* Blog Posts Grid */}
-      <section className="pb-20 px-4">
+      <PageHeader />
+      
+      <main className="pt-24 pb-16 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="group bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 hover:bg-white/[0.04] transition"
+          <div className="text-center mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">{t.title}</h1>
+            <p className="text-gray-400 text-lg">{t.subtitle}</p>
+          </div>
+          
+          {/* Categories */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            {t.categories.map((cat: string, i: number) => (
+              <button
+                key={i}
+                className={`px-4 py-2 rounded-full text-sm transition ${
+                  i === 0 
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                }`}
               >
-                {/* Image */}
-                <div className="h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                  <span className="text-6xl">{post.image}</span>
+                {cat}
+              </button>
+            ))}
+          </div>
+          
+          {/* Blog Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map((post, i) => (
+              <Link 
+                key={i}
+                href={`/blog/${post.slug}`}
+                className="group p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] hover:border-purple-500/30 transition-all"
+              >
+                <div className="text-5xl mb-4">{post.image}</div>
+                
+                <div className="flex items-center gap-3 mb-3 text-sm">
+                  <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded-lg">{post.category}</span>
+                  <span className="text-gray-500">{post.readTime} {t.minRead}</span>
                 </div>
                 
-                {/* Content */}
-                <div className="p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
-                      {post.category}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {post.readTime} {t.minRead}
-                    </span>
-                  </div>
-                  
-                  <h2 className="text-lg font-semibold mb-2 group-hover:text-purple-400 transition">
-                    {post.title[language as keyof typeof post.title] || post.title.en}
-                  </h2>
-                  
-                  <p className="text-sm text-gray-400 mb-4 line-clamp-2">
-                    {post.excerpt[language as keyof typeof post.excerpt] || post.excerpt.en}
-                  </p>
-                  
-                  <span className="text-purple-400 text-sm font-medium group-hover:underline">
-                    {t.readMore} →
-                  </span>
-                </div>
+                <h2 className="text-lg font-semibold mb-2 group-hover:text-purple-400 transition">
+                  {post.title[language] || post.title.en}
+                </h2>
+                
+                <p className="text-gray-500 text-sm mb-4">
+                  {post.excerpt[language] || post.excerpt.en}
+                </p>
+                
+                <span className="text-purple-400 text-sm group-hover:text-purple-300 transition">
+                  {t.readMore} →
+                </span>
               </Link>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-4">
-        <div className="max-w-6xl mx-auto text-center text-gray-500 text-sm">
-          © 2025 MediaToolKit. All rights reserved.
-        </div>
-      </footer>
+      </main>
+      
+      <Footer />
     </div>
   )
 }

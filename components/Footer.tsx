@@ -1,54 +1,82 @@
 'use client'
-
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const footerTexts: Record<string, Record<string, string>> = {
+  en: {
+    privacy: 'Privacy',
+    terms: 'Terms',
+    contact: 'Contact',
+    faq: 'FAQ',
+    blog: 'Blog',
+    home: 'Home',
+    dashboard: 'Dashboard',
+    rights: 'All rights reserved.'
+  },
+  tr: {
+    privacy: 'Gizlilik',
+    terms: 'Şartlar',
+    contact: 'İletişim',
+    faq: 'SSS',
+    blog: 'Blog',
+    home: 'Ana Sayfa',
+    dashboard: 'Dashboard',
+    rights: 'Tüm hakları saklıdır.'
+  },
+  ru: {
+    privacy: 'Конфиденциальность',
+    terms: 'Условия',
+    contact: 'Контакты',
+    faq: 'ЧЗВ',
+    blog: 'Блог',
+    home: 'Главная',
+    dashboard: 'Панель',
+    rights: 'Все права защищены.'
+  },
+  de: {
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    contact: 'Kontakt',
+    faq: 'FAQ',
+    blog: 'Blog',
+    home: 'Startseite',
+    dashboard: 'Dashboard',
+    rights: 'Alle Rechte vorbehalten.'
+  },
+  fr: {
+    privacy: 'Confidentialité',
+    terms: 'Conditions',
+    contact: 'Contact',
+    faq: 'FAQ',
+    blog: 'Blog',
+    home: 'Accueil',
+    dashboard: 'Tableau de bord',
+    rights: 'Tous droits réservés.'
+  }
+}
+
 export default function Footer() {
-  const { t } = useLanguage()
+  const { language } = useLanguage()
+  const t = footerTexts[language] || footerTexts.en
 
   return (
-    <footer className="bg-gray-800/50 border-t border-gray-800 py-16 px-4">
+    <footer className="py-8 sm:py-12 px-4 sm:px-6 border-t border-white/5 bg-[#0a0a0f]">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <span className="text-xl font-bold text-white">M</span>
-              </div>
-              <span className="text-xl font-bold text-white">Media Tool Kit</span>
-            </Link>
-            <p className="text-gray-400">{t.footer?.description || 'AI tools for content creators'}</p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">M</div>
+            <span className="font-semibold">MediaToolKit</span>
+          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-500">
+            <Link href="/" className="hover:text-white transition">{t.home}</Link>
+            <Link href="/dashboard" className="hover:text-white transition">{t.dashboard}</Link>
+            <Link href="/privacy" className="hover:text-white transition">{t.privacy}</Link>
+            <Link href="/terms" className="hover:text-white transition">{t.terms}</Link>
+            <Link href="/contact" className="hover:text-white transition">{t.contact}</Link>
+            <Link href="/faq" className="hover:text-white transition">{t.faq}</Link>
+            <Link href="/blog" className="hover:text-white transition">{t.blog}</Link>
           </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer?.product || 'Product'}</h4>
-            <ul className="space-y-3">
-              <li><a href="#features" className="text-gray-400 hover:text-white transition">{t.footer?.links?.features || 'Features'}</a></li>
-              <li><a href="#pricing" className="text-gray-400 hover:text-white transition">{t.footer?.links?.pricing || 'Pricing'}</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.api || 'API'}</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer?.company || 'Company'}</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.about || 'About'}</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.blog || 'Blog'}</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.careers || 'Careers'}</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-4">{t.footer?.legal || 'Legal'}</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.privacy || 'Privacy'}</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">{t.footer?.links?.terms || 'Terms'}</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-700 pt-8 text-center">
-          <p className="text-gray-500">{t.footer?.copyright || '© 2024 Media Tool Kit. All rights reserved.'}</p>
+          <div className="text-xs sm:text-sm text-gray-500">© 2026 MediaToolKit. {t.rights}</div>
         </div>
       </div>
     </footer>
