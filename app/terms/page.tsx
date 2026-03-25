@@ -100,7 +100,7 @@ You may delete your account at any time from your dashboard.`
       {
         title: '10. Contact',
         content: `For questions about these Terms of Service:
-- Email: legal@mediatoolkit.site`
+- Email: support@mediatoolkit.site`
       }
     ]
   },
@@ -200,7 +200,7 @@ Hesabınızı istediğiniz zaman kontrol panelinizden silebilirsiniz.`
       {
         title: '10. İletişim',
         content: `Bu Kullanım Şartları hakkında sorularınız için:
-- E-posta: legal@mediatoolkit.site`
+- E-posta: support@mediatoolkit.site`
       }
     ]
   },
@@ -280,7 +280,7 @@ Hesabınızı istediğiniz zaman kontrol panelinizden silebilirsiniz.`
       {
         title: '10. Контакты',
         content: `По вопросам условий:
-- Email: legal@mediatoolkit.site`
+- Email: support@mediatoolkit.site`
       }
     ]
   },
@@ -354,7 +354,7 @@ Der Dienst arbeitet mit einem Kreditsystem.`
       {
         title: '10. Kontakt',
         content: `Bei Fragen:
-- E-Mail: legal@mediatoolkit.site`
+- E-Mail: support@mediatoolkit.site`
       }
     ]
   },
@@ -428,7 +428,7 @@ Le service fonctionne avec un système de crédits.`
       {
         title: '10. Contact',
         content: `Pour toute question:
-- E-mail: legal@mediatoolkit.site`
+- E-mail: support@mediatoolkit.site`
       }
     ]
   }

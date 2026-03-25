@@ -69,7 +69,7 @@ You can disable cookies in your browser settings, but some features may not work
       {
         title: '7. Contact Us',
         content: `If you have questions about this Privacy Policy, please contact us at:
-- Email: privacy@mediatoolkit.site`
+- Email: support@mediatoolkit.site`
       }
     ]
   },
@@ -138,7 +138,7 @@ Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz, ancak ba
       {
         title: '7. Bize Ulaşın',
         content: `Bu Gizlilik Politikası hakkında sorularınız varsa, lütfen bizimle iletişime geçin:
-- E-posta: privacy@mediatoolkit.site`
+- E-posta: support@mediatoolkit.site`
       }
     ]
   },
@@ -205,7 +205,7 @@ Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz, ancak ba
       {
         title: '7. Связаться с нами',
         content: `По вопросам политики конфиденциальности:
-- Email: privacy@mediatoolkit.site`
+- Email: support@mediatoolkit.site`
       }
     ]
   },
@@ -272,7 +272,7 @@ Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz, ancak ba
       {
         title: '7. Kontakt',
         content: `Bei Fragen zur Datenschutzrichtlinie:
-- E-Mail: privacy@mediatoolkit.site`
+- E-Mail: support@mediatoolkit.site`
       }
     ]
   },
@@ -339,7 +339,7 @@ Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz, ancak ba
       {
         title: '7. Contact',
         content: `Pour toute question sur cette politique:
-- E-mail: privacy@mediatoolkit.site`
+- E-mail: support@mediatoolkit.site`
       }
     ]
   }

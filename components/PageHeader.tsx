@@ -23,7 +23,7 @@ export default function PageHeader() {
         </Link>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/" className="text-gray-400 hover:text-white transition text-sm">{t.home}</Link>
+          <Link href="/" scroll={false} className="text-gray-400 hover:text-white transition text-sm">{t.home}</Link>
           <Link href="/dashboard" className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white text-sm font-medium hover:opacity-90 transition">
             {t.dashboard}
           </Link>
