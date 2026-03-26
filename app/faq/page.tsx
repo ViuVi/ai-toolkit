@@ -7,16 +7,16 @@ import Footer from '@/components/Footer'
 const content: Record<string, any> = {
   en: {
     title: 'Frequently Asked Questions',
-    subtitle: 'Find answers to common questions about MediaToolKit',
+    subtitle: 'Find answers to common questions about MediaToolkit',
     categories: [
       {
         name: 'Getting Started',
         icon: '🚀',
         questions: [
-          { q: 'What is MediaToolKit?', a: 'MediaToolKit is an AI-powered platform with 16+ tools designed to help content creators generate viral hooks, scripts, captions, and more. It uses advanced AI to help you create engaging content faster.' },
+          { q: 'What is MediaToolkit?', a: 'MediaToolkit is an AI-powered platform with 16+ tools designed to help content creators generate viral hooks, scripts, captions, and more. It uses advanced AI to help you create engaging content faster.' },
           { q: 'How do I create an account?', a: 'Simply click "Get Started" on our homepage and sign up with your email or Google account. You\'ll receive 100 free credits immediately to start creating content.' },
-          { q: 'Is MediaToolKit free to use?', a: 'Yes! We offer a free plan with 100 credits per month and access to all 16 tools. You can also watch ads to earn additional credits. Paid plans offer more credits and additional features.' },
-          { q: 'What platforms does MediaToolKit support?', a: 'MediaToolKit works in any modern web browser. The content you create can be used on any platform including TikTok, Instagram, YouTube, Twitter/X, LinkedIn, and more.' }
+          { q: 'Is MediaToolkit free to use?', a: 'Yes! We offer a free plan with 100 credits per month and access to all 16 tools. You can also watch ads to earn additional credits. Paid plans offer more credits and additional features.' },
+          { q: 'What platforms does MediaToolkit support?', a: 'MediaToolkit works in any modern web browser. The content you create can be used on any platform including TikTok, Instagram, YouTube, Twitter/X, LinkedIn, and more.' }
         ]
       },
       {
@@ -34,9 +34,9 @@ const content: Record<string, any> = {
         name: 'Tools & Features',
         icon: '🛠️',
         questions: [
-          { q: 'What tools are included?', a: 'MediaToolKit includes 16 AI tools: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, and Content Repurposer.' },
+          { q: 'What tools are included?', a: 'MediaToolkit includes 16 AI tools: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, and Content Repurposer.' },
           { q: 'How accurate is the AI?', a: 'Our AI is trained on millions of viral content pieces and continuously improves. While results are highly optimized for engagement, we recommend reviewing and personalizing the output to match your brand voice.' },
-          { q: 'Can I use the generated content commercially?', a: 'Yes! All content generated through MediaToolKit can be used freely for personal and commercial purposes without attribution.' },
+          { q: 'Can I use the generated content commercially?', a: 'Yes! All content generated through MediaToolkit can be used freely for personal and commercial purposes without attribution.' },
           { q: 'What languages are supported?', a: 'Our interface supports 5 languages (English, Turkish, Russian, German, French). The AI can generate content in many more languages based on your input.' }
         ]
       },
@@ -59,16 +59,16 @@ const content: Record<string, any> = {
   },
   tr: {
     title: 'Sıkça Sorulan Sorular',
-    subtitle: 'MediaToolKit hakkında sık sorulan soruların cevapları',
+    subtitle: 'MediaToolkit hakkında sık sorulan soruların cevapları',
     categories: [
       {
         name: 'Başlarken',
         icon: '🚀',
         questions: [
-          { q: 'MediaToolKit nedir?', a: 'MediaToolKit, içerik üreticilerinin viral hook, script, caption ve daha fazlasını oluşturmasına yardımcı olmak için tasarlanmış 16+ araç içeren AI destekli bir platformdur.' },
+          { q: 'MediaToolkit nedir?', a: 'MediaToolkit, içerik üreticilerinin viral hook, script, caption ve daha fazlasını oluşturmasına yardımcı olmak için tasarlanmış 16+ araç içeren AI destekli bir platformdur.' },
           { q: 'Nasıl hesap oluştururum?', a: 'Ana sayfamızda "Başla" butonuna tıklayın ve e-posta veya Google hesabınızla kaydolun. İçerik oluşturmaya başlamak için hemen 100 ücretsiz kredi alacaksınız.' },
-          { q: 'MediaToolKit ücretsiz mi?', a: 'Evet! Ayda 100 kredi ve tüm 16 araca erişim içeren ücretsiz bir plan sunuyoruz. Ayrıca ek kredi kazanmak için reklam izleyebilirsiniz.' },
-          { q: 'MediaToolKit hangi platformları destekliyor?', a: 'MediaToolKit herhangi bir modern web tarayıcısında çalışır. Oluşturduğunuz içerik TikTok, Instagram, YouTube, Twitter/X, LinkedIn ve daha fazlası dahil herhangi bir platformda kullanılabilir.' }
+          { q: 'MediaToolkit ücretsiz mi?', a: 'Evet! Ayda 100 kredi ve tüm 16 araca erişim içeren ücretsiz bir plan sunuyoruz. Ayrıca ek kredi kazanmak için reklam izleyebilirsiniz.' },
+          { q: 'MediaToolkit hangi platformları destekliyor?', a: 'MediaToolkit herhangi bir modern web tarayıcısında çalışır. Oluşturduğunuz içerik TikTok, Instagram, YouTube, Twitter/X, LinkedIn ve daha fazlası dahil herhangi bir platformda kullanılabilir.' }
         ]
       },
       {
@@ -86,9 +86,9 @@ const content: Record<string, any> = {
         name: 'Araçlar ve Özellikler',
         icon: '🛠️',
         questions: [
-          { q: 'Hangi araçlar dahil?', a: 'MediaToolKit 16 AI aracı içerir: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer ve Content Repurposer.' },
+          { q: 'Hangi araçlar dahil?', a: 'MediaToolkit 16 AI aracı içerir: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer ve Content Repurposer.' },
           { q: 'AI ne kadar doğru?', a: 'AI\'mız milyonlarca viral içerik üzerinde eğitilmiştir ve sürekli gelişmektedir. Sonuçlar yüksek etkileşim için optimize edilmiş olsa da, çıktıyı marka sesinize uyacak şekilde incelemenizi ve kişiselleştirmenizi öneririz.' },
-          { q: 'Oluşturulan içeriği ticari olarak kullanabilir miyim?', a: 'Evet! MediaToolKit aracılığıyla oluşturulan tüm içerikler, atıf gerektirmeden kişisel ve ticari amaçlarla serbestçe kullanılabilir.' },
+          { q: 'Oluşturulan içeriği ticari olarak kullanabilir miyim?', a: 'Evet! MediaToolkit aracılığıyla oluşturulan tüm içerikler, atıf gerektirmeden kişisel ve ticari amaçlarla serbestçe kullanılabilir.' },
           { q: 'Hangi diller destekleniyor?', a: 'Arayüzümüz 5 dili destekler (İngilizce, Türkçe, Rusça, Almanca, Fransızca). AI, girdinize göre çok daha fazla dilde içerik oluşturabilir.' }
         ]
       },
@@ -111,16 +111,16 @@ const content: Record<string, any> = {
   },
   ru: {
     title: 'Часто задаваемые вопросы',
-    subtitle: 'Найдите ответы на распространенные вопросы о MediaToolKit',
+    subtitle: 'Найдите ответы на распространенные вопросы о MediaToolkit',
     categories: [
       {
         name: 'Начало работы',
         icon: '🚀',
         questions: [
-          { q: 'Что такое MediaToolKit?', a: 'MediaToolKit - это платформа с ИИ, включающая 16+ инструментов для создателей контента для генерации вирусных хуков, скриптов, подписей и многого другого.' },
+          { q: 'Что такое MediaToolkit?', a: 'MediaToolkit - это платформа с ИИ, включающая 16+ инструментов для создателей контента для генерации вирусных хуков, скриптов, подписей и многого другого.' },
           { q: 'Как создать аккаунт?', a: 'Нажмите "Начать" на главной странице и зарегистрируйтесь через email или Google. Вы сразу получите 100 бесплатных кредитов.' },
-          { q: 'MediaToolKit бесплатный?', a: 'Да! Мы предлагаем бесплатный план со 100 кредитами в месяц и доступом ко всем 16 инструментам.' },
-          { q: 'Какие платформы поддерживаются?', a: 'MediaToolKit работает в любом современном браузере. Контент можно использовать на TikTok, Instagram, YouTube, Twitter/X, LinkedIn и других.' }
+          { q: 'MediaToolkit бесплатный?', a: 'Да! Мы предлагаем бесплатный план со 100 кредитами в месяц и доступом ко всем 16 инструментам.' },
+          { q: 'Какие платформы поддерживаются?', a: 'MediaToolkit работает в любом современном браузере. Контент можно использовать на TikTok, Instagram, YouTube, Twitter/X, LinkedIn и других.' }
         ]
       },
       {
@@ -163,15 +163,15 @@ const content: Record<string, any> = {
   },
   de: {
     title: 'Häufig gestellte Fragen',
-    subtitle: 'Finden Sie Antworten auf häufige Fragen zu MediaToolKit',
+    subtitle: 'Finden Sie Antworten auf häufige Fragen zu MediaToolkit',
     categories: [
       {
         name: 'Erste Schritte',
         icon: '🚀',
         questions: [
-          { q: 'Was ist MediaToolKit?', a: 'MediaToolKit ist eine KI-Plattform mit 16+ Tools für Content-Ersteller.' },
+          { q: 'Was ist MediaToolkit?', a: 'MediaToolkit ist eine KI-Plattform mit 16+ Tools für Content-Ersteller.' },
           { q: 'Wie erstelle ich ein Konto?', a: 'Klicken Sie auf "Starten" und registrieren Sie sich. Sie erhalten sofort 100 kostenlose Credits.' },
-          { q: 'Ist MediaToolKit kostenlos?', a: 'Ja! Wir bieten einen kostenlosen Plan mit 100 Credits/Monat.' },
+          { q: 'Ist MediaToolkit kostenlos?', a: 'Ja! Wir bieten einen kostenlosen Plan mit 100 Credits/Monat.' },
           { q: 'Welche Plattformen werden unterstützt?', a: 'Funktioniert in jedem Browser. Content für TikTok, Instagram, YouTube usw.' }
         ]
       },
@@ -215,15 +215,15 @@ const content: Record<string, any> = {
   },
   fr: {
     title: 'Questions fréquentes',
-    subtitle: 'Trouvez les réponses aux questions courantes sur MediaToolKit',
+    subtitle: 'Trouvez les réponses aux questions courantes sur MediaToolkit',
     categories: [
       {
         name: 'Premiers pas',
         icon: '🚀',
         questions: [
-          { q: 'Qu\'est-ce que MediaToolKit?', a: 'MediaToolKit est une plateforme IA avec 16+ outils pour les créateurs de contenu.' },
+          { q: 'Qu\'est-ce que MediaToolkit?', a: 'MediaToolkit est une plateforme IA avec 16+ outils pour les créateurs de contenu.' },
           { q: 'Comment créer un compte?', a: 'Cliquez sur "Commencer" et inscrivez-vous. Vous recevrez 100 crédits gratuits.' },
-          { q: 'MediaToolKit est-il gratuit?', a: 'Oui! Nous offrons un plan gratuit avec 100 crédits/mois.' },
+          { q: 'MediaToolkit est-il gratuit?', a: 'Oui! Nous offrons un plan gratuit avec 100 crédits/mois.' },
           { q: 'Quelles plateformes sont supportées?', a: 'Fonctionne dans tout navigateur. Contenu pour TikTok, Instagram, YouTube, etc.' }
         ]
       },

@@ -487,14 +487,14 @@ AI is a **collaborator**, not a replacement. Think of it as a brainstorming part
 ❌ Ignoring your audience's feedback
 ❌ Over-relying on AI for everything
 
-## The MediaToolKit Workflow
+## The MediaToolkit Workflow
 
 1. **Generate** ideas with our AI tools
 2. **Customize** the output to your voice
 3. **Test** with your audience
 4. **Iterate** based on performance
 
-Try our 16 AI tools at [MediaToolKit Dashboard](/dashboard)!`,
+Try our 16 AI tools at [MediaToolkit Dashboard](/dashboard)!`,
       tr: `# AI İçerik Oluşturma Rehberi
 
 AI araçları içerik oluşturmayı devrimleştirdi. İşte otantik sesinizi kaybetmeden bunları etkili kullanmanın yolu.
@@ -520,7 +520,7 @@ AI bir **işbirlikçi**, değiştirici değil. Onu hiç yorulmayan bir beyin fı
 - Genel ifadeleri kaldırın
 - Doğruluk ve özgünlüğü sağlayın
 
-[MediaToolKit Dashboard](/dashboard)'da 16 AI aracımızı deneyin!`,
+[MediaToolkit Dashboard](/dashboard)'da 16 AI aracımızı deneyin!`,
       ru: `# Руководство по созданию контента с ИИ
 
 ## Правильный подход
@@ -735,7 +735,7 @@ Utilisez notre [Content Repurposer](/dashboard)!`
     content: {
       en: `# How Sarah Grew from 1K to 100K in 3 Months
 
-Sarah was stuck at 1,000 followers for over a year. Then she discovered MediaToolKit and everything changed.
+Sarah was stuck at 1,000 followers for over a year. Then she discovered MediaToolkit and everything changed.
 
 ## The Starting Point
 
@@ -786,7 +786,7 @@ Her "5-minute pasta hack" video hit 2M views:
 Start with our free plan: [Get Started](/register)`,
       tr: `# Sarah 3 Ayda 1K'dan 100K'ya Nasıl Büyüdü
 
-Sarah bir yılı aşkın süredir 1.000 takipçide takılı kalmıştı. Sonra MediaToolKit'i keşfetti ve her şey değişti.
+Sarah bir yılı aşkın süredir 1.000 takipçide takılı kalmıştı. Sonra MediaToolkit'i keşfetti ve her şey değişti.
 
 ## Başlangıç Noktası
 
@@ -825,7 +825,7 @@ Sarah araçlarımızı kullanmaya başladı:
 Ücretsiz planla başlayın: [Başla](/register)`,
       ru: `# Как Сара выросла с 1K до 100K за 3 месяца
 
-Сара застряла на 1000 подписчиках больше года. Потом она открыла MediaToolKit.
+Сара застряла на 1000 подписчиках больше года. Потом она открыла MediaToolkit.
 
 ## Трансформация
 
@@ -844,7 +844,7 @@ Sarah araçlarımızı kullanmaya başladı:
 Начните бесплатно: [Регистрация](/register)`,
       de: `# Wie Sarah in 3 Monaten von 1K auf 100K wuchs
 
-Sarah steckte über ein Jahr bei 1.000 Followern fest. Dann entdeckte sie MediaToolKit.
+Sarah steckte über ein Jahr bei 1.000 Followern fest. Dann entdeckte sie MediaToolkit.
 
 ## Die Transformation
 
@@ -863,7 +863,7 @@ Virales Video mit 2M Views
 Starten Sie kostenlos: [Registrieren](/register)`,
       fr: `# Comment Sarah est passée de 1K à 100K en 3 mois
 
-Sarah était bloquée à 1 000 abonnés depuis plus d'un an. Puis elle a découvert MediaToolKit.
+Sarah était bloquée à 1 000 abonnés depuis plus d'un an. Puis elle a découvert MediaToolkit.
 
 ## La transformation
 

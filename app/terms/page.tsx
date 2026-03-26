@@ -10,11 +10,11 @@ const content: Record<string, any> = {
     sections: [
       {
         title: '1. Acceptance of Terms',
-        content: `By accessing or using MediaToolKit ("the Service"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service.`
+        content: `By accessing or using MediaToolkit ("the Service"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service.`
       },
       {
         title: '2. Description of Service',
-        content: `MediaToolKit provides AI-powered tools for content creators, including but not limited to:
+        content: `MediaToolkit provides AI-powered tools for content creators, including but not limited to:
 - Hook generation
 - Caption creation
 - Script writing
@@ -70,7 +70,7 @@ We reserve the right to terminate accounts that violate these guidelines.`
 - You grant us a license to store and process your inputs
 
 **Our Content:**
-- MediaToolKit branding, design, and code are our property
+- MediaToolkit branding, design, and code are our property
 - AI-generated outputs may be used freely for personal and commercial purposes`
       },
       {
@@ -110,11 +110,11 @@ You may delete your account at any time from your dashboard.`
     sections: [
       {
         title: '1. Şartların Kabulü',
-        content: `MediaToolKit'e ("Hizmet") erişerek veya kullanarak bu Kullanım Şartlarına bağlı olmayı kabul edersiniz. Şartların herhangi bir kısmına katılmıyorsanız, Hizmete erişemezsiniz.`
+        content: `MediaToolkit'e ("Hizmet") erişerek veya kullanarak bu Kullanım Şartlarına bağlı olmayı kabul edersiniz. Şartların herhangi bir kısmına katılmıyorsanız, Hizmete erişemezsiniz.`
       },
       {
         title: '2. Hizmet Açıklaması',
-        content: `MediaToolKit, içerik üreticileri için AI destekli araçlar sağlar:
+        content: `MediaToolkit, içerik üreticileri için AI destekli araçlar sağlar:
 - Hook oluşturma
 - Caption oluşturma
 - Script yazma
@@ -170,7 +170,7 @@ Bu yönergeleri ihlal eden hesapları sonlandırma hakkımız saklıdır.`
 - Girdilerinizi saklamamız ve işlememiz için bize lisans verirsiniz
 
 **Bizim İçeriğimiz:**
-- MediaToolKit markası, tasarımı ve kodu bizim mülkümüzdür
+- MediaToolkit markası, tasarımı ve kodu bizim mülkümüzdür
 - AI tarafından oluşturulan çıktılar kişisel ve ticari amaçlarla serbestçe kullanılabilir`
       },
       {
@@ -210,11 +210,11 @@ Hesabınızı istediğiniz zaman kontrol panelinizden silebilirsiniz.`
     sections: [
       {
         title: '1. Принятие условий',
-        content: `Получая доступ к MediaToolKit ("Сервис") или используя его, вы соглашаетесь с настоящими Условиями использования.`
+        content: `Получая доступ к MediaToolkit ("Сервис") или используя его, вы соглашаетесь с настоящими Условиями использования.`
       },
       {
         title: '2. Описание сервиса',
-        content: `MediaToolKit предоставляет AI-инструменты для создателей контента:
+        content: `MediaToolkit предоставляет AI-инструменты для создателей контента:
 - Генерация хуков
 - Создание подписей
 - Написание скриптов
@@ -263,7 +263,7 @@ Hesabınızı istediğiniz zaman kontrol panelinizden silebilirsiniz.`
 - Вы сохраняете права на созданный контент
 
 **Наш контент:**
-- Бренд и код MediaToolKit - наша собственность`
+- Бренд и код MediaToolkit - наша собственность`
       },
       {
         title: '7. Ограничение ответственности',
@@ -290,11 +290,11 @@ Hesabınızı istediğiniz zaman kontrol panelinizden silebilirsiniz.`
     sections: [
       {
         title: '1. Annahme der Bedingungen',
-        content: `Durch den Zugriff auf MediaToolKit stimmen Sie diesen Nutzungsbedingungen zu.`
+        content: `Durch den Zugriff auf MediaToolkit stimmen Sie diesen Nutzungsbedingungen zu.`
       },
       {
         title: '2. Beschreibung des Dienstes',
-        content: `MediaToolKit bietet KI-Tools für Content-Ersteller:
+        content: `MediaToolkit bietet KI-Tools für Content-Ersteller:
 - Hook-Generierung
 - Caption-Erstellung
 - Skript-Schreiben
@@ -337,7 +337,7 @@ Der Dienst arbeitet mit einem Kreditsystem.`
 - Sie behalten die Rechte an erstellten Inhalten
 
 **Unser Inhalt:**
-- MediaToolKit-Marke und Code sind unser Eigentum`
+- MediaToolkit-Marke und Code sind unser Eigentum`
       },
       {
         title: '7. Haftungsbeschränkung',
@@ -364,11 +364,11 @@ Der Dienst arbeitet mit einem Kreditsystem.`
     sections: [
       {
         title: '1. Acceptation des conditions',
-        content: `En accédant à MediaToolKit, vous acceptez ces Conditions d'utilisation.`
+        content: `En accédant à MediaToolkit, vous acceptez ces Conditions d'utilisation.`
       },
       {
         title: '2. Description du service',
-        content: `MediaToolKit fournit des outils IA pour les créateurs:
+        content: `MediaToolkit fournit des outils IA pour les créateurs:
 - Génération de hooks
 - Création de légendes
 - Écriture de scripts
@@ -411,7 +411,7 @@ Le service fonctionne avec un système de crédits.`
 - Vous conservez les droits sur le contenu créé
 
 **Notre contenu:**
-- La marque et le code MediaToolKit nous appartiennent`
+- La marque et le code MediaToolkit nous appartiennent`
       },
       {
         title: '7. Limitation de responsabilité',

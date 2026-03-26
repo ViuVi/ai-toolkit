@@ -65,7 +65,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
           <Link href="/" scroll={false} className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">M</div>
-            <span className="font-semibold">MediaToolKit</span>
+            <span className="font-semibold">MediaToolkit</span>
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-500">
             <Link href="/" scroll={false} className="hover:text-white transition">{t.home}</Link>
@@ -76,7 +76,7 @@ export default function Footer() {
             <Link href="/faq" className="hover:text-white transition">{t.faq}</Link>
             <Link href="/blog" className="hover:text-white transition">{t.blog}</Link>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500">© 2026 MediaToolKit. {t.rights}</div>
+          <div className="text-xs sm:text-sm text-gray-500">© 2026 MediaToolkit. {t.rights}</div>
         </div>
       </div>
     </footer>

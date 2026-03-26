@@ -141,9 +141,9 @@ const posts = [
       fr: 'Comment Sarah est passée de 1K à 100K en 3 mois'
     },
     excerpt: {
-      en: 'A real case study of a creator who used MediaToolKit to 100x her following.',
-      tr: 'MediaToolKit kullanarak takipçi sayısını 100 kat artıran bir içerik üreticisinin gerçek hikayesi.',
-      ru: 'Реальный кейс создателя, который использовал MediaToolKit для роста в 100 раз.',
+      en: 'A real case study of a creator who used MediaToolkit to 100x her following.',
+      tr: 'MediaToolkit kullanarak takipçi sayısını 100 kat artıran bir içerik üreticisinin gerçek hikayesi.',
+      ru: 'Реальный кейс создателя, который использовал MediaToolkit для роста в 100 раз.',
       de: 'Eine echte Fallstudie einer Creatorin, die ihre Follower ver-100-facht hat.',
       fr: 'Une étude de cas réelle d\'une créatrice qui a multiplié ses abonnés par 100.'
     }
