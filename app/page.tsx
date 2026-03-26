@@ -188,7 +188,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-16 pt-16 border-t border-white/5">
             {[
               { value: '16+', label: t.stats.tools },
-              { value: '1K+', label: t.stats.content },
+              { value: '5K+', label: t.stats.content },
               { value: '5', label: t.stats.languages },
               { value: '500+', label: t.stats.users },
             ].map((stat, i) => (
