@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 import { supabase } from '@/lib/supabase'
@@ -85,8 +85,8 @@ export default function HomePage() {
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  // Sayfa yüklendiğinde kaydedilmiş pozisyona hemen git (kayma olmasın)
-  useEffect(() => {
+  // Sayfa renderlanmadan önce kaydedilmiş pozisyona git (kayma olmaz)
+  useLayoutEffect(() => {
     const savedPosition = sessionStorage.getItem('homeScrollPosition')
     if (savedPosition && parseInt(savedPosition) > 0) {
       window.scrollTo(0, parseInt(savedPosition))
