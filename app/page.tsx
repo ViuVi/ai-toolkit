@@ -373,11 +373,11 @@ export default function HomePage() {
               <span className="font-semibold">MediaToolkit</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
-              <Link href="/terms" className="hover:text-white transition">Terms</Link>
-              <Link href="/contact" className="hover:text-white transition">Contact</Link>
-              <Link href="/faq" className="hover:text-white transition">FAQ</Link>
-              <Link href="/blog" className="hover:text-white transition">Blog</Link>
+              <Link href="/privacy" onClick={() => sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())} className="hover:text-white transition">Privacy</Link>
+              <Link href="/terms" onClick={() => sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())} className="hover:text-white transition">Terms</Link>
+              <Link href="/contact" onClick={() => sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())} className="hover:text-white transition">Contact</Link>
+              <Link href="/faq" onClick={() => sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())} className="hover:text-white transition">FAQ</Link>
+              <Link href="/blog" onClick={() => sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())} className="hover:text-white transition">Blog</Link>
             </div>
             <div className="text-sm text-gray-500">© 2026 MediaToolkit. {t.footer.rights}</div>
           </div>
