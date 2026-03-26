@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,17 +23,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Here you can integrate with:
-    // 1. Email service (Resend, SendGrid, etc.)
-    // 2. Database to store messages
-    // 3. Slack/Discord webhook for notifications
+    // Zoho Mail SMTP transporter
+    const transporter = nodemailer.createTransport({
+      host: 'smtppro.zoho.eu',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.ZOHO_MAIL_USER, // support@mediatoolkit.site
+        pass: process.env.ZOHO_MAIL_PASS  // Zoho app password
+      }
+    })
 
-    // Example: Send to Resend (uncomment and add API key)
-    /*
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    await resend.emails.send({
-      from: 'MediaToolKit <noreply@mediatoolkit.site>',
-      to: 'support@mediatoolkit.site',
+    // Send email to support
+    await transporter.sendMail({
+      from: `"MediaToolkit Contact" <${process.env.ZOHO_MAIL_USER}>`,
+      to: process.env.ZOHO_MAIL_USER, // support@mediatoolkit.site
+      replyTo: email,
       subject: `[Contact Form] ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
@@ -40,23 +46,19 @@ export async function POST(request: NextRequest) {
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong></p>
-        <p>${message}</p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
       `
     })
-    */
-
-    // For now, just log and return success
-    console.log('Contact form submission:', { name, email, subject, message })
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Message received successfully' 
+      message: 'Message sent successfully' 
     })
 
   } catch (error) {
     console.error('Contact form error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to send message' },
       { status: 500 }
     )
   }
