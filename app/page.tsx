@@ -7,57 +7,57 @@ import { supabase } from '@/lib/supabase'
 const texts: Record<string, any> = {
   en: {
     nav: { tools: 'Tools', pricing: 'Pricing', blog: 'Blog', login: 'Log in', getStarted: 'Get Started', dashboard: 'Dashboard' },
-    hero: { badge: 'Trusted by 10,000+ content creators', title1: 'Create', title2: 'Viral Content', title3: '10x Faster with AI', subtitle: 'The ultimate AI toolkit for content creators. Generate hooks, scripts, captions, and discover viral trends.', cta: 'Start Creating Free', explore: 'Explore Tools' },
+    hero: { badge: 'Trusted by 500+ content creators', title1: 'Create', title2: 'Viral Content', title3: '10x Faster with AI', subtitle: 'The ultimate AI toolkit for content creators. Generate hooks, scripts, captions, and discover viral trends.', cta: 'Start Creating Free', explore: 'Explore Tools' },
     stats: { tools: 'AI Tools', content: 'Content Created', languages: 'Languages', users: 'Users' },
     tools: { title: 'Powerful AI Tools', subtitle: 'Everything you need to create viral content', viewAll: 'View all 16 tools' },
     howItWorks: { title: 'How It Works', subtitle: 'Viral content in 3 steps', step1: 'Find Trends', step1Desc: 'Discover viral content in your niche with AI', step2: 'Generate Content', step2Desc: 'Create hooks, scripts, and captions', step3: 'Go Viral', step3Desc: 'Watch your content explode' },
     testimonials: { title: 'Loved by Creators', subtitle: 'What our users say' },
     pricing: { title: 'Simple Pricing', subtitle: 'Start free, upgrade when you need', starter: 'Starter', pro: 'Pro', agency: 'Agency', free: 'Free', month: '/mo', credits: 'credits', popular: 'POPULAR', features: { starter: ['All 16 Tools', '100 Credits/month', 'Watch Ads +10 Credits'], pro: ['All 16 Tools', '1000 Credits/month', 'Ad-Free', 'Priority Support'], agency: ['Unlimited Credits', 'Team Access', 'API Access'] }, cta: { starter: 'Start Free', pro: 'Go Pro', agency: 'Contact Us' } },
-    cta: { title: 'Ready to Go Viral?', subtitle: 'Join 10,000+ content creators', button: 'Start Creating Free' },
+    cta: { title: 'Ready to Go Viral?', subtitle: 'Join 500+ content creators', button: 'Start Creating Free' },
     footer: { rights: 'All rights reserved.' }
   },
   tr: {
     nav: { tools: 'Araçlar', pricing: 'Fiyatlar', blog: 'Blog', login: 'Giriş', getStarted: 'Başla', dashboard: 'Dashboard' },
-    hero: { badge: '10.000+ içerik üreticisi güveniyor', title1: 'Viral İçerik', title2: 'Üret', title3: 'AI ile 10 Kat Hızlı', subtitle: 'İçerik üreticileri için en kapsamlı AI araç seti.', cta: 'Ücretsiz Başla', explore: 'Araçları Keşfet' },
+    hero: { badge: '500+ içerik üreticisi güveniyor', title1: 'Viral İçerik', title2: 'Üret', title3: 'AI ile 10 Kat Hızlı', subtitle: 'İçerik üreticileri için en kapsamlı AI araç seti.', cta: 'Ücretsiz Başla', explore: 'Araçları Keşfet' },
     stats: { tools: 'AI Araç', content: 'İçerik', languages: 'Dil', users: 'Kullanıcı' },
     tools: { title: 'Güçlü AI Araçları', subtitle: 'Viral içerik için ihtiyacın olan her şey', viewAll: 'Tüm 16 aracı gör' },
     howItWorks: { title: 'Nasıl Çalışır?', subtitle: '3 adımda viral içerik', step1: 'Trend Bul', step1Desc: 'AI ile viral içerikleri keşfet', step2: 'İçerik Üret', step2Desc: 'Hook, script ve caption oluştur', step3: 'Viral Ol', step3Desc: 'İçeriğinin patlamasını izle' },
     testimonials: { title: 'Kullanıcılarımız', subtitle: 'Ne diyorlar?' },
     pricing: { title: 'Basit Fiyatlandırma', subtitle: 'Ücretsiz başla', starter: 'Başlangıç', pro: 'Pro', agency: 'Agency', free: 'Ücretsiz', month: '/ay', credits: 'kredi', popular: 'POPÜLER', features: { starter: ['Tüm 16 Araç', '100 Kredi/ay', 'Reklam +10 Kredi'], pro: ['Tüm 16 Araç', '1000 Kredi/ay', 'Reklamsız', 'Öncelikli Destek'], agency: ['Sınırsız Kredi', 'Takım Erişimi', 'API'] }, cta: { starter: 'Ücretsiz Başla', pro: 'Pro Al', agency: 'İletişim' } },
-    cta: { title: 'Viral Olmaya Hazır mısın?', subtitle: '10.000+ içerik üreticisine katıl', button: 'Ücretsiz Başla' },
+    cta: { title: 'Viral Olmaya Hazır mısın?', subtitle: '500+ içerik üreticisine katıl', button: 'Ücretsiz Başla' },
     footer: { rights: 'Tüm hakları saklıdır.' }
   },
   ru: {
     nav: { tools: 'Инструменты', pricing: 'Цены', blog: 'Блог', login: 'Войти', getStarted: 'Начать', dashboard: 'Панель' },
-    hero: { badge: '10,000+ создателей доверяют', title1: 'Создавай', title2: 'Вирусный контент', title3: 'в 10 раз быстрее с ИИ', subtitle: 'Набор ИИ-инструментов для создателей контента.', cta: 'Начать бесплатно', explore: 'Инструменты' },
+    hero: { badge: '500+ создателей доверяют', title1: 'Создавай', title2: 'Вирусный контент', title3: 'в 10 раз быстрее с ИИ', subtitle: 'Набор ИИ-инструментов для создателей контента.', cta: 'Начать бесплатно', explore: 'Инструменты' },
     stats: { tools: 'ИИ-инструментов', content: 'Контент', languages: 'Языков', users: 'Пользователей' },
     tools: { title: 'Мощные ИИ-инструменты', subtitle: 'Всё для вирусного контента', viewAll: 'Все 16 инструментов' },
     howItWorks: { title: 'Как это работает', subtitle: 'Вирусный контент за 3 шага', step1: 'Найти тренды', step1Desc: 'ИИ-анализ трендов', step2: 'Создать контент', step2Desc: 'Хуки, скрипты, подписи', step3: 'Стать вирусным', step3Desc: 'Смотри как контент взлетает' },
     testimonials: { title: 'Пользователи', subtitle: 'Что говорят' },
     pricing: { title: 'Простые цены', subtitle: 'Начни бесплатно', starter: 'Старт', pro: 'Про', agency: 'Агентство', free: 'Бесплатно', month: '/мес', credits: 'кредитов', popular: 'ПОПУЛЯРНЫЙ', features: { starter: ['Все 16 инструментов', '100 кредитов/мес', 'Реклама +10'], pro: ['Все 16 инструментов', '1000 кредитов/мес', 'Без рекламы', 'Приоритет'], agency: ['Безлимит', 'Команда', 'API'] }, cta: { starter: 'Бесплатно', pro: 'Про', agency: 'Связаться' } },
-    cta: { title: 'Готов стать вирусным?', subtitle: 'Присоединяйся к 10,000+ создателям', button: 'Начать бесплатно' },
+    cta: { title: 'Готов стать вирусным?', subtitle: 'Присоединяйся к 500+ создателям', button: 'Начать бесплатно' },
     footer: { rights: 'Все права защищены.' }
   },
   de: {
     nav: { tools: 'Tools', pricing: 'Preise', blog: 'Blog', login: 'Anmelden', getStarted: 'Starten', dashboard: 'Dashboard' },
-    hero: { badge: '10.000+ Content-Ersteller vertrauen uns', title1: 'Erstelle', title2: 'Viralen Content', title3: '10x schneller mit KI', subtitle: 'Das ultimative KI-Toolkit für Content-Ersteller.', cta: 'Kostenlos starten', explore: 'Tools erkunden' },
+    hero: { badge: '500+ Content-Ersteller vertrauen uns', title1: 'Erstelle', title2: 'Viralen Content', title3: '10x schneller mit KI', subtitle: 'Das ultimative KI-Toolkit für Content-Ersteller.', cta: 'Kostenlos starten', explore: 'Tools erkunden' },
     stats: { tools: 'KI-Tools', content: 'Inhalte', languages: 'Sprachen', users: 'Nutzer' },
     tools: { title: 'Leistungsstarke KI-Tools', subtitle: 'Alles für viralen Content', viewAll: 'Alle 16 Tools' },
     howItWorks: { title: 'So funktioniert es', subtitle: 'Viraler Content in 3 Schritten', step1: 'Trends finden', step1Desc: 'KI-Trendanalyse', step2: 'Content erstellen', step2Desc: 'Hooks, Skripte, Captions', step3: 'Viral gehen', step3Desc: 'Content explodiert' },
     testimonials: { title: 'Nutzer', subtitle: 'Was sie sagen' },
     pricing: { title: 'Einfache Preise', subtitle: 'Kostenlos starten', starter: 'Starter', pro: 'Pro', agency: 'Agentur', free: 'Kostenlos', month: '/Mo', credits: 'Credits', popular: 'BELIEBT', features: { starter: ['Alle 16 Tools', '100 Credits/Monat', 'Werbung +10'], pro: ['Alle 16 Tools', '1000 Credits/Monat', 'Werbefrei', 'Priorität'], agency: ['Unbegrenzt', 'Team', 'API'] }, cta: { starter: 'Kostenlos', pro: 'Pro', agency: 'Kontakt' } },
-    cta: { title: 'Bereit viral zu gehen?', subtitle: '10.000+ Ersteller dabei', button: 'Kostenlos starten' },
+    cta: { title: 'Bereit viral zu gehen?', subtitle: '500+ Ersteller dabei', button: 'Kostenlos starten' },
     footer: { rights: 'Alle Rechte vorbehalten.' }
   },
   fr: {
     nav: { tools: 'Outils', pricing: 'Tarifs', blog: 'Blog', login: 'Connexion', getStarted: 'Commencer', dashboard: 'Tableau de bord' },
-    hero: { badge: '10 000+ créateurs nous font confiance', title1: 'Créez du', title2: 'Contenu Viral', title3: '10x plus vite avec l\'IA', subtitle: 'La boîte à outils IA ultime pour les créateurs.', cta: 'Commencer gratuitement', explore: 'Explorer' },
+    hero: { badge: '500+ créateurs nous font confiance', title1: 'Créez du', title2: 'Contenu Viral', title3: '10x plus vite avec l\'IA', subtitle: 'La boîte à outils IA ultime pour les créateurs.', cta: 'Commencer gratuitement', explore: 'Explorer' },
     stats: { tools: 'Outils IA', content: 'Contenus', languages: 'Langues', users: 'Utilisateurs' },
     tools: { title: 'Outils IA Puissants', subtitle: 'Tout pour le contenu viral', viewAll: 'Voir les 16 outils' },
     howItWorks: { title: 'Comment ça marche', subtitle: 'Contenu viral en 3 étapes', step1: 'Trouver les tendances', step1Desc: 'Analyse IA', step2: 'Générer du contenu', step2Desc: 'Hooks, scripts, légendes', step3: 'Devenir viral', step3Desc: 'Le contenu explose' },
     testimonials: { title: 'Utilisateurs', subtitle: 'Ce qu\'ils disent' },
     pricing: { title: 'Tarifs Simples', subtitle: 'Commencez gratuitement', starter: 'Starter', pro: 'Pro', agency: 'Agence', free: 'Gratuit', month: '/mois', credits: 'crédits', popular: 'POPULAIRE', features: { starter: ['Tous les 16 outils', '100 crédits/mois', 'Pub +10'], pro: ['Tous les 16 outils', '1000 crédits/mois', 'Sans pub', 'Priorité'], agency: ['Illimité', 'Équipe', 'API'] }, cta: { starter: 'Gratuit', pro: 'Pro', agency: 'Contact' } },
-    cta: { title: 'Prêt à devenir viral?', subtitle: '10 000+ créateurs', button: 'Commencer gratuitement' },
+    cta: { title: 'Prêt à devenir viral?', subtitle: '500+ créateurs', button: 'Commencer gratuitement' },
     footer: { rights: 'Tous droits réservés.' }
   }
 }
@@ -85,19 +85,19 @@ export default function HomePage() {
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
+  // Sayfa yüklendiğinde kaydedilmiş pozisyona hemen git (kayma olmasın)
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('homeScrollPosition')
+    if (savedPosition && parseInt(savedPosition) > 0) {
+      window.scrollTo(0, parseInt(savedPosition))
+    }
+  }, [])
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
       // Ana sayfa scroll pozisyonunu kaydet
       sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())
-    }
-    
-    // Sayfa yüklendiğinde kaydedilmiş pozisyona git
-    const savedPosition = sessionStorage.getItem('homeScrollPosition')
-    if (savedPosition && parseInt(savedPosition) > 0) {
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedPosition))
-      }, 100)
     }
     
     window.addEventListener('scroll', handleScroll)
@@ -188,9 +188,9 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-16 pt-16 border-t border-white/5">
             {[
               { value: '16+', label: t.stats.tools },
-              { value: '50K+', label: t.stats.content },
+              { value: '1K+', label: t.stats.content },
               { value: '5', label: t.stats.languages },
-              { value: '10K+', label: t.stats.users },
+              { value: '500+', label: t.stats.users },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{stat.value}</div>
