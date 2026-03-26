@@ -98,7 +98,7 @@ function RegisterForm() {
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 mb-12">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl font-bold">M</div>
-            <span className="text-xl font-bold">MediaToolKit</span>
+            <span className="text-xl font-bold">MediaToolkit</span>
           </Link>
 
           <h1 className="text-3xl font-bold mb-2">Create account</h1>

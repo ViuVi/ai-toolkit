@@ -86,7 +86,20 @@ export default function HomePage() {
   const t = texts[language] || texts.en
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20)
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+      // Ana sayfa scroll pozisyonunu kaydet
+      sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())
+    }
+    
+    // Sayfa yüklendiğinde kaydedilmiş pozisyona git
+    const savedPosition = sessionStorage.getItem('homeScrollPosition')
+    if (savedPosition && parseInt(savedPosition) > 0) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedPosition))
+      }, 100)
+    }
+    
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -104,7 +117,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg sm:text-xl font-bold">M</div>
-            <span className="text-lg sm:text-xl font-bold hidden sm:block">MediaToolKit</span>
+            <span className="text-lg sm:text-xl font-bold hidden sm:block">MediaToolkit</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
@@ -357,7 +370,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">M</div>
-              <span className="font-semibold">MediaToolKit</span>
+              <span className="font-semibold">MediaToolkit</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
@@ -366,7 +379,7 @@ export default function HomePage() {
               <Link href="/faq" className="hover:text-white transition">FAQ</Link>
               <Link href="/blog" className="hover:text-white transition">Blog</Link>
             </div>
-            <div className="text-sm text-gray-500">© 2025 MediaToolKit. {t.footer.rights}</div>
+            <div className="text-sm text-gray-500">© 2026 MediaToolkit. {t.footer.rights}</div>
           </div>
         </div>
       </footer>

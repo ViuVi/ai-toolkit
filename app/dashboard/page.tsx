@@ -405,13 +405,13 @@ export default function DashboardPage() {
   }
 
   const shareOnTwitter = () => {
-    const text = `I'm using MediaToolKit to create viral content with AI! 🚀 Use my referral code and get 100 FREE credits: `
+    const text = `I'm using MediaToolkit to create viral content with AI! 🚀 Use my referral code and get 100 FREE credits: `
     const url = `https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
   }
 
   const shareOnWhatsApp = () => {
-    const text = `Hey! I'm using MediaToolKit to create viral content. Use my code ${referralData?.referralCode} and get 100 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+    const text = `Hey! I'm using MediaToolkit to create viral content. Use my code ${referralData?.referralCode} and get 100 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -555,7 +555,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">M</span>
             </div>
-            <span className="font-bold text-lg hidden sm:block">MediaToolKit</span>
+            <span className="font-bold text-lg hidden sm:block">MediaToolkit</span>
           </Link>
 
           {/* Right Side */}
@@ -845,7 +845,7 @@ export default function DashboardPage() {
                 
                 {/* Fake Ad Content */}
                 <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl">
-                  <p className="text-sm text-gray-300 mb-2">✨ MediaToolKit Pro ✨</p>
+                  <p className="text-sm text-gray-300 mb-2">✨ MediaToolkit Pro ✨</p>
                   <p className="text-xs text-gray-400">Unlock unlimited credits and premium features!</p>
                 </div>
 

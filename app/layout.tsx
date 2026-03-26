@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'MediaToolKit - AI Tools for Content Creators',
-    template: '%s | MediaToolKit'
+    default: 'MediaToolkit - AI Tools for Content Creators',
+    template: '%s | MediaToolkit'
   },
   description: 'The ultimate AI toolkit for content creators. Generate viral hooks, scripts, captions with 16+ AI-powered tools.',
 }
