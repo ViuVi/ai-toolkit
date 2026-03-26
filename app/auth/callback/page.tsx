@@ -10,7 +10,6 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // URL'den hash'i al ve session'ı ayarla
         const { data: { session }, error } = await supabase.auth.getSession()
 
         if (error) {
@@ -22,21 +21,51 @@ export default function AuthCallbackPage() {
         if (session?.user) {
           // Kullanıcı için kredi kaydı var mı kontrol et
           const { data: existingCredits } = await supabase
-            .from('user_credits')
+            .from('credits')
             .select('id')
             .eq('user_id', session.user.id)
             .single()
 
-          // Yoksa oluştur (yeni Google kullanıcısı)
+          // Yoksa oluştur (yeni kullanıcı)
           if (!existingCredits) {
-            await supabase.from('user_credits').insert({
+            // Referral kodu var mı kontrol et
+            const referralCode = typeof window !== 'undefined' 
+              ? localStorage.getItem('referralCode') 
+              : null
+
+            // Yeni kullanıcı referral ile geldiyse 200 kredi, değilse 100 kredi
+            const initialCredits = referralCode ? 200 : 100
+
+            // Referral kodu oluştur
+            const newReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+
+            await supabase.from('credits').insert({
               user_id: session.user.id,
-              credits: 50,
-              plan: 'free'
+              balance: initialCredits,
+              total_used: 0,
+              plan: 'free',
+              referral_code: newReferralCode
             })
+
+            // Eğer referral kodu varsa, davet edene de bonus ver
+            if (referralCode) {
+              try {
+                await fetch('/api/referral', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    referralCode: referralCode,
+                    newUserId: session.user.id
+                  })
+                })
+                // Referral kodunu temizle
+                localStorage.removeItem('referralCode')
+              } catch (e) {
+                console.error('Referral error:', e)
+              }
+            }
           }
 
-          // Dashboard'a yönlendir
           router.push('/dashboard')
         } else {
           router.push('/login')

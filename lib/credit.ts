@@ -107,7 +107,7 @@ export async function getUsageHistory(userId: string, limit: number = 10): Promi
 }
 
 // Yeni kullanıcı için kredi oluştur (eğer yoksa)
-export async function initializeCredits(userId: string): Promise<void> {
+export async function initializeCredits(userId: string, isReferral: boolean = false): Promise<void> {
   const { data } = await supabase
     .from('credits')
     .select('id')
@@ -115,12 +115,18 @@ export async function initializeCredits(userId: string): Promise<void> {
     .single()
 
   if (!data) {
+    // Referral ile geldiyse 200, değilse 100 kredi
+    const initialCredits = isReferral ? 200 : 100
+    const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+    
     await supabase
       .from('credits')
       .insert({
         user_id: userId,
-        balance: 50,
-        total_used: 0
+        balance: initialCredits,
+        total_used: 0,
+        plan: 'free',
+        referral_code: referralCode
       })
   }
 }
