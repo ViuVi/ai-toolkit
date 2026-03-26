@@ -82,15 +82,18 @@ const testimonials = [
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isReady, setIsReady] = useState(false)
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  // Sayfa renderlanmadan önce kaydedilmiş pozisyona git (kayma olmaz)
+  // Sayfa yüklendiğinde scroll pozisyonunu restore et, sonra sayfayı göster
   useLayoutEffect(() => {
     const savedPosition = sessionStorage.getItem('homeScrollPosition')
     if (savedPosition && parseInt(savedPosition) > 0) {
-      window.scrollTo(0, parseInt(savedPosition))
+      window.scrollTo({ top: parseInt(savedPosition), behavior: 'instant' })
     }
+    // Scroll tamamlandıktan sonra sayfayı göster
+    setIsReady(true)
   }, [])
 
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className={`min-h-screen bg-[#0a0a0f] text-white transition-opacity duration-100 ${isReady ? 'opacity-100' : 'opacity-0'}`}>
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-white/5' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
