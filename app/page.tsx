@@ -85,14 +85,11 @@ export default function HomePage() {
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
 
-  // Sayfa yüklendiğinde kaydedilmiş pozisyona hemen git
+  // Sayfa yüklendiğinde kaydedilmiş pozisyona hemen git (kayma olmasın)
   useEffect(() => {
     const savedPosition = sessionStorage.getItem('homeScrollPosition')
     if (savedPosition && parseInt(savedPosition) > 0) {
-      // requestAnimationFrame ile DOM render'dan sonra scroll yap
-      requestAnimationFrame(() => {
-        window.scrollTo(0, parseInt(savedPosition))
-      })
+      window.scrollTo(0, parseInt(savedPosition))
     }
   }, [])
 
