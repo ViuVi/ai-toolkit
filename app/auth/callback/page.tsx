@@ -63,12 +63,14 @@ export default function AuthCallbackPage() {
                     .update({ balance: referrer.balance + CREDITS.REFERRAL_BONUS })
                     .eq('user_id', referrer.user_id)
 
-                  await supabase.from('referrals').insert({
-                    referrer_id: referrer.user_id,
-                    referred_id: userId,
-                    referral_code: referralCode.toUpperCase(),
-                    bonus_given: true
-                  }).catch(() => {})
+                  try {
+                    await supabase.from('referrals').insert({
+                      referrer_id: referrer.user_id,
+                      referred_id: userId,
+                      referral_code: referralCode.toUpperCase(),
+                      bonus_given: true
+                    })
+                  } catch {}
                 }
 
                 localStorage.removeItem('referralCode')

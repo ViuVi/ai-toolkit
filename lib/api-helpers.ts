@@ -94,12 +94,13 @@ export async function deductCredits(userId: string, toolName: string, userData: 
   const cost = TOOL_CREDITS[toolName] || 5
   
   if (userData.plan === 'agency') {
-    // Agency plan için sadece kullanım kaydı
-    await supabaseAdmin.from('tool_usage').insert({
-      user_id: userId,
-      tool_name: toolName,
-      credits_used: 0
-    }).catch(() => {})
+    try {
+      await supabaseAdmin.from('tool_usage').insert({
+        user_id: userId,
+        tool_name: toolName,
+        credits_used: 0
+      })
+    } catch {}
     return userData.balance
   }
 
@@ -111,21 +112,23 @@ export async function deductCredits(userId: string, toolName: string, userData: 
     .update({ balance: newBalance, total_used: newTotalUsed })
     .eq('user_id', userId)
 
-  // tool_usage tablosuna kaydet
-  await supabaseAdmin.from('tool_usage').insert({
-    user_id: userId,
-    tool_name: toolName,
-    credits_used: cost
-  }).catch(() => {})
+  try {
+    await supabaseAdmin.from('tool_usage').insert({
+      user_id: userId,
+      tool_name: toolName,
+      credits_used: cost
+    })
+  } catch {}
 
-  // usage_history tablosuna da kaydet (mevcut tablo)
-  await supabaseAdmin.from('usage_history').insert({
-    user_id: userId,
-    tool_name: toolName,
-    tool_display_name: toolName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-    credits_used: cost,
-    status: 'completed'
-  }).catch(() => {})
+  try {
+    await supabaseAdmin.from('usage_history').insert({
+      user_id: userId,
+      tool_name: toolName,
+      tool_display_name: toolName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      credits_used: cost,
+      status: 'completed'
+    })
+  } catch {}
 
   return newBalance
 }
