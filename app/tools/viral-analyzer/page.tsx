@@ -36,10 +36,10 @@ export default function ViralAnalyzerPage() {
       const res = await fetch('/api/viral-analyzer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, platform, language })
+        body: JSON.stringify({ content, platform, language, userId: user.id })
       })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Hata oluştu')
     } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)

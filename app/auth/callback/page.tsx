@@ -4,11 +4,10 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-// Kredi sabitleri
 const CREDITS = {
-  FREE_INITIAL: 100,      // Referanssız üye başlangıç
-  REFERRAL_INITIAL: 200,  // Referanslı üye başlangıç
-  REFERRAL_BONUS: 100     // Davet edene bonus
+  FREE_INITIAL: 100,
+  REFERRAL_INITIAL: 200,
+  REFERRAL_BONUS: 100
 }
 
 export default function AuthCallbackPage() {
@@ -28,45 +27,30 @@ export default function AuthCallbackPage() {
         if (session?.user) {
           const userId = session.user.id
 
-          // Kullanıcı için kredi kaydı var mı kontrol et
           const { data: existingCredits, error: checkError } = await supabase
             .from('credits')
-            .select('id, balance')
+            .select('id')
             .eq('user_id', userId)
             .single()
 
-          // Yoksa oluştur (yeni kullanıcı)
           if (checkError || !existingCredits) {
-            // Referral kodu var mı kontrol et
             const referralCode = typeof window !== 'undefined' 
               ? localStorage.getItem('referralCode') 
               : null
 
-            // Yeni kullanıcı referral ile geldiyse 200 kredi, değilse 100 kredi
             const initialCredits = referralCode ? CREDITS.REFERRAL_INITIAL : CREDITS.FREE_INITIAL
+            const newReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
 
-            // Benzersiz referral kodu oluştur
-            const newReferralCode = generateReferralCode()
-
-            // Kredi kaydı oluştur
-            const { error: insertError } = await supabase.from('credits').insert({
+            await supabase.from('credits').insert({
               user_id: userId,
               balance: initialCredits,
               total_used: 0,
               plan: 'free',
-              referral_code: newReferralCode,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
+              referral_code: newReferralCode
             })
 
-            if (insertError) {
-              console.error('Credit insert error:', insertError)
-            }
-
-            // Eğer referral kodu varsa, davet edene bonus ver
             if (referralCode) {
               try {
-                // Davet edenin bilgilerini bul
                 const { data: referrer } = await supabase
                   .from('credits')
                   .select('user_id, balance')
@@ -74,26 +58,22 @@ export default function AuthCallbackPage() {
                   .single()
 
                 if (referrer && referrer.user_id !== userId) {
-                  // Davet edene +100 kredi bonus
                   await supabase
                     .from('credits')
                     .update({ balance: referrer.balance + CREDITS.REFERRAL_BONUS })
                     .eq('user_id', referrer.user_id)
 
-                  // Referral kaydı oluştur
                   await supabase.from('referrals').insert({
                     referrer_id: referrer.user_id,
                     referred_id: userId,
                     referral_code: referralCode.toUpperCase(),
-                    bonus_given: true,
-                    created_at: new Date().toISOString()
+                    bonus_given: true
                   }).catch(() => {})
                 }
 
-                // Referral kodunu temizle
                 localStorage.removeItem('referralCode')
               } catch (e) {
-                console.error('Referral process error:', e)
+                console.error('Referral error:', e)
               }
             }
           }
@@ -120,8 +100,4 @@ export default function AuthCallbackPage() {
       </div>
     </div>
   )
-}
-
-function generateReferralCode(): string {
-  return Math.random().toString(36).substring(2, 10).toUpperCase()
 }

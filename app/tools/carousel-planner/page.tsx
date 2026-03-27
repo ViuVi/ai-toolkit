@@ -38,10 +38,10 @@ export default function CarouselPlannerPage() {
       const res = await fetch('/api/carousel-planner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, slideCount, style, language })
+        body: JSON.stringify({ topic, slideCount, style, language, userId: user.id })
       })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Hata oluştu')
     } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)

@@ -48,10 +48,10 @@ export default function CaptionGeneratorPage() {
       const res = await fetch('/api/caption-generator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, tone, language, includeHashtags: true, includeEmojis: true })
+        body: JSON.stringify({ topic, platform, tone, language, includeHashtags: true, includeEmojis: true, userId: user.id })
       })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }
     setLoading(false)

@@ -41,7 +41,7 @@ export default function ScriptStudioPage() {
       const res = await fetch('/api/script-studio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, platform, duration, style, language })
+        body: JSON.stringify({ topic, platform, duration, style, language, userId: user.id })
       })
       const data = await res.json()
       

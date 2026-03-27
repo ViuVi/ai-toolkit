@@ -39,10 +39,10 @@ export default function StealVideoPage() {
       const res = await fetch('/api/steal-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoDescription, creatorNiche, platform, language })
+        body: JSON.stringify({ videoDescription, creatorNiche, platform, language, userId: user.id })
       })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Hata oluştu')
     } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)

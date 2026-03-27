@@ -37,10 +37,10 @@ export default function ContentPlannerPage() {
       const res = await fetch('/api/content-planner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, platforms, postsPerWeek, language })
+        body: JSON.stringify({ niche, platforms, postsPerWeek, language, userId: user.id })
       })
       const data = await res.json()
-      if (res.ok && data.result) setResult(data.result)
+      if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Hata oluştu')
     } catch (e) { setError('Bağlantı hatası') }
     setLoading(false)

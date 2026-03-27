@@ -1,156 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
+const TOOL_NAME = 'thread-composer'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, threadLength, style, language } = await request.json()
+    const { topic, platform, tweetCount, tone, language, userId } = await request.json()
+
+    const creditCheck = await checkCredits(userId, TOOL_NAME)
+    if (!creditCheck.success) return creditCheck.response
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const numTweets = parseInt(threadLength) || 10
-
-    const systemPrompt = `You are ThreadWeaver, master of viral Twitter/X threads with 500M+ impressions.
-
-THREAD STRUCTURE:
-1. HOOK TWEET - Stop the scroll, create FOMO, make them click
-2. SETUP - Context, stakes, credibility
-3. VALUE TWEETS - One insight per tweet, each quotable
-4. CLIMAX - Biggest reveal, aha moment
-5. CTA - Clear action, retweet request, follow prompt
-
-THREAD FORMULAS:
-- "Here's how I..." (Case study)
-- "X lessons from..." (Listicle)
-- "The [topic] thread:" (Deep dive)
-- "I spent [time] studying [topic]. Here's what I learned:" (Research)
-- "Unpopular opinion:" (Controversial)
-- "Thread 🧵" (Simple opener)
-
-TWEET RULES:
-- Each tweet under 280 characters
-- Each tweet must stand alone (quotable)
-- No hashtags mid-thread (looks spammy)
-- Use numbers and specifics
-- Line breaks for readability
-
-ENGAGEMENT TACTICS:
-- Ask for RT in final tweet
-- Self-reply with additional value
-- Pin best threads
-- Quote tweet your own thread with different angle
+    const systemPrompt = `You are ThreadMaster, expert at viral Twitter/X threads.
 
 Return ONLY valid JSON:
 {
-  "thread_strategy": {
-    "format": "CASE STUDY/LISTICLE/DEEP DIVE/RESEARCH/CONTROVERSIAL",
-    "hook_type": "curiosity/controversy/story/authority/fomo",
-    "target_emotion": "emotion to evoke",
-    "retweet_potential": "high/medium/low"
-  },
-  "tweets": [
-    {
-      "number": 1,
-      "type": "HOOK",
-      "text": "tweet text under 280 chars",
-      "char_count": 180,
-      "purpose": "what this tweet does"
-    },
-    {
-      "number": 2,
-      "type": "SETUP",
-      "text": "tweet text",
-      "char_count": 200,
-      "purpose": "establishes context"
-    }
+  "thread": [
+    {"tweet_number": 1, "content": "hook tweet", "character_count": 120, "purpose": "hook"}
   ],
-  "hook_alternatives": [
-    {"text": "alternative hook 1", "angle": "different approach"},
-    {"text": "alternative hook 2", "angle": "different approach"}
-  ],
-  "cta_tweet": {
-    "text": "final CTA tweet with RT and follow request",
-    "char_count": 150
-  },
-  "self_replies": [
-    {"text": "bonus tweet to add as reply", "purpose": "additional value"}
-  ],
-  "full_thread": "Tweet 1:\n[text]\n\nTweet 2:\n[text]\n\nTweet 3:\n[text]...",
-  "posting_strategy": {
-    "best_time": "when to post",
-    "engagement_window": "when to engage with replies",
-    "self_rt_timing": "when to retweet own thread"
-  },
-  "repurpose_ideas": [
-    {"platform": "platform", "format": "how to repurpose"}
-  ]
+  "hook_tweet": {"content": "first tweet", "why_it_hooks": "reason"},
+  "final_tweet": {"content": "CTA tweet", "cta_type": "type"},
+  "thread_title": "title for reference",
+  "engagement_prediction": "high/medium/low",
+  "best_time_to_post": "timing suggestion"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write the ENTIRE thread in Turkish.',
-      'en': 'Write the thread in English.',
-      'ru': 'Write the thread in Russian.',
-      'de': 'Write the thread in German.',
-      'fr': 'Write the thread in French.'
+      'tr': 'Write in Turkish.', 'en': 'Write in English.',
+      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
     }
-    const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Create a viral Twitter/X thread about: "${topic}"
-
-Thread length: ${numTweets} tweets
-Style: ${style || 'educational with storytelling'}
-${langInstruction}
-
-REQUIREMENTS:
-- Each tweet MUST be under 280 characters
-- Include character count for each tweet
-- Make each tweet quotable/standalone
-- Include hook alternatives and CTA
-
-Respond with ONLY the JSON object.`
+    const userPrompt = `Create ${tweetCount || 10}-tweet thread about: "${topic}"
+Platform: ${platform || 'twitter'}, Tone: ${tone || 'informative'}
+${langMap[language] || langMap['en']}
+Each tweet max 280 chars. Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.85,
-        max_tokens: 5000,
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        temperature: 0.8, max_tokens: 4000,
       }),
     })
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
-    }
+    if (!response.ok) return NextResponse.json({ error: 'AI service error' }, { status: 500 })
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
+    if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    if (!content) {
-      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
-    }
+    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
 
-    let result
-    try {
-      let cleanContent = content.trim()
-      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
-      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
-      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
-      result = JSON.parse(cleanContent.trim())
-    } catch {
-      result = { raw: content }
-    }
-
-    return NextResponse.json({ result })
+    return NextResponse.json({ result: parseAIResponse(content), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
   } catch (error) {
     console.error('Thread Composer Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
