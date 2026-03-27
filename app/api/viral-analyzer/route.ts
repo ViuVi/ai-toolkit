@@ -1,65 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'viral-analyzer'
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, platform, language, userId } = await request.json()
-
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
+    const { content, platform, contentType, language, userId } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ViralAnalyst, expert at predicting content virality.
-
-Return ONLY valid JSON:
-{
-  "viral_score": 75,
-  "analysis": {
-    "hook_strength": {"score": 8, "feedback": "feedback"},
-    "emotional_trigger": {"score": 7, "emotion": "curiosity", "feedback": "feedback"},
-    "shareability": {"score": 8, "feedback": "feedback"},
-    "engagement_potential": {"score": 7, "feedback": "feedback"}
-  },
-  "improvements": [{"issue": "issue", "suggestion": "fix", "impact": "high/medium/low"}],
-  "optimized_version": "improved content",
-  "prediction": "viral potential summary"
-}`
-
-    const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
+    const creditResult = await checkAndDeductCredits(userId, 'viral-analyzer')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
 
-    const userPrompt = `Analyze viral potential: "${content}"
-Platform: ${platform}
-${langMap[language] || langMap['en']}
+    const langMap: Record<string, string> = {
+      'tr': 'Respond entirely in Turkish.',
+      'en': 'Respond in English.',
+      'ru': 'Respond in Russian.',
+      'de': 'Respond in German.',
+      'fr': 'Respond in French.'
+    }
+
+    const systemPrompt = `You are a viral content analyst who predicts content performance.
+
+You MUST return ONLY valid JSON:
+{
+  "viral_score": 7.5,
+  "breakdown": {
+    "hook_strength": 8,
+    "emotional_impact": 7,
+    "shareability": 8,
+    "trend_alignment": 6,
+    "uniqueness": 7
+  },
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "improvements": [
+    {
+      "area": "what to improve",
+      "suggestion": "how to improve",
+      "impact": "high/medium/low"
+    }
+  ],
+  "predicted_performance": "10K-50K views",
+  "best_posting_time": "recommendation"
+}`
+
+    const userPrompt = `Analyze this content for viral potential:
+
+"${content}"
+
+Platform: ${platform || 'tiktok'}
+Content type: ${contentType || 'video'}
+${langMap[language as string] || langMap['en']}
+
+Be specific and actionable in feedback.
 Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        temperature: 0.7, max_tokens: 3000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2500,
       }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content2 = data.choices?.[0]?.message?.content
-    if (!content2) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    if (!content2) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
 
-    return NextResponse.json({ result: parseAIResponse(content2), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    let result
+    try {
+      let cleanContent = content2.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
+      result = { raw: content2 }
+    }
+
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Viral Analyzer Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

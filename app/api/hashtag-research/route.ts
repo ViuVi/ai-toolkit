@@ -1,63 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'hashtag-research'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, language, userId } = await request.json()
-
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
+    const { topic, platform, strategy, language, userId } = await request.json()
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are HashtagMaster, expert at hashtag strategy.
-
-Return ONLY valid JSON:
-{
-  "primary_hashtags": [{"tag": "#tag", "reach": "high/medium/low", "competition": "high/medium/low"}],
-  "niche_hashtags": [{"tag": "#tag", "relevance": "why relevant"}],
-  "trending_hashtags": [{"tag": "#tag", "trend_duration": "days"}],
-  "avoid_hashtags": [{"tag": "#tag", "reason": "why avoid"}],
-  "hashtag_sets": [
-    {"name": "High Reach", "tags": ["#tag1", "#tag2"], "use_case": "when to use"}
-  ],
-  "strategy_tip": "overall tip"
-}`
-
-    const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
+    const creditResult = await checkAndDeductCredits(userId, 'hashtag-research')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
 
+    const langMap: Record<string, string> = {
+      'tr': 'Respond entirely in Turkish.',
+      'en': 'Respond in English.',
+      'ru': 'Respond in Russian.',
+      'de': 'Respond in German.',
+      'fr': 'Respond in French.'
+    }
+
+    const systemPrompt = `You are a hashtag research expert who maximizes content reach.
+
+You MUST return ONLY valid JSON:
+{
+  "hashtag_sets": [
+    {
+      "name": "set name (e.g., High Reach, Niche, Trending)",
+      "hashtags": ["#tag1", "#tag2", "#tag3"],
+      "total_reach": "estimated reach",
+      "competition": "low/medium/high",
+      "best_for": "use case"
+    }
+  ],
+  "trending_hashtags": ["#trending1", "#trending2"],
+  "niche_hashtags": ["#niche1", "#niche2"],
+  "avoid_hashtags": ["#banned1"],
+  "strategy_tip": "personalized advice"
+}`
+
     const userPrompt = `Research hashtags for: "${topic}"
-Platform: ${platform}
-${langMap[language] || langMap['en']}
+
+Platform: ${platform || 'instagram'}
+Strategy: ${strategy || 'balanced'}
+${langMap[language as string] || langMap['en']}
+
+Create 3 different hashtag sets (30 hashtags total).
 Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        temperature: 0.75, max_tokens: 3000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2500,
       }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
-    if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
 
-    return NextResponse.json({ result: parseAIResponse(content), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    let result
+    try {
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Hashtag Research Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

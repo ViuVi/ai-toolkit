@@ -1,47 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'content-repurposer'
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, sourceType, targetPlatforms, language, userId } = await request.json()
-
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
+    const { content, sourceFormat, targetPlatforms, language, userId } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ContentRepurposer, expert at transforming content for multiple platforms.
-
-Return ONLY valid JSON:
-{
-  "original_summary": "brief summary of original",
-  "repurposed": [
-    {
-      "platform": "TikTok",
-      "format": "short video script",
-      "content": "adapted content",
-      "hook": "platform-specific hook",
-      "hashtags": ["#tag"],
-      "tips": ["adaptation tip"]
+    const creditResult = await checkAndDeductCredits(userId, 'content-repurposer')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
-  ],
-  "content_calendar": [{"day": 1, "platform": "platform", "content_type": "type"}],
-  "maximizing_tips": ["tip for getting most out of repurposing"]
-}`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
+      'tr': 'Write ALL repurposed content in Turkish.',
+      'en': 'Write in English.',
+      'ru': 'Write in Russian.',
+      'de': 'Write in German.',
+      'fr': 'Write in French.'
     }
 
-    const userPrompt = `Repurpose this ${sourceType || 'content'}: "${content}"
-Target platforms: ${targetPlatforms?.join(', ') || 'TikTok, Instagram, Twitter, LinkedIn'}
-${langMap[language] || langMap['en']}
+    const systemPrompt = `You are a content repurposing expert. Return ONLY valid JSON:
+{
+  "repurposed": [
+    {
+      "platform": "tiktok",
+      "format": "short video script",
+      "content": "repurposed content",
+      "hook": "platform-specific hook",
+      "hashtags": ["#tag1", "#tag2"],
+      "tips": "production tips"
+    }
+  ],
+  "content_atoms": ["key message 1", "key message 2"],
+  "distribution_plan": {
+    "day1": "platform and content",
+    "day2": "platform and content"
+  },
+  "additional_ideas": ["idea 1", "idea 2"]
+}`
+
+    const platforms = targetPlatforms?.join(', ') || 'tiktok, instagram, twitter, linkedin'
+    
+    const userPrompt = `Repurpose this content for multiple platforms:
+
+Original (${sourceFormat || 'blog post'}):
+"${content}"
+
+Target platforms: ${platforms}
+${langMap[language as string] || langMap['en']}
+
+Create unique versions optimized for each platform.
 Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -60,9 +73,16 @@ Respond with ONLY JSON.`
     const content2 = data.choices?.[0]?.message?.content
     if (!content2) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    let result
+    try {
+      let cleanContent = content2.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch { result = { raw: content2 } }
 
-    return NextResponse.json({ result: parseAIResponse(content2), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Content Repurposer Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

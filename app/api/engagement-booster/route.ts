@@ -1,42 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'engagement-booster'
 
 export async function POST(request: NextRequest) {
   try {
     const { content, platform, goal, language, userId } = await request.json()
 
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
-
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are EngagementExpert, specialist in boosting social media engagement.
-
-Return ONLY valid JSON:
-{
-  "engagement_score": 65,
-  "analysis": {"current_cta": "existing", "emotion_level": "low/medium/high", "shareability": "score"},
-  "optimized_versions": [
-    {"version": "optimized content", "changes": ["what changed"], "expected_lift": "+25%"}
-  ],
-  "cta_suggestions": [{"cta": "text", "type": "comment/share/save", "placement": "where"}],
-  "hook_improvements": [{"original": "old", "improved": "new", "why": "reason"}],
-  "engagement_tips": ["tip1", "tip2"]
-}`
-
-    const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
+    const creditResult = await checkAndDeductCredits(userId, 'engagement-booster')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
 
-    const userPrompt = `Boost engagement for: "${content}"
-Platform: ${platform}, Goal: ${goal || 'more comments'}
-${langMap[language] || langMap['en']}
+    const langMap: Record<string, string> = {
+      'tr': 'Respond entirely in Turkish.',
+      'en': 'Respond in English.',
+      'ru': 'Respond in Russian.',
+      'de': 'Respond in German.',
+      'fr': 'Respond in French.'
+    }
+
+    const systemPrompt = `You are an engagement optimization expert. Return ONLY valid JSON:
+{
+  "current_score": 6.5,
+  "optimized_versions": [
+    {
+      "version": "optimized content",
+      "changes": ["change 1", "change 2"],
+      "expected_lift": "+35%"
+    }
+  ],
+  "engagement_hooks": ["hook 1", "hook 2"],
+  "cta_suggestions": ["cta 1", "cta 2"],
+  "reply_starters": ["comment prompt 1", "comment prompt 2"],
+  "hashtag_strategy": { "primary": ["#tag"], "secondary": ["#tag2"] }
+}`
+
+    const userPrompt = `Optimize this content for maximum engagement:
+"${content}"
+
+Platform: ${platform || 'instagram'}
+Goal: ${goal || 'more comments and shares'}
+${langMap[language as string] || langMap['en']}
 Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -45,7 +54,7 @@ Respond with ONLY JSON.`
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        temperature: 0.75, max_tokens: 3000,
+        temperature: 0.8, max_tokens: 3000,
       }),
     })
 
@@ -55,9 +64,16 @@ Respond with ONLY JSON.`
     const content2 = data.choices?.[0]?.message?.content
     if (!content2) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    let result
+    try {
+      let cleanContent = content2.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch { result = { raw: content2 } }
 
-    return NextResponse.json({ result: parseAIResponse(content2), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Engagement Booster Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

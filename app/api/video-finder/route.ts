@@ -1,68 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'video-finder'
 
 export async function POST(request: NextRequest) {
   try {
     const { niche, platform, contentType, language, userId } = await request.json()
 
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
-
     if (!niche) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are TrendSpotter, expert at finding viral video ideas.
+    const creditResult = await checkAndDeductCredits(userId, 'video-finder')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
+    }
 
-Return ONLY valid JSON:
+    const langMap: Record<string, string> = {
+      'tr': 'Respond entirely in Turkish.',
+      'en': 'Respond in English.',
+      'ru': 'Respond in Russian.',
+      'de': 'Respond in German.',
+      'fr': 'Respond in French.'
+    }
+
+    const systemPrompt = `You are a viral content research expert who finds trending video ideas.
+
+You MUST return ONLY valid JSON:
 {
   "video_ideas": [
     {
-      "title": "video title",
-      "concept": "brief concept",
+      "title": "video title idea",
       "hook": "opening hook",
-      "viral_potential": "high/medium",
-      "why_it_works": "reason",
-      "best_time_to_post": "timing"
+      "why_viral": "why it will perform",
+      "format": "tutorial/story/challenge/etc",
+      "estimated_views": "10K-50K",
+      "difficulty": "easy/medium/hard"
     }
   ],
-  "trending_formats": ["format 1", "format 2"],
+  "trending_angles": ["angle 1", "angle 2"],
   "content_gaps": ["gap 1", "gap 2"],
-  "niche_insight": "insight about this niche"
+  "best_posting_times": ["time 1", "time 2"]
 }`
 
-    const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
-    }
+    const userPrompt = `Find 10 viral video ideas for niche: "${niche}"
 
-    const userPrompt = `Find 10 viral video ideas for: "${niche}"
-Platform: ${platform}, Content Type: ${contentType}
-${langMap[language] || langMap['en']}
+Platform: ${platform || 'tiktok'}
+Content type: ${contentType || 'all'}
+${langMap[language as string] || langMap['en']}
+
+Focus on proven formats with high engagement potential.
 Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        temperature: 0.85, max_tokens: 4000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 3000,
       }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
-    if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
 
-    return NextResponse.json({ result: parseAIResponse(content), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    let result
+    try {
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Video Finder Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

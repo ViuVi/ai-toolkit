@@ -1,67 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'steal-video'
 
 export async function POST(request: NextRequest) {
   try {
-    const { videoDescription, platform, yourNiche, language, userId } = await request.json()
-
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) return creditCheck.response
+    const { videoDescription, platform, goal, language, userId } = await request.json()
 
     if (!videoDescription) {
       return NextResponse.json({ error: 'Video description is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are ContentRemixer, expert at ethically adapting viral content.
-
-Return ONLY valid JSON:
-{
-  "analysis": {"original_hook": "hook", "viral_elements": ["elem1"], "target_emotion": "emotion"},
-  "adaptations": [
-    {
-      "title": "adapted title",
-      "new_angle": "your unique angle",
-      "hook": "new hook",
-      "script_outline": "brief outline",
-      "differentiation": "how it's different"
+    const creditResult = await checkAndDeductCredits(userId, 'steal-video')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
-  ],
-  "content_tips": ["tip1", "tip2"],
-  "legal_notes": "reminder about originality"
-}`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write in Turkish.', 'en': 'Write in English.',
-      'ru': 'Write in Russian.', 'de': 'Write in German.', 'fr': 'Write in French.'
+      'tr': 'Respond entirely in Turkish.',
+      'en': 'Respond in English.',
+      'ru': 'Respond in Russian.',
+      'de': 'Respond in German.',
+      'fr': 'Respond in French.'
     }
 
-    const userPrompt = `Analyze and create adaptations for: "${videoDescription}"
-Platform: ${platform}, Your Niche: ${yourNiche}
-${langMap[language] || langMap['en']}
-Create 5 unique adaptations. Respond with ONLY JSON.`
+    const systemPrompt = `You are a content strategist who reverse-engineers viral videos.
+
+You MUST return ONLY valid JSON:
+{
+  "analysis": {
+    "hook_breakdown": "how they grab attention",
+    "structure": "content flow analysis",
+    "retention_tactics": ["tactic 1", "tactic 2"],
+    "viral_elements": ["element 1", "element 2"]
+  },
+  "your_versions": [
+    {
+      "angle": "unique angle",
+      "hook": "your hook",
+      "outline": "brief content outline",
+      "differentiator": "what makes it unique"
+    }
+  ],
+  "script_template": "ready-to-use script template",
+  "production_tips": ["tip 1", "tip 2"],
+  "hashtags": ["#tag1", "#tag2"]
+}`
+
+    const userPrompt = `Analyze and create unique versions of this viral content:
+
+"${videoDescription}"
+
+Platform: ${platform || 'tiktok'}
+Goal: ${goal || 'recreate with unique spin'}
+${langMap[language as string] || langMap['en']}
+
+Create 3 unique versions that won't look copied.
+Respond with ONLY JSON.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        temperature: 0.85, max_tokens: 4000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 4000,
       }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    if (!response.ok) {
+      return NextResponse.json({ error: 'AI service error' }, { status: 500 })
+    }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
-    if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    if (!content) {
+      return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
+    }
 
-    return NextResponse.json({ result: parseAIResponse(content), creditsUsed: TOOL_CREDITS[TOOL_NAME], newBalance })
+    let result
+    try {
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
+      result = { raw: content }
+    }
+
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Steal Video Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

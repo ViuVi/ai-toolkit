@@ -1,55 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkCredits, deductCredits, parseAIResponse, TOOL_CREDITS } from '@/lib/api-helpers'
+import { checkAndDeductCredits } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
-const TOOL_NAME = 'hook-generator'
 
 export async function POST(request: NextRequest) {
   try {
     const { topic, platform, tone, language, userId } = await request.json()
 
-    // Kredi kontrolü
-    const creditCheck = await checkCredits(userId, TOOL_NAME)
-    if (!creditCheck.success) {
-      return creditCheck.response
-    }
-
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
-    const systemPrompt = `You are HookMaster, the world's best viral hook writer.
+    // Kredi kontrolü ve düşürme
+    const creditResult = await checkAndDeductCredits(userId, 'hook-generator')
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 402 })
+    }
 
-HOOK PATTERNS:
-1. CURIOSITY GAP - "Nobody talks about this but..."
-2. CONTROVERSIAL - "Stop doing this immediately..."
-3. STORYTELLING - "I was about to quit when..."
-4. AUTHORITY - "After 10 years I learned..."
-5. SHOCK VALUE - "This is why you're failing..."
-6. DIRECT BENEFIT - "How to get 10K followers in 30 days"
-7. QUESTION - "Why does nobody talk about this?"
-8. FOMO - "Everyone is doing this except you..."
+    const systemPrompt = `You are HookMaster, the world's best viral hook writer. You have written hooks for videos with 1B+ combined views.
 
-Return ONLY valid JSON:
+HOOK PATTERNS YOU MUST USE:
+1. CURIOSITY GAP - Creates "I need to know" feeling
+2. CONTROVERSIAL - Challenges common beliefs
+3. STORYTELLING - Opens a narrative loop
+4. AUTHORITY - Positions expertise
+5. SHOCK VALUE - Unexpected statement
+6. DIRECT BENEFIT - Clear value proposition
+7. QUESTION - Engages viewer's mind
+8. FEAR OF MISSING OUT - Creates urgency
+
+RULES:
+- Each hook MUST be under 12 words
+- No fluff, no filler words
+- Must stop the scroll instantly
+
+You MUST return ONLY valid JSON with exactly this structure:
 {
-  "hooks": [{"text": "hook", "pattern": "TYPE", "virality_score": 8}],
-  "best_hook": {"text": "best hook", "reason": "why"},
-  "topic_insight": "insight"
+  "hooks": [
+    {
+      "text": "hook text here (max 12 words)",
+      "pattern": "CURIOSITY GAP/CONTROVERSIAL/STORYTELLING/AUTHORITY/SHOCK VALUE/DIRECT BENEFIT/QUESTION/FOMO",
+      "curiosity_score": 8,
+      "virality_score": 9,
+      "why_it_works": "brief explanation"
+    }
+  ],
+  "best_hook": {
+    "text": "the single best hook",
+    "reason": "why this is the winner"
+  },
+  "topic_insight": "key insight about this topic for hooks"
 }`
 
     const langMap: Record<string, string> = {
-      'tr': 'Write ALL hooks in Turkish.',
+      'tr': 'Write ALL 20 hooks in Turkish. They must sound native.',
       'en': 'Write all hooks in English.',
       'ru': 'Write all hooks in Russian.',
       'de': 'Write all hooks in German.',
       'fr': 'Write all hooks in French.'
     }
+    const langInstruction = langMap[language as string] || langMap['en']
 
-    const userPrompt = `Generate 20 viral hooks for: "${topic}"
-Platform: ${platform}
-Tone: ${tone}
-${langMap[language] || langMap['en']}
-Each hook under 12 words. Respond with ONLY JSON.`
+    const platformContext: Record<string, string> = {
+      'tiktok': 'TikTok style: trendy, fast, casual',
+      'instagram': 'Instagram Reels: polished but punchy',
+      'youtube': 'YouTube Shorts: value-focused, curiosity-driven',
+      'twitter': 'Twitter/X: witty, provocative, shareable'
+    }
+
+    const userPrompt = `Generate exactly 20 viral hooks for: "${topic}"
+
+Platform: ${platform} - ${platformContext[platform] || ''}
+Tone: ${tone || 'engaging'}
+${langInstruction}
+
+IMPORTANT:
+- Generate EXACTLY 20 different hooks
+- Use ALL 8 pattern types
+- Score curiosity_score and virality_score from 1-10
+- Keep each hook under 12 words
+
+Respond with ONLY the JSON object, no other text.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -79,14 +110,18 @@ Each hook under 12 words. Respond with ONLY JSON.`
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
     }
 
-    // Başarılı - krediyi düşür
-    const newBalance = await deductCredits(userId, TOOL_NAME, creditCheck.userData!)
+    let result
+    try {
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
+      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
+      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
+      result = JSON.parse(cleanContent.trim())
+    } catch {
+      result = { raw: content, hooks: [] }
+    }
 
-    return NextResponse.json({ 
-      result: parseAIResponse(content),
-      creditsUsed: TOOL_CREDITS[TOOL_NAME],
-      newBalance
-    })
+    return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Hook Generator Error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
