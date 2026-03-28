@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const toolTexts: Record<string, Record<string, string>> = {
+  tr: { title: 'Rakip Analizi', competitorInfo: 'Rakip Hakkında Bilgi', competitorPlaceholder: 'Rakibin kullanıcı adı veya içerik stratejisi hakkında bilgi...', yourNiche: 'Sizin Nişiniz', nichePlaceholder: 'örn: Fitness, Teknoloji...', platform: 'Platform', generate: 'Rakibi Analiz Et', generating: '{t.generating}', emptyTitle: 'Rakip Analizi', emptyDesc: '{t.emptyDesc}', rightThings: 'Doğru Yaptıkları', doItBetter: 'Siz Daha İyi Yapabilirsiniz', actionPlan: 'Aksiyon Planı' },
+  en: { title: 'Competitor Spy', competitorInfo: 'Competitor Info', competitorPlaceholder: "Competitor's username or content strategy info...", yourNiche: 'Your Niche', nichePlaceholder: 'e.g: Fitness, Tech...', platform: 'Platform', generate: 'Analyze Competitor', generating: 'Analyzing...', emptyTitle: 'Competitor Analysis', emptyDesc: 'Enter info about your competitor', rightThings: 'What They Do Right', doItBetter: 'You Can Do Better', actionPlan: 'Action Plan' },
+  ru: { title: 'Шпион за конкурентами', competitorInfo: 'Информация о конкуренте', competitorPlaceholder: 'Имя пользователя или стратегия контента конкурента...', yourNiche: 'Ваша ниша', nichePlaceholder: 'напр: Фитнес, Технологии...', platform: 'Платформа', generate: 'Анализировать конкурента', generating: 'Анализируем...', emptyTitle: 'Анализ конкурентов', emptyDesc: 'Введите информацию о конкуренте', rightThings: 'Что делают правильно', doItBetter: 'Вы можете лучше', actionPlan: 'План действий' },
+  de: { title: 'Wettbewerber-Spion', competitorInfo: 'Wettbewerber-Info', competitorPlaceholder: 'Benutzername oder Content-Strategie des Wettbewerbers...', yourNiche: 'Ihre Nische', nichePlaceholder: 'z.B: Fitness, Technik...', platform: 'Plattform', generate: 'Wettbewerber analysieren', generating: 'Wird analysiert...', emptyTitle: 'Wettbewerbsanalyse', emptyDesc: 'Infos über Ihren Wettbewerber eingeben', rightThings: 'Was sie richtig machen', doItBetter: 'Sie können es besser', actionPlan: 'Aktionsplan' },
+  fr: { title: 'Espion Concurrent', competitorInfo: 'Infos concurrent', competitorPlaceholder: "Nom d'utilisateur ou stratégie du concurrent...", yourNiche: 'Votre niche', nichePlaceholder: 'ex: Fitness, Tech...', platform: 'Plateforme', generate: 'Analyser le concurrent', generating: 'Analyse en cours...', emptyTitle: 'Analyse concurrentielle', emptyDesc: 'Entrez des infos sur votre concurrent', rightThings: "Ce qu'ils font bien", doItBetter: 'Vous pouvez mieux faire', actionPlan: "Plan d'action" }
+}
+
 export default function CompetitorSpyPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
@@ -15,7 +23,8 @@ export default function CompetitorSpyPage() {
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+  const t = toolTexts[language] || toolTexts.en
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,8 +50,8 @@ export default function CompetitorSpyPage() {
       })
       const data = await res.json()
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
-      else setError(data.error || 'Hata oluştu')
-    } catch (e) { setError('Bağlantı hatası') }
+      else setError(data.error || 'Error')
+    } catch (e) { setError('Connection error') }
     setLoading(false)
   }
 
@@ -52,9 +61,19 @@ export default function CompetitorSpyPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
-            <h1 className="font-bold">🕵️ Competitor Spy</h1>
+            <h1 className="font-bold">🕵️ {t.title}</h1>
           </div>
-          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
+                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
+          </div>
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-8">
@@ -62,12 +81,12 @@ export default function CompetitorSpyPage() {
           <div className="lg:col-span-2">
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Rakip Hakkında Bilgi</label>
-                <textarea value={competitorInfo} onChange={(e) => setCompetitorInfo(e.target.value)} placeholder="Rakibin kullanıcı adı veya içerik stratejisi hakkında bilgi..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none" />
+                <label className="block text-sm text-gray-400 mb-2">{t.competitorInfo}</label>
+                <textarea value={competitorInfo} onChange={(e) => setCompetitorInfo(e.target.value)} placeholder={t.competitorPlaceholder} rows={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none" />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Sizin Nişiniz</label>
-                <input type="text" value={yourNiche} onChange={(e) => setYourNiche(e.target.value)} placeholder="örn: Fitness, Teknoloji..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
+                <label className="block text-sm text-gray-400 mb-2">{t.yourNiche}</label>
+                <input type="text" value={yourNiche} onChange={(e) => setYourNiche(e.target.value)} placeholder={t.nichePlaceholder || "e.g: Fitness, Tech..."} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Platform</label>
@@ -78,19 +97,19 @@ export default function CompetitorSpyPage() {
                 </div>
               </div>
               <button onClick={handleAnalyze} disabled={loading || !competitorInfo.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Analiz Ediliyor...</> : '🕵️ Rakibi Analiz Et'}
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : '🕵️ Rakibi Analiz Et'}
               </button>
               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
           <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
-            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">🕵️</div><h3 className="text-xl font-medium mb-2">Rakip Analizi</h3><p className="text-gray-500">Rakibiniz hakkında bilgi girin</p></div>}
+            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">🕵️</div><h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3><p className="text-gray-500">{t.emptyDesc}</p></div>}
             {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
             {result && (
               <div className="space-y-4">
                 {result.what_they_do_right && (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <h4 className="font-semibold text-green-400 mb-3">✅ Doğru Yaptıkları</h4>
+                    <h4 className="font-semibold text-green-400 mb-3">{`✅ ${t.rightThings}`}</h4>
                     {result.what_they_do_right.map((item: any, i: number) => (
                       <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
                         <p className="font-medium text-sm">{item.strength}</p>
@@ -101,7 +120,7 @@ export default function CompetitorSpyPage() {
                 )}
                 {result.what_you_can_do_better && (
                   <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                    <h4 className="font-semibold text-purple-400 mb-3">🚀 Siz Daha İyi Yapabilirsiniz</h4>
+                    <h4 className="font-semibold text-purple-400 mb-3">{`🚀 ${t.doItBetter}`}</h4>
                     {result.what_you_can_do_better.map((item: any, i: number) => (
                       <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
                         <p className="font-medium text-sm">{item.weakness}</p>
@@ -112,7 +131,7 @@ export default function CompetitorSpyPage() {
                 )}
                 {result.action_plan && (
                   <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                    <h4 className="font-semibold text-orange-400 mb-3">🎯 Aksiyon Planı</h4>
+                    <h4 className="font-semibold text-orange-400 mb-3">{`🎯 ${t.actionPlan}`}</h4>
                     {result.action_plan.map((item: any, i: number) => (
                       <div key={i} className="mb-2 flex gap-3 items-start">
                         <span className="w-6 h-6 bg-orange-500/20 text-orange-400 rounded flex items-center justify-center text-sm shrink-0">{item.priority}</span>

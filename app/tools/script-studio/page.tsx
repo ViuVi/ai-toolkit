@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const toolTexts: Record<string, Record<string, string>> = {
+  tr: { title: 'Script Studio', topic: 'Video Konusu', topicPlaceholder: 'örn: Yapay zeka ile 5 dakikada logo tasarımı...', platform: 'Platform', duration: 'Süre', style: 'Stil', generate: 'Script Oluştur', generating: 'Script Yazılıyor...', emptyTitle: 'Video Script', emptyDesc: '{t.emptyDesc}', script: 'Script', scenes: 'Sahneler', extras: 'Extras', fullScript: 'Tam Script', copy: t.copy, copied: t.copied, videoInfo: 'Video Bilgileri', titleSuggestions: 'Başlık Önerileri', hashtags: "Hashtag'ler", filmingTips: 'Çekim İpuçları', educational: 'Eğitici', entertaining: 'Eğlenceli', storytelling: 'Hikaye', tutorial: 'Tutorial', sec15: t.sec15, sec30: t.sec30, sec60: t.sec60, min3: t.min3 },
+  en: { title: 'Script Studio', topic: 'Video Topic', topicPlaceholder: 'e.g: Design a logo with AI in 5 minutes...', platform: 'Platform', duration: 'Duration', style: 'Style', generate: 'Create Script', generating: 'Writing Script...', emptyTitle: 'Video Script', emptyDesc: 'Enter your topic to create a shoot-ready script', script: 'Script', scenes: 'Scenes', extras: 'Extras', fullScript: 'Full Script', copy: 'Copy', copied: 'Copied', videoInfo: 'Video Info', titleSuggestions: 'Title Suggestions', hashtags: 'Hashtags', filmingTips: 'Filming Tips', educational: 'Educational', entertaining: 'Entertaining', storytelling: 'Storytelling', tutorial: 'Tutorial', sec15: '15s', sec30: '30s', sec60: '60s', min3: '3 min' },
+  ru: { title: 'Студия скриптов', topic: 'Тема видео', topicPlaceholder: 'напр: Дизайн логотипа с ИИ за 5 минут...', platform: 'Платформа', duration: 'Длительность', style: 'Стиль', generate: 'Создать скрипт', generating: 'Пишем скрипт...', emptyTitle: 'Видео скрипт', emptyDesc: 'Введите тему для создания скрипта', script: 'Скрипт', scenes: 'Сцены', extras: 'Доп. материалы', fullScript: 'Полный скрипт', copy: 'Копировать', copied: 'Скопировано', videoInfo: 'Информация о видео', titleSuggestions: 'Варианты заголовков', hashtags: 'Хештеги', filmingTips: 'Советы по съёмке', educational: 'Обучающий', entertaining: 'Развлекательный', storytelling: 'Сторителлинг', tutorial: 'Туториал', sec15: '15 сек', sec30: '30 сек', sec60: '60 сек', min3: '3 мин' },
+  de: { title: 'Script Studio', topic: 'Video-Thema', topicPlaceholder: 'z.B: Logo-Design mit KI in 5 Minuten...', platform: 'Plattform', duration: 'Dauer', style: 'Stil', generate: 'Script erstellen', generating: 'Script wird geschrieben...', emptyTitle: 'Video-Script', emptyDesc: 'Thema eingeben, um ein drehfertiges Script zu erstellen', script: 'Script', scenes: 'Szenen', extras: 'Extras', fullScript: 'Vollständiges Script', copy: 'Kopieren', copied: 'Kopiert', videoInfo: 'Video-Info', titleSuggestions: 'Titelvorschläge', hashtags: 'Hashtags', filmingTips: 'Drehtipps', educational: 'Lehrreich', entertaining: 'Unterhaltsam', storytelling: 'Storytelling', tutorial: 'Tutorial', sec15: '15 Sek', sec30: '30 Sek', sec60: '60 Sek', min3: '3 Min' },
+  fr: { title: 'Studio de Scripts', topic: 'Sujet vidéo', topicPlaceholder: "ex: Créer un logo avec l'IA en 5 minutes...", platform: 'Plateforme', duration: 'Durée', style: 'Style', generate: 'Créer le script', generating: 'Écriture du script...', emptyTitle: 'Script vidéo', emptyDesc: 'Entrez votre sujet pour créer un script prêt au tournage', script: 'Script', scenes: 'Scènes', extras: 'Extras', fullScript: 'Script complet', copy: 'Copier', copied: 'Copié', videoInfo: 'Infos vidéo', titleSuggestions: 'Suggestions de titres', hashtags: 'Hashtags', filmingTips: 'Conseils de tournage', educational: 'Éducatif', entertaining: 'Divertissant', storytelling: 'Storytelling', tutorial: 'Tutoriel', sec15: '15s', sec30: '30s', sec60: '60s', min3: '3 min' }
+}
+
 export default function ScriptStudioPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
@@ -18,7 +26,8 @@ export default function ScriptStudioPage() {
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState('script')
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+  const t = toolTexts[language] || toolTexts.en
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,10 +57,10 @@ export default function ScriptStudioPage() {
       if (res.ok && data.result) {
         setResult(data.result)
       } else {
-        setError(data.error || 'Bir hata oluştu')
+        setError(data.error || 'Error')
       }
     } catch (err) {
-      setError('Bağlantı hatası')
+      setError('Connection error')
     }
     setLoading(false)
   }
@@ -70,17 +79,17 @@ export default function ScriptStudioPage() {
   ]
 
   const durations = [
-    { value: '15', label: '15 sn' },
-    { value: '30', label: '30 sn' },
-    { value: '60', label: '60 sn' },
-    { value: '180', label: '3 dk' }
+    { value: '15', label: t.sec15 },
+    { value: '30', label: t.sec30 },
+    { value: '60', label: t.sec60 },
+    { value: '180', label: t.min3 }
   ]
 
   const styles = [
-    { value: 'educational', label: '📚 Eğitici' },
-    { value: 'entertaining', label: '🎭 Eğlenceli' },
-    { value: 'storytelling', label: '📖 Hikaye' },
-    { value: 'tutorial', label: '🎯 Tutorial' }
+    { value: 'educational', label: `📚 ${t.educational}` },
+    { value: 'entertaining', label: `🎭 ${t.entertaining}` },
+    { value: 'storytelling', label: `📖 ${t.storytelling}` },
+    { value: 'tutorial', label: `🎯 ${t.tutorial}` }
   ]
 
   return (
@@ -91,11 +100,21 @@ export default function ScriptStudioPage() {
             <Link href="/dashboard" className="text-gray-400 hover:text-white transition">← Dashboard</Link>
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎬</span>
-              <h1 className="font-bold text-lg">Script Studio</h1>
+              <h1 className="font-bold text-lg">{t.title}</h1>
             </div>
           </div>
-          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-            <span className="text-purple-400">✦ {credits}</span>
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
+                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+              <span className="text-purple-400">✦ {credits}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -106,11 +125,11 @@ export default function ScriptStudioPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Video Konusu</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.topic}</label>
                 <textarea
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="örn: Yapay zeka ile 5 dakikada logo tasarımı..."
+                  placeholder={t.topicPlaceholder}
                   rows={3}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none"
                 />
@@ -136,7 +155,7 @@ export default function ScriptStudioPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Süre</label>
+                <label className="block text-sm text-gray-400 mb-2">{t.duration}</label>
                 <div className="grid grid-cols-4 gap-2">
                   {durations.map((d) => (
                     <button
@@ -184,7 +203,7 @@ export default function ScriptStudioPage() {
                     Script Yazılıyor...
                   </>
                 ) : (
-                  <>🎬 Script Oluştur</>
+                  <>{`🎬 ${t.generate}`}</>
                 )}
               </button>
 
@@ -201,15 +220,15 @@ export default function ScriptStudioPage() {
             {!result && !loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
                 <div className="text-5xl mb-4">🎬</div>
-                <h3 className="text-xl font-medium mb-2">Video Script</h3>
-                <p className="text-gray-500">Konunuzu girin, çekime hazır script oluşturalım</p>
+                <h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3>
+                <p className="text-gray-500">{t.emptyDesc}</p>
               </div>
             )}
 
             {loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
                 <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-400">Viral script yazılıyor...</p>
+                <p className="text-gray-400">{t.generating}</p>
               </div>
             )}
 
@@ -249,12 +268,12 @@ export default function ScriptStudioPage() {
                     {/* Full Script */}
                     <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold text-purple-400">📝 Tam Script</h3>
+                        <h3 className="font-semibold text-purple-400">{`📝 ${t.fullScript}`}</h3>
                         <button
                           onClick={() => copyToClipboard(result.script.full_script || '')}
                           className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-lg text-sm hover:bg-purple-500/30 transition"
                         >
-                          {copied ? '✓ Kopyalandı' : 'Kopyala'}
+                          {copied ? `✓ ${t.copied}` : t.copy}
                         </button>
                       </div>
                       <div className="prose prose-invert max-w-none">
@@ -332,7 +351,7 @@ export default function ScriptStudioPage() {
                     {/* Metadata */}
                     {result.metadata && (
                       <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                        <h4 className="font-semibold text-purple-400 mb-3">📊 Video Bilgileri</h4>
+                        <h4 className="font-semibold text-purple-400 mb-3">{`📊 ${t.videoInfo}`}</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div className="p-2 bg-white/5 rounded-lg">
                             <span className="text-gray-500">Süre:</span>
@@ -353,7 +372,7 @@ export default function ScriptStudioPage() {
                     {/* Title Options */}
                     {result.title_options && (
                       <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                        <h4 className="font-semibold text-purple-400 mb-3">📌 Başlık Önerileri</h4>
+                        <h4 className="font-semibold text-purple-400 mb-3">{`📌 ${t.titleSuggestions}`}</h4>
                         <div className="space-y-2">
                           {result.title_options.map((title: string, i: number) => (
                             <div key={i} className="p-2 bg-white/5 rounded-lg text-sm text-gray-300">
@@ -367,7 +386,7 @@ export default function ScriptStudioPage() {
                     {/* Hashtags */}
                     {result.hashtags && (
                       <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                        <h4 className="font-semibold text-purple-400 mb-3">#️⃣ Hashtag'ler</h4>
+                        <h4 className="font-semibold text-purple-400 mb-3">#️⃣ {t.hashtags}</h4>
                         <div className="flex flex-wrap gap-2">
                           {result.hashtags.map((tag: string, i: number) => (
                             <span key={i} className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg text-sm">
@@ -381,7 +400,7 @@ export default function ScriptStudioPage() {
                     {/* Filming Tips */}
                     {result.filming_tips && (
                       <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
-                        <h4 className="font-semibold text-purple-400 mb-3">💡 Çekim İpuçları</h4>
+                        <h4 className="font-semibold text-purple-400 mb-3">{`💡 ${t.filmingTips}`}</h4>
                         <ul className="space-y-2">
                           {result.filming_tips.map((tip: string, i: number) => (
                             <li key={i} className="text-sm text-gray-300 flex gap-2">

@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
+const toolTexts: Record<string, Record<string, string>> = {
+  tr: { title: 'Trend Radar', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Girişimcilik...', platform: 'Platform', generate: 'Trendleri Tara', generating: '{t.generating}', emptyTitle: 'Trend Radar', emptyDesc: '{t.emptyDesc}', actionPlan: 'Aksiyon Planı', today: 'Bugün', thisWeek: 'Bu hafta' },
+  en: { title: 'Trend Radar', niche: 'Niche', nichePlaceholder: 'e.g: Fitness, Entrepreneurship...', platform: 'Platform', generate: 'Scan Trends', generating: 'Scanning...', emptyTitle: 'Trend Radar', emptyDesc: 'Enter your niche', actionPlan: 'Action Plan', today: 'Today', thisWeek: 'This week' },
+  ru: { title: 'Радар трендов', niche: 'Ниша', nichePlaceholder: 'напр: Фитнес, Бизнес...', platform: 'Платформа', generate: 'Сканировать тренды', generating: 'Сканируем...', emptyTitle: 'Радар трендов', emptyDesc: 'Введите вашу нишу', actionPlan: 'План действий', today: 'Сегодня', thisWeek: 'На этой неделе' },
+  de: { title: 'Trend-Radar', niche: 'Nische', nichePlaceholder: 'z.B: Fitness, Unternehmertum...', platform: 'Plattform', generate: 'Trends scannen', generating: 'Wird gescannt...', emptyTitle: 'Trend-Radar', emptyDesc: 'Nische eingeben', actionPlan: 'Aktionsplan', today: 'Heute', thisWeek: 'Diese Woche' },
+  fr: { title: 'Radar de tendances', niche: 'Niche', nichePlaceholder: 'ex: Fitness, Entrepreneuriat...', platform: 'Plateforme', generate: 'Scanner les tendances', generating: 'Scan en cours...', emptyTitle: 'Radar de tendances', emptyDesc: 'Entrez votre niche', actionPlan: "Plan d'action", today: "Aujourd'hui", thisWeek: 'Cette semaine' }
+}
+
 export default function TrendRadarPage() {
   const [user, setUser] = useState<any>(null)
   const [credits, setCredits] = useState(0)
@@ -14,7 +22,8 @@ export default function TrendRadarPage() {
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+  const t = toolTexts[language] || toolTexts.en
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,8 +49,8 @@ export default function TrendRadarPage() {
       })
       const data = await res.json()
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
-      else setError(data.error || 'Hata oluştu')
-    } catch (e) { setError('Bağlantı hatası') }
+      else setError(data.error || 'Error')
+    } catch (e) { setError('Connection error') }
     setLoading(false)
   }
 
@@ -51,9 +60,19 @@ export default function TrendRadarPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-gray-400 hover:text-white">← Dashboard</Link>
-            <h1 className="font-bold">📡 Trend Radar</h1>
+            <h1 className="font-bold">📡 {t.title}</h1>
           </div>
-          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">🌐</button>
+              <div className="absolute right-0 mt-2 w-28 bg-gray-900 border border-gray-800 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
+                {(['en', 'tr', 'ru', 'de', 'fr'] as const).map(l => (
+                  <button key={l} onClick={() => setLanguage(l)} className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-800 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400">✦ {credits}</div>
+          </div>
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-8">
@@ -61,8 +80,8 @@ export default function TrendRadarPage() {
           <div className="lg:col-span-2">
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-5">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Niş</label>
-                <input type="text" value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="örn: Fitness, Girişimcilik..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
+                <label className="block text-sm text-gray-400 mb-2">{t.niche}</label>
+                <input type="text" value={niche} onChange={(e) => setNiche(e.target.value)} placeholder={t.nichePlaceholder || "e.g: Fitness..."} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Platform</label>
@@ -73,13 +92,13 @@ export default function TrendRadarPage() {
                 </div>
               </div>
               <button onClick={handleSearch} disabled={loading || !niche.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>Taranıyor...</> : '📡 Trendleri Tara'}
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : '📡 Trendleri Tara'}
               </button>
               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
           </div>
           <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
-            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">📡</div><h3 className="text-xl font-medium mb-2">Trend Radar</h3><p className="text-gray-500">Nişinizi girin</p></div>}
+            {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">📡</div><h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3><p className="text-gray-500">{t.emptyDesc}</p></div>}
             {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
             {result && (
               <div className="space-y-4">
@@ -96,9 +115,9 @@ export default function TrendRadarPage() {
                 ))}
                 {result.action_plan && (
                   <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
-                    <h4 className="font-semibold text-purple-400 mb-2">🎯 Aksiyon Planı</h4>
-                    <p className="text-sm text-gray-300"><strong>Bugün:</strong> {result.action_plan.today}</p>
-                    <p className="text-sm text-gray-300"><strong>Bu hafta:</strong> {result.action_plan.this_week}</p>
+                    <h4 className="font-semibold text-purple-400 mb-2">{`🎯 ${t.actionPlan}`}</h4>
+                    <p className="text-sm text-gray-300"><strong>{t.today}:</strong> {result.action_plan.today}</p>
+                    <p className="text-sm text-gray-300"><strong>{t.thisWeek}:</strong> {result.action_plan.this_week}</p>
                   </div>
                 )}
                 {result.raw && !result.trending_topics && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
