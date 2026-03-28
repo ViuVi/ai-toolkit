@@ -29,7 +29,7 @@ function PricingContent() {
       setUser(user)
       // Mevcut planı kontrol et
       const { data: credits } = await supabase
-        .from('user_credits')
+        .from('credits')
         .select('plan')
         .eq('user_id', user.id)
         .single()

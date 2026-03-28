@@ -451,13 +451,19 @@ export default function DashboardPage() {
     if (!user) return
     setAdComplete(true)
     
-    const { error } = await supabase
-      .from('credits')
-      .update({ balance: credits + 10 })
-      .eq('user_id', user.id)
-    
-    if (!error) {
-      setCredits(credits + 10)
+    try {
+      const res = await fetch('/api/watch-ad', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      const data = await res.json()
+      
+      if (res.ok && data.success) {
+        setCredits(data.newBalance)
+      }
+    } catch (err) {
+      console.error('Ad credit error:', err)
     }
     
     setTimeout(() => {
@@ -593,7 +599,7 @@ export default function DashboardPage() {
               onClick={startWatchingAd}
               className="px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:from-green-500/30 hover:to-emerald-500/30 transition hidden sm:flex items-center gap-1"
             >
-              🎬 +10
+              🎬 +{plan === 'pro' ? 50 : 10}
             </button>
 
             {/* Profile Dropdown */}
@@ -778,7 +784,7 @@ export default function DashboardPage() {
               onClick={startWatchingAd}
               className="px-4 py-2 bg-green-500 text-white rounded-xl font-medium"
             >
-              +10 🎬
+              +{plan === 'pro' ? 50 : 10} 🎬
             </button>
           </div>
         </div>
@@ -871,7 +877,7 @@ export default function DashboardPage() {
               <>
                 <div className="text-6xl mb-4">🎉</div>
                 <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
-                <p className="text-gray-400">+10 {t.credits}</p>
+                <p className="text-gray-400">+{plan === 'pro' ? 50 : 10} {t.credits}</p>
               </>
             )}
           </div>

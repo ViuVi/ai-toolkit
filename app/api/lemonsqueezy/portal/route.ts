@@ -10,43 +10,31 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth header'dan token al
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const token = authHeader.replace('Bearer ', '')
 
-    // Kullanıcıyı doğrula
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Kullanıcının customer_id'sini al
-    const { data: credits, error: creditsError } = await supabaseAdmin
-      .from('user_credits')
+    // Read from credits table (single source of truth)
+    const { data: creditData, error: creditsError } = await supabaseAdmin
+      .from('credits')
       .select('customer_id')
       .eq('user_id', user.id)
       .single()
 
-    if (creditsError || !credits?.customer_id) {
-      return NextResponse.json(
-        { error: 'No subscription found' },
-        { status: 404 }
-      )
+    if (creditsError || !creditData?.customer_id) {
+      return NextResponse.json({ error: 'No subscription found' }, { status: 404 })
     }
 
-    // Customer portal URL'sini al
-    const portalUrl = await getCustomerPortalUrl(credits.customer_id)
+    const portalUrl = await getCustomerPortalUrl(creditData.customer_id)
 
     return NextResponse.json({ portalUrl })
 

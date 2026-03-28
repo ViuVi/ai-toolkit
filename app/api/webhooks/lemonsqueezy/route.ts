@@ -1,5 +1,5 @@
 // Lemon Squeezy Webhook Handler
-// Handles subscription events and updates Supabase
+// Handles subscription events — writes to 'credits' table (single source of truth)
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
@@ -10,7 +10,6 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Webhook imzasını doğrula
 function verifySignature(payload: string, signature: string): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET
   if (!secret) {
@@ -33,13 +32,9 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.text()
     const signature = request.headers.get('x-signature') || ''
 
-    // İmzayı doğrula
     if (!verifySignature(rawBody, signature)) {
       console.error('Invalid webhook signature')
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
     const payload = JSON.parse(rawBody)
@@ -49,7 +44,6 @@ export async function POST(request: NextRequest) {
 
     console.log(`📥 Webhook received: ${eventName}`, { userId })
 
-    // Event'e göre işlem yap
     switch (eventName) {
       case 'subscription_created':
         await handleSubscriptionCreated(payload, userId)
@@ -85,14 +79,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Webhook error:', error)
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
-// Yeni abonelik oluşturuldu
+// New subscription created — user upgraded to Pro
 async function handleSubscriptionCreated(payload: any, userId: string) {
   const subscription = payload.data.attributes
   const subscriptionId = payload.data.id
@@ -104,20 +95,13 @@ async function handleSubscriptionCreated(payload: any, userId: string) {
   const plan = getPlanFromVariantId(variantId)
   const credits = getCreditsForPlan(plan)
 
-  console.log(`✅ Subscription created for user ${userId}:`, {
-    plan,
-    credits,
-    subscriptionId,
-    customerId
-  })
+  console.log(`✅ Subscription created for user ${userId}:`, { plan, credits, subscriptionId, customerId })
 
-  // Kullanıcının user_id'si ile eşleşen kaydı güncelle
-  // Önce user_id ile dene, yoksa email ile bul
   const { error } = await supabaseAdmin
-    .from('user_credits')
+    .from('credits')
     .update({
       plan,
-      credits,
+      balance: credits,
       subscription_id: subscriptionId,
       customer_id: customerId,
       variant_id: variantId,
@@ -128,14 +112,14 @@ async function handleSubscriptionCreated(payload: any, userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error updating user credits:', error)
+    console.error('Error updating credits:', error)
     throw error
   }
 
   console.log(`✅ User ${userId} upgraded to ${plan} with ${credits} credits`)
 }
 
-// Abonelik güncellendi (plan değişikliği, yenileme vb.)
+// Subscription renewed or plan changed
 async function handleSubscriptionUpdated(payload: any, userId: string) {
   const subscription = payload.data.attributes
   const subscriptionId = payload.data.id
@@ -144,23 +128,18 @@ async function handleSubscriptionUpdated(payload: any, userId: string) {
   const endsAt = subscription.ends_at
   const status = subscription.status
 
-  // Eğer yenilendiyse kredileri sıfırla
   const plan = getPlanFromVariantId(variantId)
   const credits = getCreditsForPlan(plan)
 
-  console.log(`🔄 Subscription updated for user ${userId}:`, {
-    status,
-    plan,
-    renewsAt
-  })
+  console.log(`🔄 Subscription updated for user ${userId}:`, { status, plan, renewsAt })
 
-  // Aktif abonelikse kredileri güncelle
   if (status === 'active') {
+    // Monthly renewal — reset credits to plan amount
     const { error } = await supabaseAdmin
-      .from('user_credits')
+      .from('credits')
       .update({
         plan,
-        credits, // Yenilenince krediler sıfırlanır
+        balance: credits,
         variant_id: variantId,
         renews_at: renewsAt,
         ends_at: endsAt,
@@ -175,7 +154,7 @@ async function handleSubscriptionUpdated(payload: any, userId: string) {
   }
 }
 
-// Abonelik iptal edildi veya süresi doldu
+// Subscription cancelled or expired — downgrade to free
 async function handleSubscriptionEnded(payload: any, userId: string) {
   const subscriptionId = payload.data.id
   const subscription = payload.data.attributes
@@ -183,13 +162,13 @@ async function handleSubscriptionEnded(payload: any, userId: string) {
 
   console.log(`❌ Subscription ended for user ${userId}`)
 
-  // Free plana düşür ama mevcut dönem sonuna kadar bekle
   const { error } = await supabaseAdmin
-    .from('user_credits')
+    .from('credits')
     .update({
       plan: 'free',
-      credits: 50, // Free plan kredisi
+      balance: 100,
       subscription_id: null,
+      customer_id: null,
       variant_id: null,
       renews_at: null,
       ends_at: endsAt,
@@ -203,7 +182,7 @@ async function handleSubscriptionEnded(payload: any, userId: string) {
   }
 }
 
-// Abonelik devam ettirildi
+// Subscription resumed
 async function handleSubscriptionResumed(payload: any, userId: string) {
   const subscription = payload.data.attributes
   const subscriptionId = payload.data.id
@@ -215,10 +194,10 @@ async function handleSubscriptionResumed(payload: any, userId: string) {
   console.log(`▶️ Subscription resumed for user ${userId}`)
 
   const { error } = await supabaseAdmin
-    .from('user_credits')
+    .from('credits')
     .update({
       plan,
-      credits,
+      balance: credits,
       renews_at: subscription.renews_at,
       ends_at: subscription.ends_at,
       updated_at: new Date().toISOString()
@@ -231,15 +210,14 @@ async function handleSubscriptionResumed(payload: any, userId: string) {
   }
 }
 
-// Abonelik duraklatıldı
+// Subscription paused
 async function handleSubscriptionPaused(payload: any, userId: string) {
   const subscriptionId = payload.data.id
 
   console.log(`⏸️ Subscription paused for user ${userId}`)
 
-  // Plan ve krediler değişmez, sadece duraklatıldı işareti
   const { error } = await supabaseAdmin
-    .from('user_credits')
+    .from('credits')
     .update({
       updated_at: new Date().toISOString()
     })
