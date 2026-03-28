@@ -329,6 +329,13 @@ export default function DashboardPage() {
   const [referralData, setReferralData] = useState<{referralCode: string, referralCount: number, totalEarned: number} | null>(null)
   const [showReferral, setShowReferral] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
+  const [showBrandKit, setShowBrandKit] = useState(false)
+  const [brandProfile, setBrandProfile] = useState<any>(null)
+  const [brandSaving, setBrandSaving] = useState(false)
+  const [brandForm, setBrandForm] = useState({
+    brandName: '', niche: '', targetAudience: '', tone: 'professional',
+    contentStyle: 'educational', platforms: ['tiktok', 'instagram'], keywords: '', description: ''
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
@@ -345,6 +352,7 @@ export default function DashboardPage() {
         fetchCredits(session.user.id)
         fetchStats(session.user.id)
         fetchReferral(session.user.id)
+        fetchBrandProfile(session.user.id)
         
         // Google OAuth sonrası pending referral kontrolü
         const pendingReferral = localStorage.getItem('pending_referral')
@@ -425,6 +433,69 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Error fetching stats:', err)
     }
+  }
+
+  const fetchBrandProfile = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/brand-profile?userId=${userId}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.profile) {
+          setBrandProfile(data.profile)
+          setBrandForm({
+            brandName: data.profile.brand_name || '',
+            niche: data.profile.niche || '',
+            targetAudience: data.profile.target_audience || '',
+            tone: data.profile.tone || 'professional',
+            contentStyle: data.profile.content_style || 'educational',
+            platforms: data.profile.platforms || ['tiktok', 'instagram'],
+            keywords: (data.profile.keywords || []).join(', '),
+            description: data.profile.description || ''
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching brand profile:', err)
+    }
+  }
+
+  const saveBrandProfile = async () => {
+    if (!user) return
+    setBrandSaving(true)
+    try {
+      const res = await fetch('/api/brand-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          brandName: brandForm.brandName,
+          niche: brandForm.niche,
+          targetAudience: brandForm.targetAudience,
+          tone: brandForm.tone,
+          contentStyle: brandForm.contentStyle,
+          platforms: brandForm.platforms,
+          keywords: brandForm.keywords.split(',').map((k: string) => k.trim()).filter(Boolean),
+          description: brandForm.description
+        })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setBrandProfile(data.profile)
+        setShowBrandKit(false)
+      }
+    } catch (err) {
+      console.error('Error saving brand profile:', err)
+    }
+    setBrandSaving(false)
+  }
+
+  const togglePlatform = (p: string) => {
+    setBrandForm(prev => ({
+      ...prev,
+      platforms: prev.platforms.includes(p) 
+        ? prev.platforms.filter((x: string) => x !== p)
+        : [...prev.platforms, p]
+    }))
   }
 
   const handleLogout = async () => {
@@ -644,7 +715,13 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold mb-2">{t.welcome}, {user.email?.split('@')[0] || 'User'}! 👋</h1>
             <p className="text-gray-400">{t.readyToCreate}</p>
           </div>
-          <div className="flex gap-2 self-start">
+          <div className="flex gap-2 self-start flex-wrap">
+            <button
+              onClick={() => setShowBrandKit(!showBrandKit)}
+              className={`px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${showBrandKit ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : brandProfile?.niche ? 'bg-white/5 border-blue-500/20 text-blue-400 hover:bg-blue-500/10' : 'bg-blue-500/10 border-blue-500/30 text-blue-400 animate-pulse'}`}
+            >
+              🎨 Brand Kit {brandProfile?.niche ? '✓' : ''}
+            </button>
             <button
               onClick={() => setShowStats(!showStats)}
               className={`px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${showStats ? 'bg-purple-500/20 border-purple-500/30 text-purple-400' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}`}
@@ -659,6 +736,72 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {/* Brand Kit Panel */}
+        {showBrandKit && (
+          <div className="mb-8 p-6 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-blue-400">🎨 Brand Kit</h3>
+                <p className="text-sm text-gray-400">{language === 'tr' ? 'Profilini ayarla, tüm araçlar sana özel üretsin' : 'Set up your profile, all tools will create personalized content'}</p>
+              </div>
+              {brandProfile?.niche && <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-lg text-sm">✓ {language === 'tr' ? 'Aktif' : 'Active'}</span>}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Marka Adı' : 'Brand Name'}</label>
+                <input type="text" value={brandForm.brandName} onChange={e => setBrandForm({...brandForm, brandName: e.target.value})} placeholder={language === 'tr' ? 'örn: FitnessTR' : 'e.g: FitnessPro'} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Niş / Alan *' : 'Niche / Area *'}</label>
+                <input type="text" value={brandForm.niche} onChange={e => setBrandForm({...brandForm, niche: e.target.value})} placeholder={language === 'tr' ? 'örn: Fitness, Kişisel Gelişim' : 'e.g: Fitness, Personal Development'} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Hedef Kitle' : 'Target Audience'}</label>
+                <input type="text" value={brandForm.targetAudience} onChange={e => setBrandForm({...brandForm, targetAudience: e.target.value})} placeholder={language === 'tr' ? 'örn: 18-30 yaş, fitness meraklıları' : 'e.g: 18-30, fitness enthusiasts'} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Anahtar Kelimeler' : 'Keywords'}</label>
+                <input type="text" value={brandForm.keywords} onChange={e => setBrandForm({...brandForm, keywords: e.target.value})} placeholder={language === 'tr' ? 'örn: spor, beslenme, motivasyon' : 'e.g: sports, nutrition, motivation'} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Ton' : 'Tone'}</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['professional', language === 'tr' ? 'Profesyonel' : 'Professional'], ['casual', language === 'tr' ? 'Samimi' : 'Casual'], ['humorous', language === 'tr' ? 'Esprili' : 'Humorous'], ['inspiring', language === 'tr' ? 'İlham Verici' : 'Inspiring']].map(([val, label]) => (
+                    <button key={val} onClick={() => setBrandForm({...brandForm, tone: val})} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${brandForm.tone === val ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400' : 'bg-white/5 border border-white/10 text-gray-400'}`}>{label}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'İçerik Stili' : 'Content Style'}</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['educational', language === 'tr' ? 'Eğitici' : 'Educational'], ['entertaining', language === 'tr' ? 'Eğlenceli' : 'Entertaining'], ['storytelling', language === 'tr' ? 'Hikaye' : 'Storytelling'], ['tutorial', language === 'tr' ? 'Tutorial' : 'Tutorial']].map(([val, label]) => (
+                    <button key={val} onClick={() => setBrandForm({...brandForm, contentStyle: val})} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${brandForm.contentStyle === val ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400' : 'bg-white/5 border border-white/10 text-gray-400'}`}>{label}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Platformlar' : 'Platforms'}</label>
+                <div className="flex flex-wrap gap-2">
+                  {[['tiktok', '🎵 TikTok'], ['instagram', '📸 Instagram'], ['youtube', '🎬 YouTube'], ['twitter', '🐦 Twitter/X'], ['linkedin', '💼 LinkedIn']].map(([val, label]) => (
+                    <button key={val} onClick={() => togglePlatform(val)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${brandForm.platforms.includes(val) ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400' : 'bg-white/5 border border-white/10 text-gray-400'}`}>{label}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm text-gray-400 mb-1.5">{language === 'tr' ? 'Hakkında (opsiyonel)' : 'About (optional)'}</label>
+                <textarea value={brandForm.description} onChange={e => setBrandForm({...brandForm, description: e.target.value})} placeholder={language === 'tr' ? 'Markan hakkında kısa bilgi...' : 'Brief info about your brand...'} rows={2} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm resize-none" />
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-4">
+              <button onClick={saveBrandProfile} disabled={brandSaving || !brandForm.niche.trim()} className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2">
+                {brandSaving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{language === 'tr' ? 'Kaydediliyor...' : 'Saving...'}</> : <>{language === 'tr' ? '💾 Kaydet' : '💾 Save'}</>}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Referral Panel */}
         {showReferral && referralData && (

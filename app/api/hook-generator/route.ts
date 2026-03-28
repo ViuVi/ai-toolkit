@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits } from '@/lib/api-helpers'
+import { checkAndDeductCredits, getBrandContext } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
     if (!creditResult.success) {
       return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
+
+    const brandContext = await getBrandContext(userId)
 
     const systemPrompt = `You are HookMaster, the world's best viral hook writer. You have written hooks for videos with 1B+ combined views.
 
@@ -80,7 +82,8 @@ IMPORTANT:
 - Score curiosity_score and virality_score from 1-10
 - Keep each hook under 12 words
 
-Respond with ONLY the JSON object, no other text.`
+Respond with ONLY the JSON object, no other text.
+${brandContext}`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

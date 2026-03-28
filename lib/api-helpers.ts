@@ -204,3 +204,33 @@ export function parseAIResponse(content: string): any {
     return { raw: content }
   }
 }
+
+// Brand Kit — fetch user's brand profile and build context string for AI prompts
+export async function getBrandContext(userId: string): Promise<string> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('brand_profiles')
+      .select('brand_name, niche, target_audience, tone, content_style, platforms, keywords, description')
+      .eq('user_id', userId)
+      .single()
+
+    if (error || !data || !data.niche) return ''
+
+    const parts: string[] = []
+    parts.push(`\n--- CREATOR BRAND PROFILE ---`)
+    if (data.brand_name) parts.push(`Brand: ${data.brand_name}`)
+    if (data.niche) parts.push(`Niche: ${data.niche}`)
+    if (data.target_audience) parts.push(`Target Audience: ${data.target_audience}`)
+    if (data.tone) parts.push(`Brand Tone: ${data.tone}`)
+    if (data.content_style) parts.push(`Content Style: ${data.content_style}`)
+    if (data.platforms?.length) parts.push(`Main Platforms: ${data.platforms.join(', ')}`)
+    if (data.keywords?.length) parts.push(`Key Topics: ${data.keywords.join(', ')}`)
+    if (data.description) parts.push(`About: ${data.description}`)
+    parts.push(`--- END BRAND PROFILE ---`)
+    parts.push(`IMPORTANT: Tailor ALL output to match this creator's brand voice, niche, and target audience.`)
+
+    return parts.join('\n')
+  } catch {
+    return ''
+  }
+}

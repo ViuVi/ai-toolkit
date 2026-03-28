@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits } from '@/lib/api-helpers'
+import { checkAndDeductCredits, getBrandContext } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
     if (!creditResult.success) {
       return NextResponse.json({ error: creditResult.error }, { status: 402 })
     }
+
+    const brandContext = await getBrandContext(userId)
 
     const langMap: Record<string, string> = {
       'tr': 'Write the ENTIRE script in Turkish.',
@@ -58,7 +60,8 @@ Style: ${style || 'educational'}
 ${langMap[language as string] || langMap['en']}
 
 Make it engaging with pattern interrupts and visual cues.
-Respond with ONLY JSON.`
+Respond with ONLY JSON.
+${brandContext}`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
