@@ -236,7 +236,11 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     carouselPlanner: { name: 'Carousel Planner', desc: 'Plan carousel posts' },
     engagementBooster: { name: 'Engagement Booster', desc: 'Boost engagement' },
     postingOptimizer: { name: 'Posting Optimizer', desc: 'Best posting times' },
-    threadComposer: { name: 'Thread Composer', desc: 'Write Twitter threads' }
+    threadComposer: { name: 'Thread Composer', desc: 'Write Twitter threads' },
+    viralScore: { name: 'Viral Score Predictor', desc: 'Real-time viral scoring' },
+    bioGenerator: { name: 'Bio Generator', desc: 'Platform-perfect bios' },
+    videoIdeas: { name: 'Video Idea Generator', desc: 'Shoot-ready video ideas' },
+    thumbnailCreator: { name: 'Thumbnail Creator', desc: 'Design click-worthy thumbnails' }
   },
   tr: {
     hookGenerator: { name: 'Hook Üretici', desc: 'Viral hooklar oluştur' },
@@ -254,7 +258,11 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     carouselPlanner: { name: 'Carousel Planlayıcı', desc: 'Carousel postları planla' },
     engagementBooster: { name: 'Etkileşim Arttırıcı', desc: 'Etkileşimi arttır' },
     postingOptimizer: { name: 'Paylaşım Zamanı', desc: 'En iyi paylaşım saatleri' },
-    threadComposer: { name: 'Thread Yazarı', desc: 'Twitter threadleri yaz' }
+    threadComposer: { name: 'Thread Yazarı', desc: 'Twitter threadleri yaz' },
+    viralScore: { name: 'Viral Skor Tahmincisi', desc: 'Anlık viral skor hesapla' },
+    bioGenerator: { name: 'Bio Üretici', desc: 'Platform bazlı bio yaz' },
+    videoIdeas: { name: 'Video Fikir Üretici', desc: 'Çekilmeye hazır fikirler' },
+    thumbnailCreator: { name: 'Thumbnail Oluşturucu', desc: 'Tıklanır thumbnaillar tasarla' }
   },
   ru: {
     hookGenerator: { name: 'Генератор Хуков', desc: 'Создайте вирусные хуки' },
@@ -272,7 +280,11 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     carouselPlanner: { name: 'Планер Каруселей', desc: 'Планируйте посты' },
     engagementBooster: { name: 'Усилитель Вовлечения', desc: 'Увеличьте охват' },
     postingOptimizer: { name: 'Оптимизатор Постинга', desc: 'Лучшее время' },
-    threadComposer: { name: 'Композитор Тредов', desc: 'Пишите треды' }
+    threadComposer: { name: 'Композитор Тредов', desc: 'Пишите треды' },
+    viralScore: { name: 'Предсказатель вирусности', desc: 'Балл в реальном времени' },
+    bioGenerator: { name: 'Генератор Bio', desc: 'Bio для любой платформы' },
+    videoIdeas: { name: 'Генератор видео-идей', desc: 'Готовые идеи для съёмки' },
+    thumbnailCreator: { name: 'Создатель обложек', desc: 'Создайте кликабельные обложки' }
   },
   de: {
     hookGenerator: { name: 'Hook Generator', desc: 'Virale Hooks erstellen' },
@@ -290,7 +302,11 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     carouselPlanner: { name: 'Carousel Planer', desc: 'Carousel planen' },
     engagementBooster: { name: 'Engagement Booster', desc: 'Engagement steigern' },
     postingOptimizer: { name: 'Posting Optimierer', desc: 'Beste Posting-Zeit' },
-    threadComposer: { name: 'Thread Komponist', desc: 'Threads schreiben' }
+    threadComposer: { name: 'Thread Komponist', desc: 'Threads schreiben' },
+    viralScore: { name: 'Viral-Score-Prediktor', desc: 'Echtzeit Viral-Score' },
+    bioGenerator: { name: 'Bio Generator', desc: 'Plattform-perfekte Bios' },
+    videoIdeas: { name: 'Video-Ideen-Generator', desc: 'Drehfertige Ideen' },
+    thumbnailCreator: { name: 'Thumbnail-Ersteller', desc: 'Klickstarke Thumbnails' }
   },
   fr: {
     hookGenerator: { name: 'Générateur de Hooks', desc: 'Créer des hooks viraux' },
@@ -308,7 +324,11 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     carouselPlanner: { name: 'Planificateur Carousel', desc: 'Planifier les carousels' },
     engagementBooster: { name: 'Booster d\'Engagement', desc: 'Augmenter l\'engagement' },
     postingOptimizer: { name: 'Optimiseur de Posts', desc: 'Meilleur moment' },
-    threadComposer: { name: 'Compositeur de Threads', desc: 'Écrire des threads' }
+    threadComposer: { name: 'Compositeur de Threads', desc: 'Écrire des threads' },
+    viralScore: { name: 'Prédicteur de viralité', desc: 'Score viral en temps réel' },
+    bioGenerator: { name: 'Générateur de Bio', desc: 'Bios parfaites par plateforme' },
+    videoIdeas: { name: "Générateur d'idées vidéo", desc: 'Idées prêtes à filmer' },
+    thumbnailCreator: { name: 'Créateur de Miniatures', desc: 'Miniatures accrocheuses' }
   }
 }
 
@@ -620,6 +640,10 @@ export default function DashboardPage() {
     { key: 'engagementBooster', icon: '🚀', href: '/tools/engagement-booster', credits: 4, category: 'optimize' },
     { key: 'postingOptimizer', icon: '⏰', href: '/tools/posting-optimizer', credits: 2, category: 'optimize' },
     { key: 'threadComposer', icon: '🧵', href: '/tools/thread-composer', credits: 5, category: 'create' },
+    { key: 'viralScore', icon: '⚡', href: '/tools/viral-score', credits: 3, category: 'analyze' },
+    { key: 'bioGenerator', icon: '📝', href: '/tools/bio-generator', credits: 3, category: 'create' },
+    { key: 'videoIdeas', icon: '💡', href: '/tools/video-ideas', credits: 5, category: 'create' },
+    { key: 'thumbnailCreator', icon: '🎨', href: '/tools/thumbnail-creator', credits: 4, category: 'create' },
   ]
 
   const [filter, setFilter] = useState('all')
