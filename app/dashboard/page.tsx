@@ -816,7 +816,12 @@ export default function DashboardPage() {
               {/* Left - Info */}
               <div>
                 <h3 className="text-lg font-semibold text-green-400 mb-1">🎁 {t.referral}</h3>
-                <p className="text-sm text-gray-400 mb-4">{t.referralDesc}</p>
+                <p className="text-sm text-gray-400 mb-2">{t.referralDesc}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400">🎯 1 {language === 'tr' ? 'davet' : 'invite'} = +100 {language === 'tr' ? 'kredi' : 'credits'}</span>
+                  <span className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-400">🏆 5 {language === 'tr' ? 'davet' : 'invites'} = +250 bonus</span>
+                  <span className="px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-400">👑 10 {language === 'tr' ? 'davet' : 'invites'} = +500 bonus</span>
+                </div>
                 
                 {/* Referral Code */}
                 <div className="flex items-center gap-3">
@@ -848,18 +853,37 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Share Buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={shareOnTwitter}
                     className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
                   >
-                    𝕏
+                    𝕏 Twitter
                   </button>
                   <button
                     onClick={shareOnWhatsApp}
                     className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
                   >
                     💬 WhatsApp
+                  </button>
+                  <button
+                    onClick={() => {
+                      const text = `Check out MediaToolkit - AI tools for content creators! Use my code ${referralData?.referralCode} for 100 FREE credits 🎁`
+                      const url = `https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+                      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank')
+                    }}
+                    className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    ✈️ Telegram
+                  </button>
+                  <button
+                    onClick={() => {
+                      const url = `https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
+                      navigator.clipboard.writeText(url)
+                    }}
+                    className="px-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm hover:bg-white/10 transition flex items-center gap-2"
+                  >
+                    🔗 {language === 'tr' ? 'Linki Kopyala' : 'Copy Link'}
                   </button>
                 </div>
               </div>

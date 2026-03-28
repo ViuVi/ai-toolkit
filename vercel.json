@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/monthly-credits",
       "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-coaching",
+      "schedule": "0 8 * * 1"
     }
   ]
 }

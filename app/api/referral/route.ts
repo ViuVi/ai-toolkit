@@ -91,6 +91,34 @@ export async function POST(request: Request) {
       .update({ balance: (referrer.balance || 0) + REFERRAL_BONUS })
       .eq('user_id', referrer.user_id)
 
+    // Milestone bonusları kontrol et
+    const { data: allReferrals } = await supabase
+      .from('referrals')
+      .select('id')
+      .eq('referrer_id', referrer.user_id)
+
+    const totalReferrals = (allReferrals?.length || 0) + 1 // +1 for this new one
+    let milestoneBonus = 0
+
+    if (totalReferrals === 5) milestoneBonus = 250
+    else if (totalReferrals === 10) milestoneBonus = 500
+    else if (totalReferrals === 25) milestoneBonus = 1000
+
+    if (milestoneBonus > 0) {
+      const { data: currentCredits } = await supabase
+        .from('credits')
+        .select('balance')
+        .eq('user_id', referrer.user_id)
+        .single()
+      
+      if (currentCredits) {
+        await supabase
+          .from('credits')
+          .update({ balance: currentCredits.balance + milestoneBonus })
+          .eq('user_id', referrer.user_id)
+      }
+    }
+
     // Davet edilene +100 kredi
     const { data: newUser } = await supabase
       .from('credits')
