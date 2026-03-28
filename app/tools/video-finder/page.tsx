@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const toolTexts: Record<string, Record<string, string>> = {
-  tr: { title: 'Viral Video Bulucu', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Teknoloji...', platform: 'Platform', generate: 'Viral Fikirler Bul', generating: '{t.generating}', emptyTitle: 'Video Fikirleri', emptyDesc: '{t.emptyDesc}' },
+  tr: { title: 'Viral Video Bulucu', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Teknoloji...', platform: 'Platform', generate: 'Viral Fikirler Bul', generating: 'Aranıyor...', emptyTitle: 'Video Fikirleri', emptyDesc: 'Nişinizi girin' },
   en: { title: 'Viral Video Finder', niche: 'Niche', nichePlaceholder: 'e.g: Fitness, Tech...', platform: 'Platform', generate: 'Find Viral Ideas', generating: 'Searching...', emptyTitle: 'Video Ideas', emptyDesc: 'Enter your niche' },
   ru: { title: 'Поиск вирусных видео', niche: 'Ниша', nichePlaceholder: 'напр: Фитнес, Технологии...', platform: 'Платформа', generate: 'Найти вирусные идеи', generating: 'Поиск...', emptyTitle: 'Идеи для видео', emptyDesc: 'Введите вашу нишу' },
   de: { title: 'Viraler Video-Finder', niche: 'Nische', nichePlaceholder: 'z.B: Fitness, Technik...', platform: 'Plattform', generate: 'Virale Ideen finden', generating: 'Suche...', emptyTitle: 'Video-Ideen', emptyDesc: 'Nische eingeben' },

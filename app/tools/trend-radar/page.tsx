@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const toolTexts: Record<string, Record<string, string>> = {
-  tr: { title: 'Trend Radar', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Girişimcilik...', platform: 'Platform', generate: 'Trendleri Tara', generating: '{t.generating}', emptyTitle: 'Trend Radar', emptyDesc: '{t.emptyDesc}', actionPlan: 'Aksiyon Planı', today: 'Bugün', thisWeek: 'Bu hafta' },
+  tr: { title: 'Trend Radar', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Girişimcilik...', platform: 'Platform', generate: 'Trendleri Tara', generating: 'Taranıyor...', emptyTitle: 'Trend Radar', emptyDesc: 'Nişinizi girin', actionPlan: 'Aksiyon Planı', today: 'Bugün', thisWeek: 'Bu hafta' },
   en: { title: 'Trend Radar', niche: 'Niche', nichePlaceholder: 'e.g: Fitness, Entrepreneurship...', platform: 'Platform', generate: 'Scan Trends', generating: 'Scanning...', emptyTitle: 'Trend Radar', emptyDesc: 'Enter your niche', actionPlan: 'Action Plan', today: 'Today', thisWeek: 'This week' },
   ru: { title: 'Радар трендов', niche: 'Ниша', nichePlaceholder: 'напр: Фитнес, Бизнес...', platform: 'Платформа', generate: 'Сканировать тренды', generating: 'Сканируем...', emptyTitle: 'Радар трендов', emptyDesc: 'Введите вашу нишу', actionPlan: 'План действий', today: 'Сегодня', thisWeek: 'На этой неделе' },
   de: { title: 'Trend-Radar', niche: 'Nische', nichePlaceholder: 'z.B: Fitness, Unternehmertum...', platform: 'Plattform', generate: 'Trends scannen', generating: 'Wird gescannt...', emptyTitle: 'Trend-Radar', emptyDesc: 'Nische eingeben', actionPlan: 'Aktionsplan', today: 'Heute', thisWeek: 'Diese Woche' },

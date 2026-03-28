@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
 
 const toolTexts: Record<string, Record<string, string>> = {
-  tr: { title: 'İçerik Planlayıcı', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Kişisel gelişim...', postsPerWeek: 'Haftalık Post Sayısı', generate: '30 Günlük Plan Oluştur', generating: '{t.generating}', emptyTitle: '30 Günlük Plan', emptyDesc: '{t.emptyDesc}', strategy: 'Strateji', day: 'Gün' },
+  tr: { title: 'İçerik Planlayıcı', niche: 'Niş', nichePlaceholder: 'örn: Fitness, Kişisel gelişim...', postsPerWeek: 'Haftalık Post Sayısı', generate: '30 Günlük Plan Oluştur', generating: 'Planlanıyor...', emptyTitle: '30 Günlük Plan', emptyDesc: 'Nişinizi girin', strategy: 'Strateji', day: 'Gün' },
   en: { title: 'Content Planner', niche: 'Niche', nichePlaceholder: 'e.g: Fitness, Personal development...', postsPerWeek: 'Posts Per Week', generate: 'Create 30-Day Plan', generating: 'Planning...', emptyTitle: '30-Day Plan', emptyDesc: 'Enter your niche', strategy: 'Strategy', day: 'Day' },
   ru: { title: 'Планировщик контента', niche: 'Ниша', nichePlaceholder: 'напр: Фитнес, Саморазвитие...', postsPerWeek: 'Постов в неделю', generate: 'Создать план на 30 дней', generating: 'Планирование...', emptyTitle: 'План на 30 дней', emptyDesc: 'Введите вашу нишу', strategy: 'Стратегия', day: 'День' },
   de: { title: 'Content-Planer', niche: 'Nische', nichePlaceholder: 'z.B: Fitness, Persönliche Entwicklung...', postsPerWeek: 'Posts pro Woche', generate: '30-Tage-Plan erstellen', generating: 'Wird geplant...', emptyTitle: '30-Tage-Plan', emptyDesc: 'Nische eingeben', strategy: 'Strategie', day: 'Tag' },
