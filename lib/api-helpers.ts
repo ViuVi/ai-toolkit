@@ -133,6 +133,66 @@ export async function deductCredits(userId: string, toolName: string, userData: 
   return newBalance
 }
 
+// Combined check + deduct (used by all tool API routes)
+export async function checkAndDeductCredits(userId: string, toolName: string): Promise<{ success: boolean; newBalance?: number; error?: string }> {
+  if (!userId) {
+    return { success: false, error: 'User ID required' }
+  }
+
+  const cost = TOOL_CREDITS[toolName] || 5
+
+  try {
+    const { data: userData, error: fetchError } = await supabaseAdmin
+      .from('credits')
+      .select('balance, plan, total_used')
+      .eq('user_id', userId)
+      .single()
+
+    if (fetchError || !userData) {
+      return { success: false, error: 'User not found' }
+    }
+
+    if (userData.plan === 'agency') {
+      try {
+        await supabaseAdmin.from('tool_usage').insert({
+          user_id: userId,
+          tool_name: toolName,
+          credits_used: 0
+        })
+      } catch {}
+      return { success: true, newBalance: userData.balance }
+    }
+
+    if (userData.balance < cost) {
+      return { success: false, error: `Insufficient credits. This tool requires ${cost} credits.` }
+    }
+
+    const newBalance = userData.balance - cost
+
+    const { error: updateError } = await supabaseAdmin
+      .from('credits')
+      .update({ balance: newBalance, total_used: (userData.total_used || 0) + cost })
+      .eq('user_id', userId)
+
+    if (updateError) {
+      return { success: false, error: 'Failed to update credits' }
+    }
+
+    try {
+      await supabaseAdmin.from('tool_usage').insert({
+        user_id: userId,
+        tool_name: toolName,
+        credits_used: cost
+      })
+    } catch {}
+
+    return { success: true, newBalance }
+  } catch (err) {
+    console.error('Credit check error:', err)
+    return { success: false, error: 'Credit system error' }
+  }
+}
+
 export function parseAIResponse(content: string): any {
   try {
     let clean = content.trim()
