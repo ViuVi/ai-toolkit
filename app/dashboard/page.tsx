@@ -716,6 +716,12 @@ export default function DashboardPage() {
             <p className="text-gray-400">{t.readyToCreate}</p>
           </div>
           <div className="flex gap-2 self-start flex-wrap">
+            <Link
+              href="/library"
+              className="px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 bg-white/5 border-orange-500/20 text-orange-400 hover:bg-orange-500/10"
+            >
+              📚 {language === 'tr' ? 'Kütüphane' : 'Library'}
+            </Link>
             <button
               onClick={() => setShowBrandKit(!showBrandKit)}
               className={`px-4 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${showBrandKit ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : brandProfile?.niche ? 'bg-white/5 border-blue-500/20 text-blue-400 hover:bg-blue-500/10' : 'bg-blue-500/10 border-blue-500/30 text-blue-400 animate-pulse'}`}

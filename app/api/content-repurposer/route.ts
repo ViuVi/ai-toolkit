@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits, getBrandContext } from '@/lib/api-helpers'
+import { checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
@@ -85,6 +85,9 @@ ${brandContext}`
       result = JSON.parse(cleanContent.trim())
     } catch { result = { raw: content2 } }
 
+    
+    // Auto-save to content library
+    await saveContent(userId, 'content-repurposer', content || '', result)
     return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Content Repurposer Error:', error)

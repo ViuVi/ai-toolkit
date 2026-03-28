@@ -234,3 +234,24 @@ export async function getBrandContext(userId: string): Promise<string> {
     return ''
   }
 }
+
+// Auto-save tool output to content library
+export async function saveContent(
+  userId: string, 
+  toolName: string, 
+  inputSummary: string, 
+  result: any
+): Promise<void> {
+  try {
+    const displayName = toolName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    await supabaseAdmin.from('saved_contents').insert({
+      user_id: userId,
+      tool_name: toolName,
+      tool_display_name: displayName,
+      input_summary: inputSummary.substring(0, 300),
+      result: typeof result === 'string' ? { raw: result } : result
+    })
+  } catch (err) {
+    console.error('Save content error:', err)
+  }
+}

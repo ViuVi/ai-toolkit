@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits, getBrandContext } from '@/lib/api-helpers'
+import { checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
@@ -124,6 +124,9 @@ ${brandContext}`
       result = { raw: content, hooks: [] }
     }
 
+    
+    // Auto-save to content library
+    await saveContent(userId, 'hook-generator', topic || '', result)
     return NextResponse.json({ result, newBalance: creditResult.newBalance })
   } catch (error) {
     console.error('Hook Generator Error:', error)
