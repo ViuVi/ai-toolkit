@@ -104,7 +104,7 @@ export default function HashtagResearchPage() {
                 </div>
               </div>
               <button onClick={handleSearch} disabled={loading || !topic.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : '#️⃣ Hashtag Bul'}
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : `#️⃣ ${t.generate}`}
               </button>
               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
@@ -128,10 +128,10 @@ export default function HashtagResearchPage() {
                   </div>
                 )}
                 {[
-                  { key: 'trending_hashtags', title: '🔥 Trend', color: 'red' },
-                  { key: 'high_volume_hashtags', title: '📈 Yüksek Hacim', color: 'orange' },
-                  { key: 'medium_hashtags', title: '⚖️ Orta', color: 'yellow' },
-                  { key: 'low_competition_hashtags', title: '💎 Düşük Rekabet', color: 'green' },
+                  { key: 'trending_hashtags', title: `🔥 ${t.trending}`, color: 'red' },
+                  { key: 'high_volume_hashtags', title: `📈 ${t.highVolume}`, color: 'orange' },
+                  { key: 'medium_hashtags', title: `⚖️ ${t.medium}`, color: 'yellow' },
+                  { key: 'low_competition_hashtags', title: `💎 ${t.lowCompetition}`, color: 'green' },
                 ].map(({ key, title, color }) => result[key] && (
                   <div key={key} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className={`font-semibold text-${color}-400 mb-3`}>{title}</h4>

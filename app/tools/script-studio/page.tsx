@@ -200,7 +200,7 @@ export default function ScriptStudioPage() {
                 {loading ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Script Yazılıyor...
+                    {t.generating}
                   </>
                 ) : (
                   <>{`🎬 ${t.generate}`}</>
@@ -354,7 +354,7 @@ export default function ScriptStudioPage() {
                         <h4 className="font-semibold text-purple-400 mb-3">{`📊 ${t.videoInfo}`}</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div className="p-2 bg-white/5 rounded-lg">
-                            <span className="text-gray-500">Süre:</span>
+                            <span className="text-gray-500">{t.duration}:</span>
                             <span className="text-white ml-2">{result.metadata.total_duration}</span>
                           </div>
                           <div className="p-2 bg-white/5 rounded-lg">

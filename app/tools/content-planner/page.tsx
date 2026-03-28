@@ -93,7 +93,7 @@ export default function ContentPlannerPage() {
                 </div>
               </div>
               <button onClick={handleGenerate} disabled={loading || !niche.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
-                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : '📅 30 Günlük Plan Oluştur'}
+                {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : `📅 ${t.generate}`}
               </button>
               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
             </div>
@@ -106,8 +106,8 @@ export default function ContentPlannerPage() {
                 {result.strategy && (
                   <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">🎯 {t.strategy}</h4>
-                    <p className="text-sm text-gray-300">Sıklık: {result.strategy.posting_frequency}</p>
-                    {result.strategy.content_pillars && <p className="text-sm text-gray-400 mt-1">Konular: {result.strategy.content_pillars.join(', ')}</p>}
+                    <p className="text-sm text-gray-300"{language === 'tr' ? 'Sıklık' : 'Frequency'}: {result.strategy.posting_frequency}</p>
+                    {result.strategy.content_pillars && <p className="text-sm text-gray-400 mt-1">{t.day === 'Gün' ? 'Konular' : 'Topics'}: {result.strategy.content_pillars.join(', ')}</p>}
                   </div>
                 )}
                 {result.calendar?.slice(0, 14).map((day: any, i: number) => (
@@ -121,7 +121,7 @@ export default function ContentPlannerPage() {
                     {day.best_time && <p className="text-xs text-gray-500 mt-2">⏰ {day.best_time}</p>}
                   </div>
                 ))}
-                {result.calendar?.length > 14 && <p className="text-center text-gray-500 text-sm">+ {result.calendar.length - 14} gün daha...</p>}
+                {result.calendar?.length > 14 && <p className="text-center text-gray-500 text-sm">+ {result.calendar.length - 14} {t.day} more...</p>}
                 {result.raw && !result.calendar && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
