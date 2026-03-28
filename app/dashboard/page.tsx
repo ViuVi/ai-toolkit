@@ -240,7 +240,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral Score Predictor', desc: 'Real-time viral scoring' },
     bioGenerator: { name: 'Bio Generator', desc: 'Platform-perfect bios' },
     videoIdeas: { name: 'Video Idea Generator', desc: 'Shoot-ready video ideas' },
-    thumbnailCreator: { name: 'Thumbnail Creator', desc: 'Design click-worthy thumbnails' }
+    contentDna: { name: 'Content DNA Analyzer', desc: 'Decode viral content DNA' }
   },
   tr: {
     hookGenerator: { name: 'Hook Üretici', desc: 'Viral hooklar oluştur' },
@@ -262,7 +262,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral Skor Tahmincisi', desc: 'Anlık viral skor hesapla' },
     bioGenerator: { name: 'Bio Üretici', desc: 'Platform bazlı bio yaz' },
     videoIdeas: { name: 'Video Fikir Üretici', desc: 'Çekilmeye hazır fikirler' },
-    thumbnailCreator: { name: 'Thumbnail Oluşturucu', desc: 'Tıklanır thumbnaillar tasarla' }
+    contentDna: { name: 'Content DNA Analyzer', desc: 'Viral içerik DNA kodunu çöz' }
   },
   ru: {
     hookGenerator: { name: 'Генератор Хуков', desc: 'Создайте вирусные хуки' },
@@ -284,7 +284,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Предсказатель вирусности', desc: 'Балл в реальном времени' },
     bioGenerator: { name: 'Генератор Bio', desc: 'Bio для любой платформы' },
     videoIdeas: { name: 'Генератор видео-идей', desc: 'Готовые идеи для съёмки' },
-    thumbnailCreator: { name: 'Создатель обложек', desc: 'Создайте кликабельные обложки' }
+    contentDna: { name: 'Content DNA Analyzer', desc: 'Расшифруйте ДНК контента' }
   },
   de: {
     hookGenerator: { name: 'Hook Generator', desc: 'Virale Hooks erstellen' },
@@ -306,7 +306,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral-Score-Prediktor', desc: 'Echtzeit Viral-Score' },
     bioGenerator: { name: 'Bio Generator', desc: 'Plattform-perfekte Bios' },
     videoIdeas: { name: 'Video-Ideen-Generator', desc: 'Drehfertige Ideen' },
-    thumbnailCreator: { name: 'Thumbnail-Ersteller', desc: 'Klickstarke Thumbnails' }
+    contentDna: { name: 'Content DNA Analyzer', desc: 'DNA viraler Inhalte entschlüsseln' }
   },
   fr: {
     hookGenerator: { name: 'Générateur de Hooks', desc: 'Créer des hooks viraux' },
@@ -328,7 +328,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Prédicteur de viralité', desc: 'Score viral en temps réel' },
     bioGenerator: { name: 'Générateur de Bio', desc: 'Bios parfaites par plateforme' },
     videoIdeas: { name: "Générateur d'idées vidéo", desc: 'Idées prêtes à filmer' },
-    thumbnailCreator: { name: 'Créateur de Miniatures', desc: 'Miniatures accrocheuses' }
+    contentDna: { name: 'Content DNA Analyzer', desc: "Décodez l'ADN du contenu viral" }
   }
 }
 
@@ -643,7 +643,7 @@ export default function DashboardPage() {
     { key: 'viralScore', icon: '⚡', href: '/tools/viral-score', credits: 3, category: 'analyze' },
     { key: 'bioGenerator', icon: '📝', href: '/tools/bio-generator', credits: 3, category: 'create' },
     { key: 'videoIdeas', icon: '💡', href: '/tools/video-ideas', credits: 5, category: 'create' },
-    { key: 'thumbnailCreator', icon: '🎨', href: '/tools/thumbnail-creator', credits: 4, category: 'create' },
+    { key: 'contentDna', icon: '🧬', href: '/tools/content-dna', credits: 6, category: 'analyze' },
   ]
 
   const [filter, setFilter] = useState('all')

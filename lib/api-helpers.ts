@@ -43,7 +43,7 @@ export const TOOL_CREDITS: Record<string, number> = {
   'viral-score': 3,
   'bio-generator': 3,
   'video-ideas': 5,
-  'thumbnail-creator': 4
+  'content-dna': 6
 }
 
 interface UserData {
