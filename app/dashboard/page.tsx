@@ -240,7 +240,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral Score Predictor', desc: 'Real-time viral scoring' },
     bioGenerator: { name: 'Bio Generator', desc: 'Platform-perfect bios' },
     videoIdeas: { name: 'Video Idea Generator', desc: 'Shoot-ready video ideas' },
-    contentDna: { name: 'Content DNA Analyzer', desc: 'Decode viral content DNA' }
+    qrGenerator: { name: 'QR Code Generator', desc: 'Free custom QR codes' }
   },
   tr: {
     hookGenerator: { name: 'Hook Üretici', desc: 'Viral hooklar oluştur' },
@@ -262,7 +262,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral Skor Tahmincisi', desc: 'Anlık viral skor hesapla' },
     bioGenerator: { name: 'Bio Üretici', desc: 'Platform bazlı bio yaz' },
     videoIdeas: { name: 'Video Fikir Üretici', desc: 'Çekilmeye hazır fikirler' },
-    contentDna: { name: 'Content DNA Analyzer', desc: 'Viral içerik DNA kodunu çöz' }
+    qrGenerator: { name: 'QR Kod Oluşturucu', desc: 'Ücretsiz özel QR kodlar' }
   },
   ru: {
     hookGenerator: { name: 'Генератор Хуков', desc: 'Создайте вирусные хуки' },
@@ -284,7 +284,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Предсказатель вирусности', desc: 'Балл в реальном времени' },
     bioGenerator: { name: 'Генератор Bio', desc: 'Bio для любой платформы' },
     videoIdeas: { name: 'Генератор видео-идей', desc: 'Готовые идеи для съёмки' },
-    contentDna: { name: 'Content DNA Analyzer', desc: 'Расшифруйте ДНК контента' }
+    qrGenerator: { name: 'QR-код генератор', desc: 'Бесплатные QR-коды' }
   },
   de: {
     hookGenerator: { name: 'Hook Generator', desc: 'Virale Hooks erstellen' },
@@ -306,7 +306,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Viral-Score-Prediktor', desc: 'Echtzeit Viral-Score' },
     bioGenerator: { name: 'Bio Generator', desc: 'Plattform-perfekte Bios' },
     videoIdeas: { name: 'Video-Ideen-Generator', desc: 'Drehfertige Ideen' },
-    contentDna: { name: 'Content DNA Analyzer', desc: 'DNA viraler Inhalte entschlüsseln' }
+    qrGenerator: { name: 'QR-Code Generator', desc: 'Kostenlose QR-Codes' }
   },
   fr: {
     hookGenerator: { name: 'Générateur de Hooks', desc: 'Créer des hooks viraux' },
@@ -328,7 +328,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
     viralScore: { name: 'Prédicteur de viralité', desc: 'Score viral en temps réel' },
     bioGenerator: { name: 'Générateur de Bio', desc: 'Bios parfaites par plateforme' },
     videoIdeas: { name: "Générateur d'idées vidéo", desc: 'Idées prêtes à filmer' },
-    contentDna: { name: 'Content DNA Analyzer', desc: "Décodez l'ADN du contenu viral" }
+    qrGenerator: { name: 'Générateur QR Code', desc: 'QR codes gratuits' }
   }
 }
 
@@ -643,7 +643,7 @@ export default function DashboardPage() {
     { key: 'viralScore', icon: '⚡', href: '/tools/viral-score', credits: 3, category: 'analyze' },
     { key: 'bioGenerator', icon: '📝', href: '/tools/bio-generator', credits: 3, category: 'create' },
     { key: 'videoIdeas', icon: '💡', href: '/tools/video-ideas', credits: 5, category: 'create' },
-    { key: 'contentDna', icon: '🧬', href: '/tools/content-dna', credits: 6, category: 'analyze' },
+    { key: 'qrGenerator', icon: '📱', href: '/tools/qr-generator', credits: 0, category: 'create' },
   ]
 
   const [filter, setFilter] = useState('all')
@@ -1029,8 +1029,8 @@ export default function DashboardPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{tool.icon}</span>
-                <span className="text-xs px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg">
-                  {tool.credits} ✦
+                <span className={`text-xs px-2 py-1 rounded-lg ${tool.credits === 0 ? 'bg-green-500/10 text-green-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                  {tool.credits === 0 ? (language === 'tr' ? 'ÜCRETSİZ' : 'FREE') : `${tool.credits} ✦`}
                 </span>
               </div>
               <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition">
