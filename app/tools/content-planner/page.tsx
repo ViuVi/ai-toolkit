@@ -106,7 +106,7 @@ export default function ContentPlannerPage() {
                 {result.strategy && (
                   <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">🎯 {t.strategy}</h4>
-                    <p className="text-sm text-gray-300"{language === 'tr' ? 'Sıklık' : 'Frequency'}: {result.strategy.posting_frequency}</p>
+                    <p className="text-sm text-gray-300">{language === 'tr' ? 'Sıklık' : 'Frequency'}: {result.strategy.posting_frequency}</p>
                     {result.strategy.content_pillars && <p className="text-sm text-gray-400 mt-1">{t.day === 'Gün' ? 'Konular' : 'Topics'}: {result.strategy.content_pillars.join(', ')}</p>}
                   </div>
                 )}
