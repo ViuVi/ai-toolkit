@@ -15,6 +15,7 @@ const toolTexts: Record<string, Record<string, string>> = {
 
 export default function ContentPlannerPage() {
   const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [niche, setNiche] = useState('')
@@ -31,6 +32,7 @@ export default function ContentPlannerPage() {
       if (!session) router.push('/login')
       else {
         setUser(session.user)
+        setSession(session)
         supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
           .then(({ data }) => setCredits(data?.balance || 0))
       }
@@ -45,8 +47,8 @@ export default function ContentPlannerPage() {
     try {
       const res = await fetch('/api/content-planner', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, platforms, postsPerWeek, language, userId: user.id })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ niche, platforms, postsPerWeek, language })
       })
       const data = await res.json()
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }

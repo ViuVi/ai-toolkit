@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// Authenticate request from Authorization header
+export async function authenticateRequest(request: NextRequest): Promise<{ userId: string; error?: never } | { userId?: never; error: NextResponse }> {
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+
+  if (error || !user) {
+    return { error: NextResponse.json({ error: 'Invalid token' }, { status: 401 }) }
+  }
+
+  return { userId: user.id }
+}
 
 export const TOOL_CREDITS: Record<string, number> = {
   'hook-generator': 3,

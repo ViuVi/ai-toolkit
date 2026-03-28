@@ -314,6 +314,7 @@ const toolNames: Record<string, Record<string, { name: string; desc: string }>> 
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [plan, setPlan] = useState('free')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -349,6 +350,7 @@ export default function DashboardPage() {
         router.push('/login')
       } else {
         setUser(session.user)
+        setSession(session)
         fetchCredits(session.user.id)
         fetchStats(session.user.id)
         fetchReferral(session.user.id)
@@ -393,7 +395,10 @@ export default function DashboardPage() {
 
   const fetchReferral = async (userId: string) => {
     try {
-      const res = await fetch(`/api/referral?userId=${userId}`)
+      const s = await supabase.auth.getSession()
+      const res = await fetch(`/api/referral?userId=${userId}`, {
+        headers: { 'Authorization': `Bearer ${s.data.session?.access_token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setReferralData(data)
@@ -425,7 +430,10 @@ export default function DashboardPage() {
 
   const fetchStats = async (userId: string) => {
     try {
-      const res = await fetch(`/api/user-stats?userId=${userId}`)
+      const s = await supabase.auth.getSession()
+      const res = await fetch('/api/user-stats', {
+        headers: { 'Authorization': `Bearer ${s.data.session?.access_token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setStats(data)
@@ -437,7 +445,10 @@ export default function DashboardPage() {
 
   const fetchBrandProfile = async (userId: string) => {
     try {
-      const res = await fetch(`/api/brand-profile?userId=${userId}`)
+      const s = await supabase.auth.getSession()
+      const res = await fetch('/api/brand-profile', {
+        headers: { 'Authorization': `Bearer ${s.data.session?.access_token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         if (data.profile) {
@@ -463,11 +474,11 @@ export default function DashboardPage() {
     if (!user) return
     setBrandSaving(true)
     try {
+      const s = await supabase.auth.getSession()
       const res = await fetch('/api/brand-profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.data.session?.access_token}` },
         body: JSON.stringify({
-          userId: user.id,
           brandName: brandForm.brandName,
           niche: brandForm.niche,
           targetAudience: brandForm.targetAudience,
@@ -523,10 +534,10 @@ export default function DashboardPage() {
     setAdComplete(true)
     
     try {
+      const s = await supabase.auth.getSession()
       const res = await fetch('/api/watch-ad', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.data.session?.access_token}` }
       })
       const data = await res.json()
       

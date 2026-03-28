@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
+import { authenticateRequest, checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platform, timeframe, language, userId } = await request.json()
+    const { niche, platform, timeframe, language } = await request.json()
 
     if (!niche) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 })
     }
+
+    // Authenticate from token
+    const auth = await authenticateRequest(request)
+    if (auth.error) return auth.error
+    const userId = auth.userId
 
     const creditResult = await checkAndDeductCredits(userId, 'trend-radar')
     if (!creditResult.success) {

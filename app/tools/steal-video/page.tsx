@@ -15,6 +15,7 @@ const toolTexts: Record<string, Record<string, string>> = {
 
 export default function StealVideoPage() {
   const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
   const [credits, setCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [videoDescription, setVideoDescription] = useState('')
@@ -33,6 +34,7 @@ export default function StealVideoPage() {
       if (!session) router.push('/login')
       else {
         setUser(session.user)
+        setSession(session)
         supabase.from('credits').select('balance').eq('user_id', session.user.id).single()
           .then(({ data }) => setCredits(data?.balance || 0))
       }
@@ -47,8 +49,8 @@ export default function StealVideoPage() {
     try {
       const res = await fetch('/api/steal-video', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoDescription, creatorNiche, platform, language, userId: user.id })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ videoDescription, creatorNiche, platform, language })
       })
       const data = await res.json()
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }

@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
+import { authenticateRequest, checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, tone, language, userId } = await request.json()
+    const { topic, platform, tone, language } = await request.json()
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
     }
 
     // Kredi kontrolü ve düşürme
+    // Authenticate from token
+    const auth = await authenticateRequest(request)
+    if (auth.error) return auth.error
+    const userId = auth.userId
+
     const creditResult = await checkAndDeductCredits(userId, 'hook-generator')
     if (!creditResult.success) {
       return NextResponse.json({ error: creditResult.error }, { status: 402 })

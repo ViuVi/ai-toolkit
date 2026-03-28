@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
+import { authenticateRequest, checkAndDeductCredits, getBrandContext, saveContent } from '@/lib/api-helpers'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, platform, goal, language, userId } = await request.json()
+    const { content, platform, goal, language } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
+
+    // Authenticate from token
+    const auth = await authenticateRequest(request)
+    if (auth.error) return auth.error
+    const userId = auth.userId
 
     const creditResult = await checkAndDeductCredits(userId, 'engagement-booster')
     if (!creditResult.success) {

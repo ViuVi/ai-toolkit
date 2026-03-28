@@ -43,6 +43,7 @@ function getPreviewText(result: any): string {
 
 export default function LibraryPage() {
   const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -61,6 +62,7 @@ export default function LibraryPage() {
       if (!session) router.push('/login')
       else {
         setUser(session.user)
+        setSession(session)
         fetchLibrary(session.user.id, 1, 'all', false, '')
       }
     })
@@ -69,12 +71,15 @@ export default function LibraryPage() {
   const fetchLibrary = async (userId: string, p: number, tool: string, fav: boolean, q: string) => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ userId, page: p.toString() })
+      const params = new URLSearchParams({ page: p.toString() })
       if (tool !== 'all') params.set('tool', tool)
       if (fav) params.set('favorites', 'true')
       if (q) params.set('search', q)
 
-      const res = await fetch(`/api/content-library?${params}`)
+      const s = await supabase.auth.getSession()
+      const res = await fetch(`/api/content-library?${params}`, {
+        headers: { 'Authorization': `Bearer ${s.data.session?.access_token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setItems(data.items)
@@ -112,10 +117,11 @@ export default function LibraryPage() {
 
   const toggleFavorite = async (contentId: string) => {
     if (!user) return
+    const s = await supabase.auth.getSession()
     const res = await fetch('/api/content-library', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'favorite', contentId, userId: user.id })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.data.session?.access_token}` },
+      body: JSON.stringify({ action: 'favorite', contentId })
     })
     if (res.ok) {
       setItems(items.map(item => item.id === contentId ? { ...item, is_favorite: !item.is_favorite } : item))
@@ -124,10 +130,11 @@ export default function LibraryPage() {
 
   const deleteContent = async (contentId: string) => {
     if (!user || !confirm(t.confirmDelete)) return
+    const s2 = await supabase.auth.getSession()
     const res = await fetch('/api/content-library', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete', contentId, userId: user.id })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s2.data.session?.access_token}` },
+      body: JSON.stringify({ action: 'delete', contentId })
     })
     if (res.ok) {
       setItems(items.filter(item => item.id !== contentId))
