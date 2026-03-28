@@ -1,104 +1,43 @@
 {
-  "name": "MediaToolKit - AI Tools for Creators",
-  "short_name": "MediaToolKit",
-  "description": "16+ AI-powered tools to create viral content for TikTok, Instagram, YouTube & more",
+  "name": "MediaToolkit - AI Tools for Content Creators",
+  "short_name": "MediaToolkit",
+  "description": "The ultimate AI toolkit for content creators. Generate hooks, scripts, captions and discover viral trends.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#a855f7",
   "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "en",
-  "categories": ["productivity", "social", "utilities"],
+  "categories": ["productivity", "social"],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Dashboard with AI Tools"
-    },
-    {
-      "src": "/screenshots/mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile Dashboard"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "Hook Generator",
-      "short_name": "Hooks",
-      "description": "Generate viral hooks",
       "url": "/tools/hook-generator",
-      "icons": [{ "src": "/icons/hook.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Caption Generator",
-      "short_name": "Captions",
-      "description": "Write engaging captions",
-      "url": "/tools/caption-generator",
-      "icons": [{ "src": "/icons/caption.png", "sizes": "96x96" }]
+      "name": "Script Studio",
+      "url": "/tools/script-studio",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Trend Radar",
-      "short_name": "Trends",
-      "description": "Discover trending topics",
-      "url": "/tools/trend-radar",
-      "icons": [{ "src": "/icons/trend.png", "sizes": "96x96" }]
+      "name": "Content Library",
+      "url": "/library",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false
+  ]
 }

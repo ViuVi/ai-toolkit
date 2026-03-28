@@ -1,132 +1,70 @@
-const CACHE_NAME = 'mediatoolkit-v1';
+const CACHE_NAME = 'mediatoolkit-v1'
+
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
+  '/library',
   '/login',
   '/register',
-  '/offline',
-  '/manifest.json',
-];
+  '/offline'
+]
 
-// Install event - cache static assets
+// Install — cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch(() => {
+        // Some pages might fail, that's ok
+      })
     })
-  );
-  self.skipWaiting();
-});
+  )
+  self.skipWaiting()
+})
 
-// Activate event - clean old caches
+// Activate — clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      )
     })
-  );
-  self.clients.claim();
-});
+  )
+  self.clients.claim()
+})
 
-// Fetch event - network first, fallback to cache
+// Fetch — network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+  const { request } = event
+  const url = new URL(request.url)
 
-  // Skip API requests (always fetch from network)
-  if (event.request.url.includes('/api/')) return;
+  // Skip API calls and external requests — always go to network
+  if (url.pathname.startsWith('/api/') || url.origin !== self.location.origin) {
+    return
+  }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
-        // Clone response for caching
-        const responseClone = response.clone();
-        
-        // Cache successful responses
-        if (response.status === 200) {
+        // Cache successful page responses
+        if (response.ok && request.method === 'GET') {
+          const clone = response.clone()
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+            cache.put(request, clone)
+          })
         }
-        
-        return response;
+        return response
       })
       .catch(() => {
-        // Fallback to cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
+        // Offline — try cache
+        return caches.match(request).then((cached) => {
+          if (cached) return cached
+          // If no cache, show offline page
+          if (request.mode === 'navigate') {
+            return caches.match('/offline')
           }
-          
-          // If it's a navigation request, show offline page
-          if (event.request.mode === 'navigate') {
-            return caches.match('/offline');
-          }
-          
-          return new Response('Offline', {
-            status: 503,
-            statusText: 'Service Unavailable',
-          });
-        });
+          return new Response('Offline', { status: 503 })
+        })
       })
-  );
-});
-
-// Background sync for failed API requests
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-usage') {
-    event.waitUntil(syncUsageData());
-  }
-});
-
-async function syncUsageData() {
-  // Sync any pending usage data when back online
-  const pendingData = await getFromIndexedDB('pending-usage');
-  if (pendingData && pendingData.length > 0) {
-    for (const data of pendingData) {
-      try {
-        await fetch('/api/log-usage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        await removeFromIndexedDB('pending-usage', data.id);
-      } catch (error) {
-        console.error('Sync failed:', error);
-      }
-    }
-  }
-}
-
-// Push notifications (future feature)
-self.addEventListener('push', (event) => {
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/badge-72x72.png',
-      vibrate: [100, 50, 100],
-      data: {
-        url: data.url || '/dashboard',
-      },
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
-  }
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url)
-  );
-});
+  )
+})
