@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/lib/LanguageContext'
+import { resultToMarkdown, resultToPlainText, downloadFile } from '@/lib/export-utils'
 
 const toolIcons: Record<string, string> = {
   'hook-generator': '🎣', 'caption-generator': '✍️', 'script-studio': '🎬',
@@ -200,6 +201,18 @@ export default function LibraryPage() {
                       <span className="text-sm font-medium text-purple-400">{item.tool_display_name}</span>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <button onClick={() => {
+                        const md = resultToMarkdown(item.tool_name, item.input_summary || '', item.result, item.created_at)
+                        downloadFile(md, `${item.tool_name}-${Date.now()}.md`, 'text/markdown')
+                      }} className="p-1.5 hover:bg-white/10 rounded-lg transition text-gray-500 hover:text-white" title="Markdown">
+                        📄
+                      </button>
+                      <button onClick={() => {
+                        const txt = resultToPlainText(item.tool_name, item.input_summary || '', item.result)
+                        navigator.clipboard.writeText(txt)
+                      }} className="p-1.5 hover:bg-white/10 rounded-lg transition text-gray-500 hover:text-white" title="Copy">
+                        📋
+                      </button>
                       <button onClick={() => toggleFavorite(item.id)} className="p-1.5 hover:bg-white/10 rounded-lg transition">
                         {item.is_favorite ? '⭐' : '☆'}
                       </button>

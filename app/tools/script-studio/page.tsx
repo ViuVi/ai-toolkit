@@ -25,6 +25,8 @@ export default function ScriptStudioPage() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState('script')
+  const [showTeleprompter, setShowTeleprompter] = useState(false)
+  const [teleSpeed, setTeleSpeed] = useState(3)
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
   const t = toolTexts[language] || toolTexts.en
@@ -260,6 +262,14 @@ export default function ScriptStudioPage() {
                   >
                     ✨ Extras
                   </button>
+                  {result.script?.full_script && (
+                    <button
+                      onClick={() => setShowTeleprompter(true)}
+                      className="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30"
+                    >
+                      📺 Teleprompter
+                    </button>
+                  )}
                 </div>
 
                 {/* Script Tab */}
@@ -424,6 +434,62 @@ export default function ScriptStudioPage() {
           </div>
         </div>
       </main>
+
+      {/* Teleprompter Mode */}
+      {showTeleprompter && result?.script?.full_script && (
+        <div className="fixed inset-0 bg-black z-[100] flex flex-col">
+          {/* Teleprompter Header */}
+          <div className="flex items-center justify-between px-6 py-3 bg-black/80 border-b border-white/10">
+            <div className="flex items-center gap-4">
+              <span className="text-green-400 font-bold">📺 TELEPROMPTER</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">{language === 'tr' ? 'Hız:' : 'Speed:'}</span>
+                {[1, 2, 3, 4, 5].map(s => (
+                  <button key={s} onClick={() => setTeleSpeed(s)} className={`w-7 h-7 rounded text-xs font-bold transition ${teleSpeed === s ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <button onClick={() => setShowTeleprompter(false)} className="px-4 py-1.5 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-sm font-medium hover:bg-red-500/30 transition">
+              ✕ {language === 'tr' ? 'Kapat' : 'Close'}
+            </button>
+          </div>
+
+          {/* Scrolling Script */}
+          <div className="flex-1 overflow-hidden relative">
+            {/* Gradient overlays */}
+            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
+            
+            {/* Center line indicator */}
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-green-500/30 z-10 pointer-events-none"></div>
+
+            {/* Scrolling text */}
+            <div 
+              className="h-full flex items-start justify-center pt-[50vh] pb-[50vh] overflow-y-auto"
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              <div className="max-w-3xl px-8">
+                <p 
+                  className="text-white leading-[2] text-center font-medium"
+                  style={{ 
+                    fontSize: `${1.5 + teleSpeed * 0.3}rem`,
+                    animation: `teleScroll ${Math.max(15, 60 - teleSpeed * 8)}s linear infinite`,
+                  }}
+                >
+                  {result.script.full_script}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <style>{`
+            @keyframes teleScroll {
+              0% { transform: translateY(50vh); }
+              100% { transform: translateY(-100%); }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }
