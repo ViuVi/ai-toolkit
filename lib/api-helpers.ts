@@ -39,7 +39,11 @@ export const TOOL_CREDITS: Record<string, number> = {
   'thread-composer': 4,
   'engagement-booster': 4,
   'posting-optimizer': 3,
-  'content-repurposer': 8
+  'content-repurposer': 8,
+  'viral-score': 3,
+  'bio-generator': 3,
+  'video-ideas': 5,
+  'thumbnail-creator': 4
 }
 
 interface UserData {
