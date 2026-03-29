@@ -182,40 +182,27 @@ export default function QRGeneratorPage() {
                 <input type="url" value={link} onChange={e => setLink(e.target.value)} placeholder={t.linkPlaceholder} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50" />
               </div>
 
-              {/* Quick Links */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">{t.quickLinks}</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {quickLinkTemplates.map(ql => (
-                    <button key={ql.label} onClick={() => setLink(ql.url)} className="p-2 bg-white/5 border border-white/10 rounded-xl text-center hover:bg-white/10 transition">
-                      <div className="text-lg">{ql.icon}</div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">{ql.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Color Presets */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">{t.fgColor}</label>
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {presetColors.map(pc => (
-                    <button key={pc.name} onClick={() => { setFgColor(pc.fg); setBgColor(pc.bg) }} className={`w-8 h-8 rounded-lg border-2 transition ${fgColor === pc.fg && bgColor === pc.bg ? 'border-purple-500 scale-110' : 'border-white/10'}`} style={{ background: pc.fg }} title={pc.name} />
+                    <button key={pc.name} onClick={() => { setFgColor(pc.fg); setBgColor(pc.bg) }} className={`w-6 h-6 rounded-md border-2 transition ${fgColor === pc.fg && bgColor === pc.bg ? 'border-purple-500 scale-110' : 'border-white/10'}`} style={{ background: pc.fg }} title={pc.name} />
                   ))}
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <div className="flex-1">
                     <label className="block text-xs text-gray-500 mb-1">{t.fgColor}</label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={fgColor} onChange={e => setFgColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
-                      <input type="text" value={fgColor} onChange={e => setFgColor(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white font-mono" />
+                    <div className="flex items-center gap-1.5">
+                      <input type="color" value={fgColor} onChange={e => setFgColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+                      <input type="text" value={fgColor} onChange={e => setFgColor(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white font-mono min-w-0" />
                     </div>
                   </div>
                   <div className="flex-1">
                     <label className="block text-xs text-gray-500 mb-1">{t.bgColor}</label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
-                      <input type="text" value={bgColor} onChange={e => setBgColor(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white font-mono" />
+                    <div className="flex items-center gap-1.5">
+                      <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+                      <input type="text" value={bgColor} onChange={e => setBgColor(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white font-mono min-w-0" />
                     </div>
                   </div>
                 </div>
