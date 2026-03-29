@@ -60,6 +60,8 @@ export default function ABTesterPage() {
 
   const getScoreColor = (score: number) => score >= 80 ? 'text-green-400' : score >= 60 ? 'text-yellow-400' : 'text-red-400'
 
+  const fillExample = () => { setOptionA('huge mistake... Most people do not even realize it. Watch till the end.'); setOptionB('When I first learned this, I could not believe it. Is it really this simple? Drop your thoughts below') }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/5">
