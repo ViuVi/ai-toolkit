@@ -49,7 +49,7 @@ export default function ABTesterPage() {
       const res = await fetch('/api/ab-tester', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ optionA, optionB, contentType, platform, language })
+        body: JSON.stringify({ contentA: optionA, contentB: optionB, testType: contentType, platform, language })
       })
       const data = await res.json()
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
