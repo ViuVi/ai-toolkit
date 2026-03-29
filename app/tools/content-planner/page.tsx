@@ -56,6 +56,8 @@ export default function ContentPlannerPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setNiche('Personal finance for millennials') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

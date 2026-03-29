@@ -56,6 +56,8 @@ export default function CompetitorSpyPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setCompetitorInfo('@garyvee - Gary Vaynerchuk, business and entrepreneurship on TikTok') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

@@ -93,6 +93,8 @@ export default function ScriptStudioPage() {
     { value: 'storytelling', label: `📖 ${t.storytelling}` },
     { value: 'tutorial', label: `🎯 ${t.tutorial}` }
   ]
+  const fillExample = () => { setTopic('5 AI tools that will replace your job in 2025') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

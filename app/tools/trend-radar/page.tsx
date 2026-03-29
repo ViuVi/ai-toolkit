@@ -55,6 +55,8 @@ export default function TrendRadarPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setNiche('Technology and AI') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

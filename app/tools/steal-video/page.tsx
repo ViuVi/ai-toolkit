@@ -64,6 +64,8 @@ export default function StealVideoPage() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+  const fillExample = () => { setVideoDescription('A creator shows 5 morning habits that changed their life. Starts with a shocking stat, reveals each habit with results. Ends with a 7-day challenge.') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

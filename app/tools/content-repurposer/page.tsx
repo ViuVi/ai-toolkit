@@ -56,6 +56,8 @@ export default function ContentRepurposerPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setContent('I spent 2 years building my personal brand. The biggest lesson? Consistency beats talent. I posted every day for 365 days. Most got under 100 views. Then one went viral with 2M views.') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

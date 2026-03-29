@@ -107,6 +107,8 @@ export default function CaptionGeneratorPage() {
     { value: 'humorous', label: t.humorous },
     { value: 'inspiring', label: t.inspiring }
   ]
+  const fillExample = () => { setTopic('Morning routine for productivity'); setTone('inspiring') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

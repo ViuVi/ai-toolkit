@@ -63,6 +63,8 @@ export default function HashtagResearchPage() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+  const fillExample = () => { setTopic('Home workout routines') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

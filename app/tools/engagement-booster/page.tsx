@@ -56,6 +56,8 @@ export default function EngagementBoosterPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setContent('Just launched my new online course! So excited to share everything about building a personal brand. Link in bio!') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

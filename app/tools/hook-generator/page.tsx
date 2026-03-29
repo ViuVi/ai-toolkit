@@ -126,6 +126,8 @@ export default function HookGeneratorPage() {
     { value: 'humorous', label: t.humorous },
     { value: 'dramatic', label: t.dramatic }
   ]
+  const fillExample = () => { setTopic('Making money online with AI'); setTone('professional') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

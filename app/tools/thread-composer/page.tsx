@@ -70,6 +70,8 @@ export default function ThreadComposerPage() {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+  const fillExample = () => { setTopic('How I grew from 0 to 100K followers in 6 months') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">

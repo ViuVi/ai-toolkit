@@ -61,6 +61,8 @@ export default function PostingOptimizerPage() {
     } catch (e) { setError('Connection error') }
     setLoading(false)
   }
+  const fillExample = () => { setNiche('Food and recipe content') }
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
