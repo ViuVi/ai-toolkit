@@ -57,6 +57,8 @@ export default function VideoIdeasPage() {
 
   const getViralColor = (score: number) => score >= 8 ? 'text-green-400 bg-green-500/20' : score >= 6 ? 'text-yellow-400 bg-yellow-500/20' : 'text-orange-400 bg-orange-500/20'
 
+    const fillExample = () => { setNiche('Personal finance and investing') }
+
   if (!user) return null
 
   return (
@@ -104,6 +106,8 @@ export default function VideoIdeasPage() {
                   ))}
                 </div>
               </div>
+              <button onClick={fillExample} className="w-full py-2 bg-white/5 border border-dashed border-white/20 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition mb-2">🧪 Try Example</button>
+
               <button onClick={handleGenerate} disabled={loading || !niche.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : `💡 ${t.generate}`}
               </button>

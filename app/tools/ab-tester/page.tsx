@@ -101,6 +101,8 @@ export default function ABTesterPage() {
                   ))}
                 </div>
               </div>
+              <button onClick={fillExample} className="w-full py-2 bg-white/5 border border-dashed border-white/20 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition mb-2">🧪 Try Example</button>
+
               <button onClick={handleTest} disabled={loading || !optionA.trim() || !optionB.trim()} className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{t.generating}</> : `⚔️ ${t.generate}`}
               </button>
@@ -137,7 +139,7 @@ export default function ABTesterPage() {
                   <div className={`p-4 rounded-xl border ${result.winner === 'A' ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.02] border-white/5'}`}>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold">🅰️ {t.optionA}</h4>
-                      <span className={`text-2xl font-bold ${getScoreColor((result.option_a || result.analysis?.version_a).total_score || 0)}`}>{(result.option_a || result.analysis?.version_a).total_score}/100</span>
+                      <span className={`text-2xl font-bold ${getScoreColor((result.option_a || result.analysis?.version_a).total_score || .score || 0)}`}>{(result.option_a || result.analysis?.version_a).total_score || .score}/100</span>
                     </div>
                     {(result.option_a || result.analysis?.version_a).scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries((result.option_a || result.analysis?.version_a).scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
                     {(result.option_a || result.analysis?.version_a).strengths && <p className="text-xs text-green-400">✅ {(result.option_a || result.analysis?.version_a).strengths.join(', ')}</p>}
@@ -148,7 +150,7 @@ export default function ABTesterPage() {
                   <div className={`p-4 rounded-xl border ${result.winner === 'B' ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.02] border-white/5'}`}>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold">🅱️ {t.optionB}</h4>
-                      <span className={`text-2xl font-bold ${getScoreColor((result.option_b || result.analysis?.version_b).total_score || 0)}`}>{(result.option_b || result.analysis?.version_b).total_score}/100</span>
+                      <span className={`text-2xl font-bold ${getScoreColor((result.option_b || result.analysis?.version_b).total_score || .score || 0)}`}>{(result.option_b || result.analysis?.version_b).total_score || .score}/100</span>
                     </div>
                     {(result.option_b || result.analysis?.version_b).scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries((result.option_b || result.analysis?.version_b).scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
                     {(result.option_b || result.analysis?.version_b).strengths && <p className="text-xs text-green-400">✅ {(result.option_b || result.analysis?.version_b).strengths.join(', ')}</p>}

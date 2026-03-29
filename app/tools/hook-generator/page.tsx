@@ -209,6 +209,8 @@ export default function HookGeneratorPage() {
                 </div>
               </div>
 
+              <button onClick={fillExample} className="w-full py-2 bg-white/5 border border-dashed border-white/20 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition mb-2">🧪 Try Example</button>
+
               <button
                 onClick={handleGenerate}
                 disabled={loading || !topic.trim()}
