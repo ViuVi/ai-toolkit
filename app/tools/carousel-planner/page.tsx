@@ -137,15 +137,15 @@ export default function CarouselPlannerPage() {
             {result && (
               <div className="space-y-4">
                 {/* Concept */}
-                {result.carousel_concept && (
+                {(result.carousel_concept || result.carousel?.title) && (
                   <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">{`💡 ${t.concept}`}</h4>
-                    <p className="text-sm text-gray-300">{result.carousel_concept}</p>
+                    <p className="text-sm text-gray-300">{(result.carousel_concept || result.carousel?.title)}</p>
                   </div>
                 )}
 
                 {/* Slides */}
-                {result.slides?.map((slide: any, i: number) => (
+                {(result.slides || result.carousel?.slides)?.map((slide: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="w-8 h-8 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-sm font-bold">{slide.number || i + 1}</span>
@@ -169,15 +169,15 @@ export default function CarouselPlannerPage() {
                 )}
 
                 {/* Design Specs */}
-                {result.design_specs && (
+                {(result.design_specs || result.design_tips) && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">{`📐 ${t.design}`}</h4>
-                    <p className="text-sm text-gray-400">Boyut: {result.design_specs.dimensions}</p>
-                    {result.design_specs.font_recommendation && <p className="text-sm text-gray-400">Font: {result.design_specs.font_recommendation}</p>}
+                    <p className="text-sm text-gray-400">Boyut: {(result.design_specs || result.design_tips).dimensions}</p>
+                    {(result.design_specs || result.design_tips).font_recommendation && <p className="text-sm text-gray-400">Font: {(result.design_specs || result.design_tips).font_recommendation}</p>}
                   </div>
                 )}
 
-                {result.raw && !result.slides && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.slides || result.carousel?.slides) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

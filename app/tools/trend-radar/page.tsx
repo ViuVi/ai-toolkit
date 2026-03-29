@@ -118,7 +118,7 @@ export default function TrendRadarPage() {
             )}
             {result && (
               <div className="space-y-4">
-                {result.trending_topics?.map((trend: any, i: number) => (
+                {(result.trending_topics || result.trends)?.map((trend: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{trend.topic}</h4>
@@ -136,7 +136,7 @@ export default function TrendRadarPage() {
                     <p className="text-sm text-gray-300"><strong>{t.thisWeek}:</strong> {result.action_plan.this_week}</p>
                   </div>
                 )}
-                {result.raw && !result.trending_topics && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.trending_topics || result.trends) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

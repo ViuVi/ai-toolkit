@@ -118,17 +118,17 @@ export default function VideoFinderPage() {
             )}
             {result && (
               <div className="space-y-4">
-                {result.trending_videos?.map((v: any, i: number) => (
+                {(result.trending_videos || result.videos)?.map((v: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <div className="flex justify-between mb-2"><h4 className="font-medium">{v.title}</h4><span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded">{v.format_type}</span></div>
                     {v.hook && <p className="text-sm text-purple-300">🎯 {v.hook}</p>}
                     {v.why_viral && <p className="text-xs text-gray-500 mt-2">{v.why_viral}</p>}
                   </div>
                 ))}
-                {result.evergreen_ideas?.map((e: any, i: number) => (
+                {(result.evergreen_ideas || result.content_ideas)?.map((e: any, i: number) => (
                   <div key={i} className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl"><h4 className="font-medium text-green-400">{e.title}</h4></div>
                 ))}
-                {result.raw && !result.trending_videos && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.trending_videos || result.videos) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

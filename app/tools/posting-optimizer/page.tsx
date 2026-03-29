@@ -129,11 +129,11 @@ export default function PostingOptimizerPage() {
             {result && (
               <div className="space-y-4">
                 {/* Optimal Times */}
-                {result.optimal_times && (
+                {(result.optimal_times || result.best_times) && (
                   <div className="p-5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl">
                     <h3 className="font-semibold text-purple-400 mb-4">{`🏆 ${t.bestTimes}`}</h3>
                     <div className="grid grid-cols-3 gap-3">
-                      {result.optimal_times.map((t: any, i: number) => (
+                      {(result.optimal_times || result.best_times).map((t: any, i: number) => (
                         <div key={i} className="p-3 bg-white/5 rounded-xl text-center">
                           <p className="text-2xl font-bold text-white">{t.time}</p>
                           <p className="text-xs text-gray-400">{t.day}</p>
@@ -145,7 +145,7 @@ export default function PostingOptimizerPage() {
                 )}
 
                 {/* By Platform */}
-                {result.by_platform && Object.entries(result.by_platform).map(([platform, data]: [string, any]) => (
+                {(result.by_platform || result.platform_breakdown) && Object.entries((result.by_platform || result.platform_breakdown)).map(([platform, data]: [string, any]) => (
                   <div key={platform} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-semibold capitalize text-purple-400 mb-3">{platform}</h4>
                     <div className="grid grid-cols-2 gap-2">
@@ -186,7 +186,7 @@ export default function PostingOptimizerPage() {
                   </div>
                 )}
 
-                {result.raw && !result.optimal_times && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.optimal_times || result.best_times) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

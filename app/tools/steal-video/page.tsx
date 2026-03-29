@@ -152,9 +152,9 @@ export default function StealVideoPage() {
                 )}
 
                 {/* Shots Tab */}
-                {activeTab === 'shots' && result.shot_list && (
+                {activeTab === 'shots' && (result.shot_list || result.content_ideas) && (
                   <div className="space-y-3">
-                    {result.shot_list.map((shot: any, i: number) => (
+                    {(result.shot_list || result.content_ideas).map((shot: any, i: number) => (
                       <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                         <div className="flex items-center gap-3 mb-2">
                           <span className="w-8 h-8 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-sm font-bold">{shot.scene}</span>

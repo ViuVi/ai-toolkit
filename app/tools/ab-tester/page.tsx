@@ -130,35 +130,35 @@ export default function ABTesterPage() {
                   <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl text-center">
                     <span className="text-3xl">🏆</span>
                     <h3 className="text-xl font-bold text-yellow-400 mt-2">{t.winner}: {result.winner}</h3>
-                    {result.winner_reason && <p className="text-sm text-gray-400 mt-2">{result.winner_reason}</p>}
+                    {(result.winner_reason || result.recommendation) && <p className="text-sm text-gray-400 mt-2">{(result.winner_reason || result.recommendation)}</p>}
                   </div>
                 )}
-                {result.option_a && (
+                {(result.option_a || result.analysis?.version_a) && (
                   <div className={`p-4 rounded-xl border ${result.winner === 'A' ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.02] border-white/5'}`}>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold">🅰️ {t.optionA}</h4>
-                      <span className={`text-2xl font-bold ${getScoreColor(result.option_a.total_score || 0)}`}>{result.option_a.total_score}/100</span>
+                      <span className={`text-2xl font-bold ${getScoreColor((result.option_a || result.analysis?.version_a).total_score || 0)}`}>{(result.option_a || result.analysis?.version_a).total_score}/100</span>
                     </div>
-                    {result.option_a.scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries(result.option_a.scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
-                    {result.option_a.strengths && <p className="text-xs text-green-400">✅ {result.option_a.strengths.join(', ')}</p>}
-                    {result.option_a.weaknesses && <p className="text-xs text-red-400 mt-1">⚠️ {result.option_a.weaknesses.join(', ')}</p>}
+                    {(result.option_a || result.analysis?.version_a).scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries((result.option_a || result.analysis?.version_a).scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
+                    {(result.option_a || result.analysis?.version_a).strengths && <p className="text-xs text-green-400">✅ {(result.option_a || result.analysis?.version_a).strengths.join(', ')}</p>}
+                    {(result.option_a || result.analysis?.version_a).weaknesses && <p className="text-xs text-red-400 mt-1">⚠️ {(result.option_a || result.analysis?.version_a).weaknesses.join(', ')}</p>}
                   </div>
                 )}
-                {result.option_b && (
+                {(result.option_b || result.analysis?.version_b) && (
                   <div className={`p-4 rounded-xl border ${result.winner === 'B' ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.02] border-white/5'}`}>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold">🅱️ {t.optionB}</h4>
-                      <span className={`text-2xl font-bold ${getScoreColor(result.option_b.total_score || 0)}`}>{result.option_b.total_score}/100</span>
+                      <span className={`text-2xl font-bold ${getScoreColor((result.option_b || result.analysis?.version_b).total_score || 0)}`}>{(result.option_b || result.analysis?.version_b).total_score}/100</span>
                     </div>
-                    {result.option_b.scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries(result.option_b.scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
-                    {result.option_b.strengths && <p className="text-xs text-green-400">✅ {result.option_b.strengths.join(', ')}</p>}
-                    {result.option_b.weaknesses && <p className="text-xs text-red-400 mt-1">⚠️ {result.option_b.weaknesses.join(', ')}</p>}
+                    {(result.option_b || result.analysis?.version_b).scores && (<div className="grid grid-cols-3 gap-2 mb-3">{Object.entries((result.option_b || result.analysis?.version_b).scores).map(([key, val]: [string, any]) => (<div key={key} className="p-2 bg-white/5 rounded text-center"><p className="text-xs text-gray-400 capitalize">{key.replace('_', ' ')}</p><p className="font-bold text-sm">{val}/10</p></div>))}</div>)}
+                    {(result.option_b || result.analysis?.version_b).strengths && <p className="text-xs text-green-400">✅ {(result.option_b || result.analysis?.version_b).strengths.join(', ')}</p>}
+                    {(result.option_b || result.analysis?.version_b).weaknesses && <p className="text-xs text-red-400 mt-1">⚠️ {(result.option_b || result.analysis?.version_b).weaknesses.join(', ')}</p>}
                   </div>
                 )}
-                {result.hybrid_suggestion && (
+                {(result.hybrid_suggestion || result.improved_version) && (
                   <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-2">💡 {t.hybridTitle}</h4>
-                    <p className="text-sm text-gray-300">{result.hybrid_suggestion}</p>
+                    <p className="text-sm text-gray-300">{(result.hybrid_suggestion || result.improved_version)}</p>
                   </div>
                 )}
                 {result.raw && !result.winner && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}

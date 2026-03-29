@@ -125,14 +125,14 @@ export default function ContentRepurposerPage() {
                   ))}
                 </div>
 
-                {activeTab === 'tiktok' && result.tiktok_scripts?.map((s: any, i: number) => (
+                {activeTab === 'tiktok' && (result.tiktok_scripts || result.repurposed?.filter((r: any) => r.platform === "tiktok"))?.map((s: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-medium text-purple-400 mb-2">Script {i + 1}</h4>
                     <p className="text-sm text-gray-300 whitespace-pre-wrap">{s.script || s}</p>
                   </div>
                 ))}
 
-                {activeTab === 'twitter' && result.twitter_threads?.map((t: any, i: number) => (
+                {activeTab === 'twitter' && (result.twitter_threads || result.repurposed?.filter((r: any) => r.platform === "twitter"))?.map((t: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-medium text-blue-400 mb-2">Thread {i + 1}</h4>
                     {(t.tweets || [t]).map((tw: any, j: number) => (
@@ -141,17 +141,17 @@ export default function ContentRepurposerPage() {
                   </div>
                 ))}
 
-                {activeTab === 'linkedin' && result.linkedin_posts?.map((p: any, i: number) => (
+                {activeTab === 'linkedin' && (result.linkedin_posts || result.repurposed?.filter((r: any) => r.platform === "linkedin"))?.map((p: any, i: number) => (
                   <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-medium text-blue-600 mb-2">Post {i + 1}</h4>
                     <p className="text-sm text-gray-300 whitespace-pre-wrap">{p.post || p}</p>
                   </div>
                 ))}
 
-                {activeTab === 'instagram' && result.instagram_carousel && (
+                {activeTab === 'instagram' && (result.instagram_carousel || result.repurposed?.filter((r: any) => r.platform === "instagram")) && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-medium text-pink-400 mb-2">Carousel</h4>
-                    {result.instagram_carousel.slides?.map((s: any, i: number) => (
+                    {(result.instagram_carousel || result.repurposed?.filter((r: any) => r.platform === "instagram")).slides?.map((s: any, i: number) => (
                       <div key={i} className="p-2 bg-white/5 rounded mb-2">
                         <p className="text-sm font-medium">Slide {s.slide || i + 1}</p>
                         <p className="text-xs text-gray-400">{s.content || s.text}</p>
@@ -160,14 +160,14 @@ export default function ContentRepurposerPage() {
                   </div>
                 )}
 
-                {activeTab === 'youtube' && result.youtube_short && (
+                {activeTab === 'youtube' && (result.youtube_short || result.repurposed?.filter((r: any) => r.platform === "youtube")) && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-medium text-red-400 mb-2">YouTube Short</h4>
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{result.youtube_short.script || result.youtube_short}</p>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{(result.youtube_short || result.repurposed?.filter((r: any) => r.platform === "youtube")).script || (result.youtube_short || result.repurposed?.filter((r: any) => r.platform === "youtube"))}</p>
                   </div>
                 )}
 
-                {result.raw && !result.tiktok_scripts && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.tiktok_scripts || result.repurposed?.filter((r: any) => r.platform === "tiktok")) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

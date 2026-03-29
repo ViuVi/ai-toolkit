@@ -128,11 +128,11 @@ export default function EngagementBoosterPage() {
             {result && (
               <div className="space-y-4">
                 {/* Questions */}
-                {result.questions && (
+                {(result.questions || result.reply_starters) && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-3">{`❓ ${t.questions} (10)`}</h4>
                     <div className="space-y-2">
-                      {result.questions.map((q: any, i: number) => (
+                      {(result.questions || result.reply_starters).map((q: any, i: number) => (
                         <div key={i} className="p-2 bg-white/5 rounded-lg flex justify-between items-start">
                           <p className="text-sm text-gray-300">{q.question || q}</p>
                           {q.type && <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded shrink-0 ml-2">{q.type}</span>}
@@ -143,11 +143,11 @@ export default function EngagementBoosterPage() {
                 )}
 
                 {/* CTA Lines */}
-                {result.cta_lines && (
+                {(result.cta_lines || result.cta_suggestions) && (
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                     <h4 className="font-semibold text-green-400 mb-3">👉 {t.ctas} (5)</h4>
                     <div className="space-y-2">
-                      {result.cta_lines.map((c: any, i: number) => (
+                      {(result.cta_lines || result.cta_suggestions).map((c: any, i: number) => (
                         <div key={i} className="p-2 bg-white/5 rounded-lg">
                           <p className="text-sm text-gray-300">{c.cta || c}</p>
                           {c.type && <span className="text-xs text-gray-500">{c.type}</span>}
@@ -158,11 +158,11 @@ export default function EngagementBoosterPage() {
                 )}
 
                 {/* Comment Starters */}
-                {result.comment_starters && (
+                {(result.comment_starters || result.engagement_hooks) && (
                   <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
                     <h4 className="font-semibold text-orange-400 mb-3">{`💬 ${t.commentStarters}`}</h4>
                     <div className="space-y-1">
-                      {result.comment_starters.map((c: string, i: number) => (
+                      {(result.comment_starters || result.engagement_hooks).map((c: string, i: number) => (
                         <p key={i} className="text-sm text-gray-300">• {c}</p>
                       ))}
                     </div>
@@ -170,11 +170,11 @@ export default function EngagementBoosterPage() {
                 )}
 
                 {/* Save Triggers */}
-                {result.save_triggers && (
+                {(result.save_triggers || result.optimized_versions) && (
                   <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                     <h4 className="font-semibold text-blue-400 mb-3">{`🔖 ${t.saveTriggers}`}</h4>
                     <div className="space-y-1">
-                      {result.save_triggers.map((s: string, i: number) => (
+                      {(result.save_triggers || result.optimized_versions).map((s: string, i: number) => (
                         <p key={i} className="text-sm text-gray-300">• {s}</p>
                       ))}
                     </div>
@@ -182,18 +182,18 @@ export default function EngagementBoosterPage() {
                 )}
 
                 {/* Share Triggers */}
-                {result.share_triggers && (
+                {(result.share_triggers || result.hashtag_strategy) && (
                   <div className="p-4 bg-pink-500/10 border border-pink-500/20 rounded-xl">
                     <h4 className="font-semibold text-pink-400 mb-3">{`📤 ${t.shareTriggers}`}</h4>
                     <div className="space-y-1">
-                      {result.share_triggers.map((s: string, i: number) => (
+                      {(result.share_triggers || result.hashtag_strategy).map((s: string, i: number) => (
                         <p key={i} className="text-sm text-gray-300">• {s}</p>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {result.raw && !result.questions && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.questions || result.reply_starters) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

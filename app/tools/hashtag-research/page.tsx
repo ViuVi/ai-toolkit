@@ -130,14 +130,14 @@ export default function HashtagResearchPage() {
             )}
             {result && (
               <div className="space-y-4">
-                {result.recommended_set && (
+                {(result.recommended_set || result.hashtag_sets) && (
                   <div className="p-5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl">
                     <div className="flex justify-between items-center mb-3">
                       <h3 className="font-semibold text-purple-400">{`📋 ${t.recommendedSet}`}</h3>
-                      <button onClick={() => copyHashtags(result.recommended_set.copy_paste)} className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded text-sm">{copied ? `✓ ${t.copied}` : t.copyAll}</button>
+                      <button onClick={() => copyHashtags((result.recommended_set || result.hashtag_sets).copy_paste)} className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded text-sm">{copied ? `✓ ${t.copied}` : t.copyAll}</button>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {result.recommended_set.hashtags?.map((tag: string, i: number) => (
+                      {(result.recommended_set || result.hashtag_sets).hashtags?.map((tag: string, i: number) => (
                         <span key={i} className="px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-sm">{tag}</span>
                       ))}
                     </div>
@@ -158,7 +158,7 @@ export default function HashtagResearchPage() {
                     </div>
                   </div>
                 ))}
-                {result.raw && !result.recommended_set && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.recommended_set || result.hashtag_sets) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

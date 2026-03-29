@@ -123,10 +123,10 @@ export default function CompetitorSpyPage() {
             )}
             {result && (
               <div className="space-y-4">
-                {result.what_they_do_right && (
+                {(result.what_they_do_right || result.competitor_analysis?.engagement_tactics) && (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                     <h4 className="font-semibold text-green-400 mb-3">{`✅ ${t.rightThings}`}</h4>
-                    {result.what_they_do_right.map((item: any, i: number) => (
+                    {(result.what_they_do_right || result.competitor_analysis?.engagement_tactics).map((item: any, i: number) => (
                       <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
                         <p className="font-medium text-sm">{item.strength}</p>
                         <p className="text-xs text-gray-400">{item.learn_from}</p>
@@ -134,10 +134,10 @@ export default function CompetitorSpyPage() {
                     ))}
                   </div>
                 )}
-                {result.what_you_can_do_better && (
+                {(result.what_you_can_do_better || result.opportunities) && (
                   <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                     <h4 className="font-semibold text-purple-400 mb-3">{`🚀 ${t.doItBetter}`}</h4>
-                    {result.what_you_can_do_better.map((item: any, i: number) => (
+                    {(result.what_you_can_do_better || result.opportunities).map((item: any, i: number) => (
                       <div key={i} className="mb-2 p-2 bg-white/5 rounded-lg">
                         <p className="font-medium text-sm">{item.weakness}</p>
                         <p className="text-xs text-gray-400">{item.your_opportunity}</p>
@@ -156,7 +156,7 @@ export default function CompetitorSpyPage() {
                     ))}
                   </div>
                 )}
-                {result.raw && !result.what_they_do_right && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
+                {result.raw && !(result.what_they_do_right || result.competitor_analysis?.engagement_tactics) && <pre className="p-4 bg-white/[0.02] rounded-xl whitespace-pre-wrap text-sm">{result.raw}</pre>}
               </div>
             )}
           </div>

@@ -60,7 +60,7 @@ export default function ThreadComposerPage() {
 
   const copyAll = () => {
     if (result?.full_thread) {
-      navigator.clipboard.writeText(result.full_thread)
+      navigator.clipboard.writeText((result.full_thread || result.tweets))
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } else if (result?.tweets) {

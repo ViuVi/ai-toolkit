@@ -193,12 +193,12 @@ export default function CaptionGeneratorPage() {
                     <div key={i} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl group hover:border-purple-500/30 transition">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex gap-2">
-                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">{cap.emotion}</span>
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{cap.cta_type}</span>
+                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">{cap.emotion || cap.style}</span>
+                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{cap.cta_type || cap.best_for}</span>
                         </div>
-                        <button onClick={() => copyCaption(cap.caption, i)} className="px-3 py-1 bg-white/5 text-gray-400 rounded text-sm hover:bg-white/10 opacity-0 group-hover:opacity-100 transition">{copiedIndex === i ? '✓' : t.copy}</button>
+                        <button onClick={() => copyCaption((cap.caption || cap.text), i)} className="px-3 py-1 bg-white/5 text-gray-400 rounded text-sm hover:bg-white/10 opacity-0 group-hover:opacity-100 transition">{copiedIndex === i ? '✓' : t.copy}</button>
                       </div>
-                      <p className="text-gray-200 whitespace-pre-wrap">{cap.caption}</p>
+                      <p className="text-gray-200 whitespace-pre-wrap">{(cap.caption || cap.text)}</p>
                       {cap.hook_line && <p className="mt-2 text-sm text-purple-400">🎯 Hook: {cap.hook_line}</p>}
                     </div>
                   ))}
