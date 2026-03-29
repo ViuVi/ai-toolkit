@@ -178,6 +178,23 @@ export default function ViralScorePage() {
             </button>
             {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">{error}</div>}
 
+            {/* AI Optimization Loading */}
+            {loading && (
+              <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
+                <p className="text-gray-400">{t.optimizing}</p>
+                <div className="flex justify-center gap-1.5 mt-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                </div>
+              </div>
+            )}
+
             {/* AI Optimization Result */}
             {optimized && (
               <div className="space-y-4">

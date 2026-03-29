@@ -110,7 +110,21 @@ export default function EngagementBoosterPage() {
           </div>
           <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
             {!result && !loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="text-5xl mb-4">🚀</div><h3 className="text-xl font-medium mb-2">{t.emptyTitle}</h3><p className="text-gray-500">{t.emptyDesc}</p></div>}
-            {loading && <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center"><div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div></div>}
+            {loading && (
+              <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
+                <p className="text-gray-400">{t.generating}</p>
+                <div className="flex justify-center gap-1.5 mt-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                </div>
+              </div>
+            )}
             {result && (
               <div className="space-y-4">
                 {/* Questions */}

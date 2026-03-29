@@ -229,8 +229,17 @@ export default function ScriptStudioPage() {
 
             {loading && (
               <div className="p-12 bg-white/[0.02] border border-white/5 rounded-2xl text-center">
-                <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 border-4 border-purple-500/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
                 <p className="text-gray-400">{t.generating}</p>
+                <div className="flex justify-center gap-1.5 mt-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                </div>
               </div>
             )}
 
