@@ -119,7 +119,7 @@ export default function VideoIdeasPage() {
                   <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
                   <div className="absolute inset-2 border-4 border-transparent border-t-pink-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
                 </div>
-                <p className="text-gray-400">{{t.generating}}</p>
+                <p className="text-gray-400">{t.generating}</p>
                 <div className="flex justify-center gap-1.5 mt-3">
                   <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
                   <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
