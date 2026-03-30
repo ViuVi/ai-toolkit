@@ -61,7 +61,7 @@ export default function ViralAnalyzerPage() {
     if (score >= 60) return 'text-yellow-400'
     return 'text-red-400'
   }
-  const fillExample = () => { setContent('Stop scrolling. This one habit changed my entire life. I used to wake up at noon and wonder why I was broke. Then I started waking up at 5 AM. Within 3 months I 10x my income.') }
+  const fillExample = () => { setContent('Stop scrolling. This one habit changed my entire life. I used to wake up at noon. Then I started waking up at 5 AM. Within 3 months I 10x my income.') }
 
 
   return (

@@ -64,7 +64,7 @@ export default function StealVideoPage() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-  const fillExample = () => { setVideoDescription('A creator shows 5 morning habits that changed their life. Starts with a shocking stat, reveals each habit with results. Ends with a 7-day challenge.') }
+  const fillExample = () => { setVideoDescription('A creator shows 5 morning habits. Starts with a shocking stat, reveals each habit with results. Ends with a 7-day challenge.') }
 
 
   return (
