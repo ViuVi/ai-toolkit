@@ -51,7 +51,8 @@ export default function TrendRadarPage() {
       })
       const data = await res.json()
 
-    // Normalize: trends -> trending_topics
+    // Normalize safely
+    try {: trends -> trending_topics
     if (data.result?.trends && !data.result.trending_topics) {
       data.result.trending_topics = data.result.trends.map((t: any) => ({
         topic: t.trend, category: t.growth === 'rising' ? 'RISING FAST' : t.growth === 'peak' ? 'PEAK' : 'STEADY',
@@ -61,6 +62,7 @@ export default function TrendRadarPage() {
     if (data.result?.prediction && !data.result.action_plan) {
       data.result.action_plan = { today: data.result.prediction, this_week: data.result.content_formats?.join(', ') || '' }
     }
+      } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

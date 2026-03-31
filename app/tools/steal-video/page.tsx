@@ -54,44 +54,31 @@ export default function StealVideoPage() {
       })
       const data = await res.json()
 
-    // Try to re-parse if raw JSON came through
-    if (data.result?.raw && !data.result.script && !data.result.your_versions) {
-      try {
-        let raw = data.result.raw.trim()
-        raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '')
-        const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
-        if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
-      } catch {}
-    }
-    // Normalize API response
-    if (data.result?.your_versions && !data.result.content_ideas) {
-      data.result.content_ideas = data.result.your_versions
-    }
-    if (data.result?.script_template && !data.result.script) {
-      data.result.script = { full_script: data.result.script_template }
-    }
-    if (data.result?.analysis) {
-      if (data.result.analysis.hook_breakdown && !data.result.hook) {
-        data.result.hook = { text: data.result.analysis.hook_breakdown }
+    // Normalize result safely
+    try {
+      if (data.result?.raw && !data.result.script && !data.result.your_versions) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
       }
-      if (!data.result.shot_list) {
-        const tactics = data.result.analysis.retention_tactics || data.result.analysis.viral_elements || []
-        data.result.shot_list = tactics.map((t: any) => typeof t === 'string' ? { shot: t, description: '', duration: '' } : t)
+      if (data.result && !data.result.raw) {
+        if (data.result.your_versions && !data.result.content_ideas) data.result.content_ideas = data.result.your_versions
+        if (data.result.script_template && !data.result.script) data.result.script = { full_script: data.result.script_template }
+        if (data.result.analysis?.hook_breakdown && !data.result.hook) data.result.hook = { text: data.result.analysis.hook_breakdown }
+        if (data.result.analysis && !data.result.shot_list) {
+          const tactics = data.result.analysis.retention_tactics || data.result.analysis.viral_elements || []
+          data.result.shot_list = tactics.map((t: any) => typeof t === 'string' ? { shot: t, description: '', duration: '' } : t)
+        }
+        if (data.result.your_versions && !data.result.shot_list) {
+          data.result.shot_list = data.result.your_versions.map((v: any) => ({ shot: v.angle || v.hook, description: v.outline || '', duration: '' }))
+        }
+        if (!data.result.caption) data.result.caption = { text: data.result.production_tips?.join('. ') || '' }
+        else if (typeof data.result.caption === 'string') data.result.caption = { text: data.result.caption }
+        if (data.result.hashtags && !Array.isArray(data.result.hashtags)) data.result.hashtags = []
       }
-    }
-    if (data.result?.your_versions && !data.result.shot_list) {
-      data.result.shot_list = data.result.your_versions.map((v: any) => ({
-        shot: v.angle || v.hook, description: v.outline || v.differentiator, duration: ''
-      }))
-    }
-    if (!data.result?.caption) {
-      data.result.caption = { text: data.result?.production_tips?.join('. ') || '' }
-    } else if (typeof data.result.caption === 'string') {
-      data.result.caption = { text: data.result.caption }
-    }
-    if (data.result?.hashtags && !Array.isArray(data.result.hashtags)) {
-      data.result.hashtags = []
-    }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

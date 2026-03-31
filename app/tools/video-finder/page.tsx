@@ -51,13 +51,15 @@ export default function VideoFinderPage() {
       })
       const data = await res.json()
 
-    // Normalize: video_ideas -> trending_videos
+    // Normalize safely
+    try {: video_ideas -> trending_videos
     if (data.result?.video_ideas && !data.result.trending_videos) {
       data.result.trending_videos = data.result.video_ideas
     }
     if (data.result?.content_gaps && !data.result.evergreen_ideas) {
       data.result.evergreen_ideas = data.result.content_gaps.map((g: string) => ({ idea: g }))
     }
+      } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

@@ -53,7 +53,8 @@ export default function ThreadComposerPage() {
       })
       const data = await res.json()
 
-    // Normalize: thread.tweets -> tweets (with text field)
+    // Normalize safely
+    try {: thread.tweets -> tweets (with text field)
     if (data.result?.thread?.tweets && !data.result.tweets) {
       data.result.tweets = data.result.thread.tweets.map((t: any) => ({
         ...t, text: t.content || t.text, type: t.purpose
@@ -68,6 +69,7 @@ export default function ThreadComposerPage() {
     if (data.result?.engagement_tips && !data.result.self_replies) {
       data.result.self_replies = data.result.engagement_tips
     }
+      } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

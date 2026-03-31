@@ -57,7 +57,8 @@ export default function ScriptStudioPage() {
       const data = await res.json()
       
 
-    // Normalize API response
+    // Normalize safely
+    try { API response
     if (data.result && !data.result.script && data.result.full_script) {
       data.result = { script: { full_script: data.result.full_script, hook: data.result.script?.hook || data.result.hook, ...data.result }, ...data.result }
     }
@@ -70,6 +71,7 @@ export default function ScriptStudioPage() {
     if (data.result && !data.result.title_options && data.result.tips) {
       data.result.title_options = data.result.tips
     }
+      } catch {}
       if (res.ok && data.result) {
         setResult(data.result)
       } else {

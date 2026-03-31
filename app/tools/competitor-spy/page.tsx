@@ -52,7 +52,8 @@ export default function CompetitorSpyPage() {
       })
       const data = await res.json()
 
-    // Normalize API response
+    // Normalize safely
+    try { API response
     if (data.result?.competitor_analysis) {
       const ca = data.result.competitor_analysis
       if (!data.result.what_they_do_right) {
@@ -77,6 +78,7 @@ export default function CompetitorSpyPage() {
         priority: i + 1, action: typeof idea === 'string' ? idea : (idea.idea + (idea.hook ? ' — Hook: ' + idea.hook : ''))
       }))
     }
+      } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }
