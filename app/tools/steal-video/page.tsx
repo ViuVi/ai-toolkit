@@ -54,6 +54,15 @@ export default function StealVideoPage() {
       })
       const data = await res.json()
 
+    // Try to re-parse if raw JSON came through
+    if (data.result?.raw && !data.result.script && !data.result.your_versions) {
+      try {
+        let raw = data.result.raw.trim()
+        raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '')
+        const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+        if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+      } catch {}
+    }
     // Normalize API response
     if (data.result?.your_versions && !data.result.content_ideas) {
       data.result.content_ideas = data.result.your_versions

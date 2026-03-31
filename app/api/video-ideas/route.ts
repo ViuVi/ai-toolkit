@@ -95,14 +95,19 @@ Respond with ONLY JSON.`
     const content = data.choices?.[0]?.message?.content
     if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    let result
+        let result
     try {
-      let clean = content.trim()
-      if (clean.startsWith('```json')) clean = clean.slice(7)
-      else if (clean.startsWith('```')) clean = clean.slice(3)
-      if (clean.endsWith('```')) clean = clean.slice(0, -3)
-      result = JSON.parse(clean.trim())
-    } catch { result = { raw: content } }
+      let cleanContent = content.trim()
+      cleanContent = cleanContent.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '')
+      const firstBrace = cleanContent.indexOf('{')
+      const lastBrace = cleanContent.lastIndexOf('}')
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanContent = cleanContent.substring(firstBrace, lastBrace + 1)
+      }
+      result = JSON.parse(cleanContent)
+    } catch {
+      result = { raw: content }
+    } }
 
     await saveContent(userId, 'video-ideas', niche, result)
 

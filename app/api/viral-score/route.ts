@@ -71,14 +71,19 @@ Make it scroll-stopping. Respond with ONLY JSON.`
     const aiContent = data.choices?.[0]?.message?.content
     if (!aiContent) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
 
-    let result
+        let result
     try {
-      let clean = aiContent.trim()
-      if (clean.startsWith('```json')) clean = clean.slice(7)
-      else if (clean.startsWith('```')) clean = clean.slice(3)
-      if (clean.endsWith('```')) clean = clean.slice(0, -3)
-      result = JSON.parse(clean.trim())
-    } catch { result = { raw: aiContent } }
+      let cleanContent = aiContent.trim()
+      cleanContent = cleanContent.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '')
+      const firstBrace = cleanContent.indexOf('{')
+      const lastBrace = cleanContent.lastIndexOf('}')
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanContent = cleanContent.substring(firstBrace, lastBrace + 1)
+      }
+      result = JSON.parse(cleanContent)
+    } catch {
+      result = { raw: aiContent }
+    } }
 
     await saveContent(userId, 'viral-score', content.substring(0, 100), result)
 

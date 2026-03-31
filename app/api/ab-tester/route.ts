@@ -103,15 +103,21 @@ ${brandContext}`
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
     }
 
-    let result
+        let result
     try {
       let cleanContent = content.trim()
-      if (cleanContent.startsWith('```json')) cleanContent = cleanContent.slice(7)
-      else if (cleanContent.startsWith('```')) cleanContent = cleanContent.slice(3)
-      if (cleanContent.endsWith('```')) cleanContent = cleanContent.slice(0, -3)
-      result = JSON.parse(cleanContent.trim())
+      // Remove markdown code fences (various formats)
+      cleanContent = cleanContent.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '')
+      // Find first { and last } to extract JSON
+      const firstBrace = cleanContent.indexOf('{')
+      const lastBrace = cleanContent.lastIndexOf('}')
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanContent = cleanContent.substring(firstBrace, lastBrace + 1)
+      }
+      result = JSON.parse(cleanContent)
     } catch {
       result = { raw: content }
+    }
     }
 
     
