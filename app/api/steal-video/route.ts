@@ -49,9 +49,13 @@ You MUST return ONLY valid JSON:
       "differentiator": "what makes it unique"
     }
   ],
-  "script_template": "ready-to-use script template",
+  "script_template": "FULL detailed script with hook, intro, main body (at least 5 sentences), CTA. Write it as a complete ready-to-read script, not a summary.",
+  "shot_list": [
+    { "shot": "shot description", "description": "what to film/show", "duration": "3s" }
+  ],
+  "caption": "ready-to-post caption with emojis and CTA",
   "production_tips": ["tip 1", "tip 2"],
-  "hashtags": ["#tag1", "#tag2"]
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
 }`
 
     const userPrompt = `Analyze and create unique versions of this viral content:

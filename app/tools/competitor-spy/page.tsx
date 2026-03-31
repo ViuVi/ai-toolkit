@@ -52,12 +52,30 @@ export default function CompetitorSpyPage() {
       })
       const data = await res.json()
 
-    // Normalize API response  
-    if (data.result?.competitor_analysis?.engagement_tactics && !data.result.what_they_do_right) {
-      data.result.what_they_do_right = data.result.competitor_analysis.engagement_tactics
+    // Normalize API response
+    if (data.result?.competitor_analysis) {
+      const ca = data.result.competitor_analysis
+      if (!data.result.what_they_do_right) {
+        const tactics = ca.engagement_tactics || ca.top_performing_content || []
+        data.result.what_they_do_right = tactics.map((t: any) => typeof t === 'string' ? { strength: t, learn_from: '' } : t)
+      }
+      if (!data.result.what_you_can_do_better) {
+        const weaknesses = ca.weaknesses || []
+        const opps = data.result.opportunities || []
+        data.result.what_you_can_do_better = opps.length > 0
+          ? opps.map((o: any) => ({ weakness: o.gap, your_opportunity: o.your_angle + (o.priority ? ' (' + o.priority + ')' : '') }))
+          : weaknesses.map((w: any) => typeof w === 'string' ? { weakness: w, your_opportunity: '' } : w)
+      }
     }
-    if (data.result?.opportunities && !data.result.what_you_can_do_better) {
-      data.result.what_you_can_do_better = data.result.opportunities.map((o: any) => o.gap + ' → ' + o.your_angle)
+    if (data.result?.action_plan && Array.isArray(data.result.action_plan)) {
+      data.result.action_plan = data.result.action_plan.map((item: any, i: number) => 
+        typeof item === 'string' ? { priority: i + 1, action: item } : item
+      )
+    }
+    if (data.result?.content_ideas && !data.result.action_plan) {
+      data.result.action_plan = data.result.content_ideas.map((idea: any, i: number) => ({
+        priority: i + 1, action: typeof idea === 'string' ? idea : (idea.idea + (idea.hook ? ' — Hook: ' + idea.hook : ''))
+      }))
     }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
