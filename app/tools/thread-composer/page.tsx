@@ -52,6 +52,22 @@ export default function ThreadComposerPage() {
         body: JSON.stringify({ topic, tweetCount, style, language })
       })
       const data = await res.json()
+
+    // Normalize: thread.tweets -> tweets (with text field)
+    if (data.result?.thread?.tweets && !data.result.tweets) {
+      data.result.tweets = data.result.thread.tweets.map((t: any) => ({
+        ...t, text: t.content || t.text, type: t.purpose
+      }))
+    }
+    if (data.result?.thread?.hook_tweet && !data.result.hook_alternatives) {
+      data.result.hook_alternatives = [data.result.thread.hook_tweet]
+    }
+    if (data.result?.best_posting_time && !data.result.posting_strategy) {
+      data.result.posting_strategy = data.result.best_posting_time
+    }
+    if (data.result?.engagement_tips && !data.result.self_replies) {
+      data.result.self_replies = data.result.engagement_tips
+    }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

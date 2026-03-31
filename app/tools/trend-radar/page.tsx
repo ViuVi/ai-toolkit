@@ -50,6 +50,17 @@ export default function TrendRadarPage() {
         body: JSON.stringify({ niche, platform, language })
       })
       const data = await res.json()
+
+    // Normalize: trends -> trending_topics
+    if (data.result?.trends && !data.result.trending_topics) {
+      data.result.trending_topics = data.result.trends.map((t: any) => ({
+        topic: t.trend, category: t.growth === 'rising' ? 'RISING FAST' : t.growth === 'peak' ? 'PEAK' : 'STEADY',
+        why_trending: t.how_to_use, hooks: [t.example_content].filter(Boolean), potential: t.potential
+      }))
+    }
+    if (data.result?.prediction && !data.result.action_plan) {
+      data.result.action_plan = { today: data.result.prediction, this_week: data.result.content_formats?.join(', ') || '' }
+    }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

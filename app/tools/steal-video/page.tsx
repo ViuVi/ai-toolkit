@@ -53,6 +53,23 @@ export default function StealVideoPage() {
         body: JSON.stringify({ videoDescription, creatorNiche, platform, language })
       })
       const data = await res.json()
+
+    // Normalize API response
+    if (data.result?.your_versions && !data.result.content_ideas) {
+      data.result.content_ideas = data.result.your_versions
+    }
+    if (data.result?.script_template && !data.result.script) {
+      data.result.script = { full_script: data.result.script_template }
+    }
+    if (data.result?.analysis?.hook_breakdown && !data.result.hook) {
+      data.result.hook = { text: data.result.analysis.hook_breakdown }
+    }
+    if (data.result?.analysis?.retention_tactics && !data.result.shot_list) {
+      data.result.shot_list = data.result.analysis.retention_tactics
+    }
+    if (data.result?.hashtags) {
+      data.result.caption = data.result.hashtags.join(' ')
+    }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

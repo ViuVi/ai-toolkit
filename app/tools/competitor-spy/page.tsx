@@ -51,6 +51,14 @@ export default function CompetitorSpyPage() {
         body: JSON.stringify({ competitorInfo, yourNiche, platform, language })
       })
       const data = await res.json()
+
+    // Normalize API response  
+    if (data.result?.competitor_analysis?.engagement_tactics && !data.result.what_they_do_right) {
+      data.result.what_they_do_right = data.result.competitor_analysis.engagement_tactics
+    }
+    if (data.result?.opportunities && !data.result.what_you_can_do_better) {
+      data.result.what_you_can_do_better = data.result.opportunities.map((o: any) => o.gap + ' → ' + o.your_angle)
+    }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

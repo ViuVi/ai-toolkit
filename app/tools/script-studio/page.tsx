@@ -56,6 +56,20 @@ export default function ScriptStudioPage() {
       })
       const data = await res.json()
       
+
+    // Normalize API response
+    if (data.result && !data.result.script && data.result.full_script) {
+      data.result = { script: { full_script: data.result.full_script, hook: data.result.script?.hook || data.result.hook, ...data.result }, ...data.result }
+    }
+    if (data.result?.script && !data.result.script.full_script && data.result.full_script) {
+      data.result.script.full_script = data.result.full_script
+    }
+    if (data.result && !data.result.scene_breakdown && data.result.script?.main_points) {
+      data.result.scene_breakdown = data.result.script.main_points.map((p: any, i: number) => ({ scene: i+1, section: p.point, text: p.script, duration: '', visual: p.visual_cue }))
+    }
+    if (data.result && !data.result.title_options && data.result.tips) {
+      data.result.title_options = data.result.tips
+    }
       if (res.ok && data.result) {
         setResult(data.result)
       } else {
