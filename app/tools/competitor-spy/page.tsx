@@ -53,7 +53,7 @@ export default function CompetitorSpyPage() {
       const data = await res.json()
 
     // Normalize safely
-    try { API response
+    try {
     if (data.result?.competitor_analysis) {
       const ca = data.result.competitor_analysis
       if (!data.result.what_they_do_right) {

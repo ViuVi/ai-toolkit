@@ -54,7 +54,7 @@ export default function ThreadComposerPage() {
       const data = await res.json()
 
     // Normalize safely
-    try {: thread.tweets -> tweets (with text field)
+    try {
     if (data.result?.thread?.tweets && !data.result.tweets) {
       data.result.tweets = data.result.thread.tweets.map((t: any) => ({
         ...t, text: t.content || t.text, type: t.purpose

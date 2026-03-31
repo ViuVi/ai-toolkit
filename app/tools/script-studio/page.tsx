@@ -58,7 +58,7 @@ export default function ScriptStudioPage() {
       
 
     // Normalize safely
-    try { API response
+    try {
     if (data.result && !data.result.script && data.result.full_script) {
       data.result = { script: { full_script: data.result.full_script, hook: data.result.script?.hook || data.result.hook, ...data.result }, ...data.result }
     }

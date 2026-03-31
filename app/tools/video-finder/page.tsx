@@ -52,7 +52,7 @@ export default function VideoFinderPage() {
       const data = await res.json()
 
     // Normalize safely
-    try {: video_ideas -> trending_videos
+    try {
     if (data.result?.video_ideas && !data.result.trending_videos) {
       data.result.trending_videos = data.result.video_ideas
     }

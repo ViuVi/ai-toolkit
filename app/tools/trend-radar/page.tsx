@@ -52,7 +52,7 @@ export default function TrendRadarPage() {
       const data = await res.json()
 
     // Normalize safely
-    try {: trends -> trending_topics
+    try {
     if (data.result?.trends && !data.result.trending_topics) {
       data.result.trending_topics = data.result.trends.map((t: any) => ({
         topic: t.trend, category: t.growth === 'rising' ? 'RISING FAST' : t.growth === 'peak' ? 'PEAK' : 'STEADY',
