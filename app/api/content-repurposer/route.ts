@@ -93,7 +93,7 @@ ${brandContext}`
       result = JSON.parse(cleanContent)
     } catch {
       result = { raw: content2 }
-    } }
+    }
 
     
     // Auto-save to content library

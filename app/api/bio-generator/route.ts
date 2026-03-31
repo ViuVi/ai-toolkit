@@ -103,7 +103,7 @@ Respond with ONLY JSON.`
       result = JSON.parse(cleanContent)
     } catch {
       result = { raw: content }
-    } }
+    }
 
     await saveContent(userId, 'bio-generator', `${niche} - ${platform}`, result)
 

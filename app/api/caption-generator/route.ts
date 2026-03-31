@@ -103,7 +103,6 @@ ${brandContext}`
     } catch {
       result = { raw: content, captions: [] }
     }
-    }
 
     
     // Auto-save to content library

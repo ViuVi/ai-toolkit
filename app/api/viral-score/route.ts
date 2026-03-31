@@ -83,7 +83,7 @@ Make it scroll-stopping. Respond with ONLY JSON.`
       result = JSON.parse(cleanContent)
     } catch {
       result = { raw: aiContent }
-    } }
+    }
 
     await saveContent(userId, 'viral-score', content.substring(0, 100), result)
 

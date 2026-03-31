@@ -111,7 +111,6 @@ ${brandContext}`
     } catch {
       result = { raw: content }
     }
-    }
 
     
     // Auto-save to content library
