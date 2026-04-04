@@ -25,20 +25,113 @@ const texts: Record<string, Record<string, string>> = {
 
 function getPreviewText(result: any): string {
   if (!result) return ''
-  if (result.raw) return result.raw.substring(0, 150)
+  
+  // Try to extract meaningful text from raw JSON strings
+  if (result.raw) {
+    // Try to parse raw if it looks like JSON
+    try {
+      const parsed = typeof result.raw === 'string' && result.raw.trim().startsWith('{') 
+        ? JSON.parse(result.raw.substring(result.raw.indexOf('{'), result.raw.lastIndexOf('}') + 1))
+        : null
+      if (parsed) return getPreviewText(parsed)
+    } catch {}
+    // Strip markdown fences
+    let raw = result.raw.replace(/```json/g, '').replace(/```/g, '').trim()
+    if (raw.startsWith('{')) {
+      try { return getPreviewText(JSON.parse(raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1))) } catch {}
+    }
+    return raw.substring(0, 150)
+  }
+
+  // Hook Generator
   if (result.hooks?.[0]?.text) return result.hooks[0].text
-  if (result.captions?.[0]?.text) return result.captions[0].text
-  if (result.script?.full_script) return result.script.full_script.substring(0, 150)
   if (result.best_hook?.text) return result.best_hook.text
+
+  // Caption Generator
+  if (result.captions?.[0]?.text) return result.captions[0].text
+  if (result.captions?.[0]?.caption) return result.captions[0].caption
   if (result.best_caption?.text) return result.best_caption.text
-  if (result.winner) return `Winner: ${result.winner}`
-  if (result.trends?.[0]?.trend) return result.trends[0].trend
-  if (result.carousel?.title) return result.carousel.title
+
+  // Script Studio
+  if (result.script?.full_script) return result.script.full_script.substring(0, 150)
+  if (result.full_script) return result.full_script.substring(0, 150)
+
+  // A/B Tester
+  if (result.winner) return (result.recommendation || result.winner_reason || 'Winner: ' + result.winner).substring(0, 150)
+
+  // Viral Analyzer
+  if (result.final_score) return (result.verdict || 'Viral Score: ' + result.final_score + '/100').substring(0, 150)
+  if (result.viral_score) return 'Viral Score: ' + result.viral_score + '/100'
+
+  // Trend Radar
+  if (result.trends?.[0]?.trend) return result.trends[0].trend + (result.trends[0].how_to_use ? ' — ' + result.trends[0].how_to_use : '')
+  if (result.trending_topics?.[0]?.topic) return result.trending_topics[0].topic
+
+  // Competitor Spy
+  if (result.competitor_analysis?.content_strategy) return result.competitor_analysis.content_strategy.substring(0, 150)
+  if (result.differentiation_strategy) return result.differentiation_strategy.substring(0, 150)
+  if (result.action_plan?.[0]) {
+    const item = result.action_plan[0]
+    return typeof item === 'string' ? item : (item.action || JSON.stringify(item)).substring(0, 150)
+  }
+
+  // Steal Video
+  if (result.script_template) return result.script_template.substring(0, 150)
+  if (result.analysis?.hook_breakdown) return result.analysis.hook_breakdown.substring(0, 150)
+  if (result.your_versions?.[0]?.hook) return result.your_versions[0].hook
+
+  // Thread Composer
+  if (result.thread?.tweets?.[0]?.content) return result.thread.tweets[0].content
   if (result.tweets?.[0]?.text) return result.tweets[0].text
+  if (result.tweets?.[0]?.content) return result.tweets[0].content
+
+  // Carousel Planner
+  if (result.carousel?.title) return result.carousel.title
+  if (result.slides?.[0]?.headline) return result.slides[0].headline
+
+  // Content Repurposer
   if (result.repurposed?.[0]?.content) return result.repurposed[0].content.substring(0, 150)
-  if (result.final_score) return `Viral Score: ${result.final_score}/100`
-  const str = JSON.stringify(result).substring(0, 150)
-  return str.length > 140 ? str.substring(0, 140) + '...' : str
+
+  // Content Planner
+  if (result.content_pillars) return result.content_pillars.join(', ')
+  if (result.strategy?.posting_frequency) return result.strategy.posting_frequency
+
+  // Engagement Booster
+  if (result.optimized_versions?.[0]?.version) return result.optimized_versions[0].version.substring(0, 150)
+  if (result.engagement_hooks?.[0]) return result.engagement_hooks[0]
+
+  // Posting Optimizer
+  if (result.best_times?.[0]) return typeof result.best_times[0] === 'string' ? result.best_times[0] : JSON.stringify(result.best_times[0]).substring(0, 150)
+  if (result.optimal_times?.[0]) return typeof result.optimal_times[0] === 'string' ? result.optimal_times[0] : ''
+
+  // Hashtag Research
+  if (result.recommended_set?.[0]) return typeof result.recommended_set[0] === 'string' ? result.recommended_set.join(' ') : ''
+  if (result.hashtag_sets?.[0]) return typeof result.hashtag_sets[0] === 'string' ? result.hashtag_sets.join(' ') : ''
+
+  // Bio Generator
+  if (result.bios?.[0]?.text) return result.bios[0].text
+  if (result.best_bio?.text) return result.best_bio.text
+
+  // Video Ideas
+  if (result.ideas?.[0]?.title) return result.ideas[0].title + (result.ideas[0].hook ? ' — ' + result.ideas[0].hook : '')
+
+  // Video Finder
+  if (result.video_ideas?.[0]?.title) return result.video_ideas[0].title
+  if (result.trending_videos?.[0]?.title) return result.trending_videos[0].title
+
+  // Viral Score
+  if (result.optimized_content) return result.optimized_content.substring(0, 150)
+  if (result.predicted_score_after) return 'Predicted Score: ' + result.predicted_score_after + '/100'
+
+  // Generic: try to find any string value
+  for (const key of Object.keys(result)) {
+    const val = result[key]
+    if (typeof val === 'string' && val.length > 10 && !key.includes('_id') && key !== 'dna_code') {
+      return val.substring(0, 150)
+    }
+  }
+
+  return ''
 }
 
 export default function LibraryPage() {
