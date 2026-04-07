@@ -583,7 +583,7 @@ Essayez nos 16 outils sur le [Dashboard](/dashboard)!`
   'instagram-reels-vs-tiktok': {
     image: '⚔️',
     category: 'Trends',
-    date: '2025-12-28',
+    date: '2026-02-18',
     readTime: 7,
     title: {
       en: 'Instagram Reels vs TikTok: Where Should You Post?',
@@ -723,7 +723,7 @@ Utilisez notre [Content Repurposer](/dashboard)!`
   'how-sarah-grew-100k': {
     image: '📈',
     category: 'Case Studies',
-    date: '2025-12-20',
+    date: '2026-02-10',
     readTime: 10,
     title: {
       en: 'How Sarah Grew from 1K to 100K in 3 Months',
@@ -885,7 +885,7 @@ Commencez gratuitement: [S'inscrire](/register)`
   'best-posting-times-2026': {
     image: '⏰',
     category: 'Tips & Tricks',
-    date: '2025-12-15',
+    date: '2026-01-28',
     readTime: 4,
     title: {
       en: 'Best Posting Times for Every Platform in 2026',

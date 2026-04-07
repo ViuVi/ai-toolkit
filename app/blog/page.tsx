@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/LanguageContext'
 import PageHeader from '@/components/PageHeader'
@@ -110,7 +111,7 @@ const posts = [
     slug: 'instagram-reels-vs-tiktok',
     image: '⚔️',
     category: 'Trends',
-    date: '2025-12-28',
+    date: '2026-02-18',
     readTime: 7,
     title: {
       en: 'Instagram Reels vs TikTok: Where Should You Post?',
@@ -131,7 +132,7 @@ const posts = [
     slug: 'how-sarah-grew-100k',
     image: '📈',
     category: 'Case Studies',
-    date: '2025-12-20',
+    date: '2026-02-10',
     readTime: 10,
     title: {
       en: 'How Sarah Grew from 1K to 100K in 3 Months',
@@ -152,7 +153,7 @@ const posts = [
     slug: 'best-posting-times-2026',
     image: '⏰',
     category: 'Tips & Tricks',
-    date: '2025-12-15',
+    date: '2026-01-28',
     readTime: 4,
     title: {
       en: 'Best Posting Times for Every Platform in 2026',
@@ -174,6 +175,19 @@ const posts = [
 export default function BlogPage() {
   const { language } = useLanguage()
   const t = content[language] || content.en
+  const [activeCategory, setActiveCategory] = useState(0)
+
+  const categoryMap: Record<string, string> = {
+    'Tips & Tricks': 'Tips & Tricks', 'Trends': 'Trends', 'Case Studies': 'Case Studies', 'Product Updates': 'Product Updates',
+    'İpuçları': 'Tips & Tricks', 'Trendler': 'Trends', 'Başarı Hikayeleri': 'Case Studies', 'Ürün Güncellemeleri': 'Product Updates',
+    'Советы': 'Tips & Tricks', 'Тренды': 'Trends', 'Кейсы': 'Case Studies', 'Обновления': 'Product Updates',
+    'Tipps': 'Tips & Tricks', 'Fallstudien': 'Case Studies', 'Updates': 'Product Updates',
+    'Conseils': 'Tips & Tricks', 'Tendances': 'Trends', 'Études de cas': 'Case Studies', 'Mises à jour': 'Product Updates'
+  }
+
+  const filteredPosts = activeCategory === 0
+    ? posts
+    : posts.filter(p => p.category === (categoryMap[t.categories[activeCategory]] || t.categories[activeCategory]))
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
@@ -191,8 +205,9 @@ export default function BlogPage() {
             {t.categories.map((cat: string, i: number) => (
               <button
                 key={i}
-                className={`px-4 py-2 rounded-full text-sm transition ${
-                  i === 0 
+                onClick={() => setActiveCategory(i)}
+                className={`px-4 py-2 rounded-full text-sm transition cursor-pointer ${
+                  activeCategory === i 
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                 }`}
@@ -204,7 +219,7 @@ export default function BlogPage() {
           
           {/* Blog Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post, i) => (
+            {filteredPosts.map((post, i) => (
               <Link 
                 key={i}
                 href={`/blog/${post.slug}`}
