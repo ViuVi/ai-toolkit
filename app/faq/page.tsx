@@ -13,9 +13,9 @@ const content: Record<string, any> = {
         name: 'Getting Started',
         icon: '🚀',
         questions: [
-          { q: 'What is MediaToolkit?', a: 'MediaToolkit is an AI-powered platform with 16+ tools designed to help content creators generate viral hooks, scripts, captions, and more. It uses advanced AI to help you create engaging content faster.' },
+          { q: 'What is MediaToolkit?', a: 'MediaToolkit is an AI-powered platform with 20+ tools designed to help content creators generate viral hooks, scripts, captions, and more. It uses advanced AI to help you create engaging content faster.' },
           { q: 'How do I create an account?', a: 'Simply click "Get Started" on our homepage and sign up with your email or Google account. You\'ll receive 100 free credits immediately to start creating content.' },
-          { q: 'Is MediaToolkit free to use?', a: 'Yes! We offer a free plan with 100 credits per month and access to all 16 tools. You can also watch ads to earn additional credits. Paid plans offer more credits and additional features.' },
+          { q: 'Is MediaToolkit free to use?', a: 'Yes! We offer a free plan with 100 credits per month and access to all 20 tools. You can also watch ads to earn additional credits. Paid plans offer more credits and additional features.' },
           { q: 'What platforms does MediaToolkit support?', a: 'MediaToolkit works in any modern web browser. The content you create can be used on any platform including TikTok, Instagram, YouTube, Twitter/X, LinkedIn, and more.' }
         ]
       },
@@ -24,7 +24,7 @@ const content: Record<string, any> = {
         icon: '💳',
         questions: [
           { q: 'How do credits work?', a: 'Each tool uses a certain number of credits when you generate content. Free users get 100 credits/month, Pro users get 1000 credits/month, and Agency users get unlimited credits.' },
-          { q: 'How can I earn more credits?', a: 'You can earn additional credits by: 1) Watching short ads (+10 credits), 2) Referring friends (+100 credits for both), 3) Upgrading to a paid plan.' },
+          { q: 'How can I earn more credits?', a: 'You can earn additional credits by: 1) Watching short ads (+10 credits), 2) Referring friends (+50 credits each, with milestone bonuses up to +1000), 3) Upgrading to a paid plan.' },
           { q: 'Do unused credits roll over?', a: 'No, unused credits do not roll over to the next month. Your credit balance resets at the beginning of each billing cycle.' },
           { q: 'What payment methods do you accept?', a: 'We accept all major credit cards, debit cards, and PayPal through our secure payment processor Lemon Squeezy.' },
           { q: 'Can I get a refund?', a: 'Yes, we offer refunds within 7 days of purchase if you\'re not satisfied. Contact our support team to request a refund.' }
@@ -34,7 +34,7 @@ const content: Record<string, any> = {
         name: 'Tools & Features',
         icon: '🛠️',
         questions: [
-          { q: 'What tools are included?', a: 'MediaToolkit includes 16 AI tools: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, and Content Repurposer.' },
+          { q: 'What tools are included?', a: 'MediaToolkit includes 20 AI tools: Hook Generator, Caption Generator, Script Studio, Steal This Video, Trend Radar, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, Content Repurposer, Viral Score Predictor, Bio Generator, Video Idea Generator, QR Code Generator (Free), and Link in Bio Builder (Free).' },
           { q: 'How accurate is the AI?', a: 'Our AI is trained on millions of viral content pieces and continuously improves. While results are highly optimized for engagement, we recommend reviewing and personalizing the output to match your brand voice.' },
           { q: 'Can I use the generated content commercially?', a: 'Yes! All content generated through MediaToolkit can be used freely for personal and commercial purposes without attribution.' },
           { q: 'What languages are supported?', a: 'Our interface supports 5 languages (English, Turkish, Russian, German, French). The AI can generate content in many more languages based on your input.' }
@@ -44,7 +44,7 @@ const content: Record<string, any> = {
         name: 'Account & Security',
         icon: '🔒',
         questions: [
-          { q: 'How do I delete my account?', a: 'You can delete your account from Dashboard → Settings → Delete Account. This will permanently remove all your data. Contact support if you need help.' },
+          { q: 'How do I delete my account?', a: 'To delete your account, please contact our support team through the Contact Us page. We will process your request and permanently remove all your data.' },
           { q: 'Is my data secure?', a: 'Yes, we use industry-standard encryption (SSL/TLS) for all data transfers. We never sell your personal information to third parties.' },
           { q: 'Can I change my email address?', a: 'Currently, email changes require contacting our support team. We\'re working on adding this feature to the dashboard.' },
           { q: 'What happens if I forget my password?', a: 'Click "Forgot Password" on the login page and enter your email. You\'ll receive a link to reset your password.' }
@@ -65,9 +65,9 @@ const content: Record<string, any> = {
         name: 'Başlarken',
         icon: '🚀',
         questions: [
-          { q: 'MediaToolkit nedir?', a: 'MediaToolkit, içerik üreticilerinin viral hook, script, caption ve daha fazlasını oluşturmasına yardımcı olmak için tasarlanmış 16+ araç içeren AI destekli bir platformdur.' },
+          { q: 'MediaToolkit nedir?', a: 'MediaToolkit, içerik üreticilerinin viral hook, script, caption ve daha fazlasını oluşturmasına yardımcı olmak için tasarlanmış 20+ araç içeren AI destekli bir platformdur.' },
           { q: 'Nasıl hesap oluştururum?', a: 'Ana sayfamızda "Başla" butonuna tıklayın ve e-posta veya Google hesabınızla kaydolun. İçerik oluşturmaya başlamak için hemen 100 ücretsiz kredi alacaksınız.' },
-          { q: 'MediaToolkit ücretsiz mi?', a: 'Evet! Ayda 100 kredi ve tüm 16 araca erişim içeren ücretsiz bir plan sunuyoruz. Ayrıca ek kredi kazanmak için reklam izleyebilirsiniz.' },
+          { q: 'MediaToolkit ücretsiz mi?', a: 'Evet! Ayda 100 kredi ve tüm 20 araca erişim içeren ücretsiz bir plan sunuyoruz. Ayrıca ek kredi kazanmak için reklam izleyebilirsiniz.' },
           { q: 'MediaToolkit hangi platformları destekliyor?', a: 'MediaToolkit herhangi bir modern web tarayıcısında çalışır. Oluşturduğunuz içerik TikTok, Instagram, YouTube, Twitter/X, LinkedIn ve daha fazlası dahil herhangi bir platformda kullanılabilir.' }
         ]
       },
@@ -76,7 +76,7 @@ const content: Record<string, any> = {
         icon: '💳',
         questions: [
           { q: 'Krediler nasıl çalışır?', a: 'Her araç, içerik oluşturduğunuzda belirli sayıda kredi kullanır. Ücretsiz kullanıcılar ayda 100, Pro kullanıcılar ayda 1000, Agency kullanıcılar sınırsız kredi alır.' },
-          { q: 'Nasıl daha fazla kredi kazanabilirim?', a: 'Ek kredi kazanabilirsiniz: 1) Kısa reklamlar izleyerek (+10 kredi), 2) Arkadaşlarınızı davet ederek (her ikisi için +100 kredi), 3) Ücretli plana yükselterek.' },
+          { q: 'Nasıl daha fazla kredi kazanabilirim?', a: 'Ek kredi kazanabilirsiniz: 1) Kısa reklamlar izleyerek (+10 kredi), 2) Arkadaşlarınızı davet ederek (her birine +50 kredi, milestone bonusları +1000\'e kadar), 3) Ücretli plana yükselterek.' },
           { q: 'Kullanılmayan krediler bir sonraki aya aktarılır mı?', a: 'Hayır, kullanılmayan krediler bir sonraki aya aktarılmaz. Kredi bakiyeniz her fatura döneminin başında sıfırlanır.' },
           { q: 'Hangi ödeme yöntemlerini kabul ediyorsunuz?', a: 'Güvenli ödeme işlemcimiz Lemon Squeezy aracılığıyla tüm büyük kredi kartlarını, banka kartlarını ve PayPal\'ı kabul ediyoruz.' },
           { q: 'İade alabilir miyim?', a: 'Evet, memnun kalmazsanız satın alma tarihinden itibaren 7 gün içinde iade sunuyoruz. İade talep etmek için destek ekibimizle iletişime geçin.' }
@@ -86,7 +86,7 @@ const content: Record<string, any> = {
         name: 'Araçlar ve Özellikler',
         icon: '🛠️',
         questions: [
-          { q: 'Hangi araçlar dahil?', a: 'MediaToolkit 16 AI aracı içerir: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar, Steal This Video, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer ve Content Repurposer.' },
+          { q: 'Hangi araçlar dahil?', a: 'MediaToolkit 20 AI aracı içerir: Hook Generator, Caption Generator, Script Studio, Steal This Video, Trend Radar, Content Planner, Viral Analyzer, Hashtag Research, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, Content Repurposer, Viral Score Predictor, Bio Generator, Video Idea Generator, QR Code Generator (Ücretsiz) ve Link in Bio Builder (Ücretsiz).' },
           { q: 'AI ne kadar doğru?', a: 'AI\'mız milyonlarca viral içerik üzerinde eğitilmiştir ve sürekli gelişmektedir. Sonuçlar yüksek etkileşim için optimize edilmiş olsa da, çıktıyı marka sesinize uyacak şekilde incelemenizi ve kişiselleştirmenizi öneririz.' },
           { q: 'Oluşturulan içeriği ticari olarak kullanabilir miyim?', a: 'Evet! MediaToolkit aracılığıyla oluşturulan tüm içerikler, atıf gerektirmeden kişisel ve ticari amaçlarla serbestçe kullanılabilir.' },
           { q: 'Hangi diller destekleniyor?', a: 'Arayüzümüz 5 dili destekler (İngilizce, Türkçe, Rusça, Almanca, Fransızca). AI, girdinize göre çok daha fazla dilde içerik oluşturabilir.' }
@@ -96,7 +96,7 @@ const content: Record<string, any> = {
         name: 'Hesap ve Güvenlik',
         icon: '🔒',
         questions: [
-          { q: 'Hesabımı nasıl silerim?', a: 'Hesabınızı Dashboard → Ayarlar → Hesabı Sil bölümünden silebilirsiniz. Bu, tüm verilerinizi kalıcı olarak kaldıracaktır. Yardıma ihtiyacınız varsa destek ile iletişime geçin.' },
+          { q: 'Hesabımı nasıl silerim?', a: 'Hesabınızı silmek için lütfen İletişim sayfamız üzerinden destek ekibimizle iletişime geçin. Talebinizi işleme alıp tüm verilerinizi kalıcı olarak kaldıracağız.' },
           { q: 'Verilerim güvende mi?', a: 'Evet, tüm veri aktarımları için endüstri standardı şifreleme (SSL/TLS) kullanıyoruz. Kişisel bilgilerinizi asla üçüncü taraflara satmıyoruz.' },
           { q: 'E-posta adresimi değiştirebilir miyim?', a: 'Şu anda e-posta değişiklikleri destek ekibimizle iletişim gerektirir. Bu özelliği kontrol paneline eklemeye çalışıyoruz.' },
           { q: 'Şifremi unutursam ne olur?', a: 'Giriş sayfasında "Şifremi Unuttum" seçeneğine tıklayın ve e-postanızı girin. Şifrenizi sıfırlamak için bir link alacaksınız.' }
@@ -117,9 +117,9 @@ const content: Record<string, any> = {
         name: 'Начало работы',
         icon: '🚀',
         questions: [
-          { q: 'Что такое MediaToolkit?', a: 'MediaToolkit - это платформа с ИИ, включающая 16+ инструментов для создателей контента для генерации вирусных хуков, скриптов, подписей и многого другого.' },
+          { q: 'Что такое MediaToolkit?', a: 'MediaToolkit - это платформа с ИИ, включающая 20+ инструментов для создателей контента для генерации вирусных хуков, скриптов, подписей и многого другого.' },
           { q: 'Как создать аккаунт?', a: 'Нажмите "Начать" на главной странице и зарегистрируйтесь через email или Google. Вы сразу получите 100 бесплатных кредитов.' },
-          { q: 'MediaToolkit бесплатный?', a: 'Да! Мы предлагаем бесплатный план со 100 кредитами в месяц и доступом ко всем 16 инструментам.' },
+          { q: 'MediaToolkit бесплатный?', a: 'Да! Мы предлагаем бесплатный план со 100 кредитами в месяц и доступом ко всем 20 инструментам.' },
           { q: 'Какие платформы поддерживаются?', a: 'MediaToolkit работает в любом современном браузере. Контент можно использовать на TikTok, Instagram, YouTube, Twitter/X, LinkedIn и других.' }
         ]
       },
@@ -128,7 +128,7 @@ const content: Record<string, any> = {
         icon: '💳',
         questions: [
           { q: 'Как работают кредиты?', a: 'Каждый инструмент использует определенное количество кредитов. Бесплатно: 100/месяц, Pro: 1000/месяц, Agency: безлимит.' },
-          { q: 'Как заработать больше кредитов?', a: '1) Просмотр рекламы (+10), 2) Приглашение друзей (+100 обоим), 3) Платная подписка.' },
+          { q: 'Как заработать больше кредитов?', a: '1) Просмотр рекламы (+10), 2) Приглашение друзей (+50 обоим, бонусы до +1000), 3) Платная подписка.' },
           { q: 'Кредиты переносятся?', a: 'Нет, неиспользованные кредиты не переносятся на следующий месяц.' },
           { q: 'Какие способы оплаты?', a: 'Принимаем карты и PayPal через Lemon Squeezy.' },
           { q: 'Можно ли вернуть деньги?', a: 'Да, возврат в течение 7 дней после покупки.' }
@@ -138,7 +138,7 @@ const content: Record<string, any> = {
         name: 'Инструменты',
         icon: '🛠️',
         questions: [
-          { q: 'Какие инструменты включены?', a: '16 ИИ-инструментов: Hook Generator, Caption Generator, Script Studio, Video Finder, Trend Radar и другие.' },
+          { q: 'Какие инструменты включены?', a: '20 ИИ-инструментов: Hook Generator, Caption Generator, Script Studio, Steal This Video, Trend Radar, Content Planner, Viral Analyzer, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, Content Repurposer, Viral Score Predictor, Bio Generator, Video Idea Generator, QR Code Generator (бесплатно) и Link in Bio Builder (бесплатно).' },
           { q: 'Насколько точен ИИ?', a: 'Наш ИИ обучен на миллионах вирусных материалов и постоянно улучшается.' },
           { q: 'Можно использовать контент коммерчески?', a: 'Да! Весь контент можно использовать без ограничений.' },
           { q: 'Какие языки поддерживаются?', a: 'Интерфейс на 5 языках. ИИ может генерировать на многих языках.' }
@@ -148,7 +148,7 @@ const content: Record<string, any> = {
         name: 'Аккаунт и безопасность',
         icon: '🔒',
         questions: [
-          { q: 'Как удалить аккаунт?', a: 'Dashboard → Настройки → Удалить аккаунт. Это удалит все данные.' },
+          { q: 'Как удалить аккаунт?', a: 'Свяжитесь с поддержкой через страницу контактов для удаления аккаунта.' },
           { q: 'Мои данные в безопасности?', a: 'Да, используем SSL/TLS шифрование. Не продаем данные третьим лицам.' },
           { q: 'Можно изменить email?', a: 'Сейчас требуется обращение в поддержку.' },
           { q: 'Забыл пароль?', a: 'Нажмите "Забыли пароль" на странице входа.' }
@@ -169,9 +169,9 @@ const content: Record<string, any> = {
         name: 'Erste Schritte',
         icon: '🚀',
         questions: [
-          { q: 'Was ist MediaToolkit?', a: 'MediaToolkit ist eine KI-Plattform mit 16+ Tools für Content-Ersteller.' },
+          { q: 'Was ist MediaToolkit?', a: 'MediaToolkit ist eine KI-Plattform mit 20+ Tools für Content-Ersteller.' },
           { q: 'Wie erstelle ich ein Konto?', a: 'Klicken Sie auf "Starten" und registrieren Sie sich. Sie erhalten sofort 100 kostenlose Credits.' },
-          { q: 'Ist MediaToolkit kostenlos?', a: 'Ja! Wir bieten einen kostenlosen Plan mit 100 Credits/Monat.' },
+          { q: 'Ist MediaToolkit kostenlos?', a: 'Ja! Wir bieten einen kostenlosen Plan mit 100 Credits/Monat und Zugang zu allen 20 Tools.' },
           { q: 'Welche Plattformen werden unterstützt?', a: 'Funktioniert in jedem Browser. Content für TikTok, Instagram, YouTube usw.' }
         ]
       },
@@ -180,7 +180,7 @@ const content: Record<string, any> = {
         icon: '💳',
         questions: [
           { q: 'Wie funktionieren Credits?', a: 'Jedes Tool verbraucht Credits. Kostenlos: 100/Monat, Pro: 1000/Monat, Agency: unbegrenzt.' },
-          { q: 'Wie verdiene ich mehr Credits?', a: '1) Werbung ansehen (+10), 2) Freunde einladen (+100), 3) Upgrade.' },
+          { q: 'Wie verdiene ich mehr Credits?', a: '1) Werbung ansehen (+10), 2) Freunde einladen (+50, Boni bis +1000), 3) Upgrade.' },
           { q: 'Werden Credits übertragen?', a: 'Nein, ungenutzte Credits verfallen am Monatsende.' },
           { q: 'Welche Zahlungsmethoden?', a: 'Kreditkarten und PayPal über Lemon Squeezy.' },
           { q: 'Kann ich eine Rückerstattung bekommen?', a: 'Ja, innerhalb von 7 Tagen nach dem Kauf.' }
@@ -190,7 +190,7 @@ const content: Record<string, any> = {
         name: 'Tools & Funktionen',
         icon: '🛠️',
         questions: [
-          { q: 'Welche Tools sind enthalten?', a: '16 KI-Tools einschließlich Hook Generator, Caption Generator, Script Studio und mehr.' },
+          { q: 'Welche Tools sind enthalten?', a: '20 KI-Tools: Hook Generator, Caption Generator, Script Studio, Steal This Video, Trend Radar, Content Planner, Viral Analyzer, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, Content Repurposer, Viral Score Predictor, Bio Generator, Video Idea Generator, QR Code Generator (kostenlos) und Link in Bio Builder (kostenlos).' },
           { q: 'Wie genau ist die KI?', a: 'Unsere KI wurde mit Millionen viraler Inhalte trainiert.' },
           { q: 'Kann ich Inhalte kommerziell nutzen?', a: 'Ja! Alle Inhalte können frei genutzt werden.' },
           { q: 'Welche Sprachen?', a: 'Interface in 5 Sprachen. KI generiert in vielen Sprachen.' }
@@ -200,7 +200,7 @@ const content: Record<string, any> = {
         name: 'Konto & Sicherheit',
         icon: '🔒',
         questions: [
-          { q: 'Wie lösche ich mein Konto?', a: 'Dashboard → Einstellungen → Konto löschen.' },
+          { q: 'Wie lösche ich mein Konto?', a: 'Kontaktieren Sie unseren Support über die Kontaktseite zur Kontolöschung.' },
           { q: 'Sind meine Daten sicher?', a: 'Ja, wir verwenden SSL/TLS-Verschlüsselung.' },
           { q: 'Kann ich meine E-Mail ändern?', a: 'Derzeit über Support-Kontakt.' },
           { q: 'Passwort vergessen?', a: 'Klicken Sie auf "Passwort vergessen" auf der Login-Seite.' }
@@ -221,9 +221,9 @@ const content: Record<string, any> = {
         name: 'Premiers pas',
         icon: '🚀',
         questions: [
-          { q: 'Qu\'est-ce que MediaToolkit?', a: 'MediaToolkit est une plateforme IA avec 16+ outils pour les créateurs de contenu.' },
+          { q: 'Qu\'est-ce que MediaToolkit?', a: 'MediaToolkit est une plateforme IA avec 20+ outils pour les créateurs de contenu.' },
           { q: 'Comment créer un compte?', a: 'Cliquez sur "Commencer" et inscrivez-vous. Vous recevrez 100 crédits gratuits.' },
-          { q: 'MediaToolkit est-il gratuit?', a: 'Oui! Nous offrons un plan gratuit avec 100 crédits/mois.' },
+          { q: 'MediaToolkit est-il gratuit?', a: 'Oui! Nous offrons un plan gratuit avec 100 crédits/mois et accès aux 20 outils.' },
           { q: 'Quelles plateformes sont supportées?', a: 'Fonctionne dans tout navigateur. Contenu pour TikTok, Instagram, YouTube, etc.' }
         ]
       },
@@ -232,7 +232,7 @@ const content: Record<string, any> = {
         icon: '💳',
         questions: [
           { q: 'Comment fonctionnent les crédits?', a: 'Chaque outil utilise des crédits. Gratuit: 100/mois, Pro: 1000/mois, Agency: illimité.' },
-          { q: 'Comment gagner plus de crédits?', a: '1) Regarder des pubs (+10), 2) Inviter des amis (+100), 3) Mise à niveau.' },
+          { q: 'Comment gagner plus de crédits?', a: '1) Regarder des pubs (+10), 2) Inviter des amis (+50, bonus jusqu\'à +1000), 3) Mise à niveau.' },
           { q: 'Les crédits sont-ils reportés?', a: 'Non, les crédits non utilisés expirent à la fin du mois.' },
           { q: 'Quels moyens de paiement?', a: 'Cartes et PayPal via Lemon Squeezy.' },
           { q: 'Puis-je être remboursé?', a: 'Oui, dans les 7 jours suivant l\'achat.' }
@@ -242,7 +242,7 @@ const content: Record<string, any> = {
         name: 'Outils & Fonctionnalités',
         icon: '🛠️',
         questions: [
-          { q: 'Quels outils sont inclus?', a: '16 outils IA dont Hook Generator, Caption Generator, Script Studio et plus.' },
+          { q: 'Quels outils sont inclus?', a: '20 outils IA: Hook Generator, Caption Generator, Script Studio, Steal This Video, Trend Radar, Content Planner, Viral Analyzer, Competitor Spy, A/B Tester, Carousel Planner, Thread Composer, Engagement Booster, Posting Optimizer, Content Repurposer, Viral Score Predictor, Bio Generator, Video Idea Generator, QR Code Generator (gratuit) et Link in Bio Builder (gratuit).' },
           { q: 'L\'IA est-elle précise?', a: 'Notre IA est entraînée sur des millions de contenus viraux.' },
           { q: 'Puis-je utiliser le contenu commercialement?', a: 'Oui! Tout le contenu peut être utilisé librement.' },
           { q: 'Quelles langues?', a: 'Interface en 5 langues. L\'IA génère dans plusieurs langues.' }
@@ -252,7 +252,7 @@ const content: Record<string, any> = {
         name: 'Compte & Sécurité',
         icon: '🔒',
         questions: [
-          { q: 'Comment supprimer mon compte?', a: 'Dashboard → Paramètres → Supprimer le compte.' },
+          { q: 'Comment supprimer mon compte?', a: 'Contactez notre support via la page de contact pour supprimer votre compte.' },
           { q: 'Mes données sont-elles sécurisées?', a: 'Oui, nous utilisons le chiffrement SSL/TLS.' },
           { q: 'Puis-je changer mon email?', a: 'Actuellement via le support.' },
           { q: 'Mot de passe oublié?', a: 'Cliquez sur "Mot de passe oublié" sur la page de connexion.' }
