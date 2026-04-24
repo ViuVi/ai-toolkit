@@ -742,6 +742,29 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* PRO Upgrade Banner - only for free users */}
+      {plan === 'free' && (
+        <div className="max-w-7xl mx-auto px-4 mt-4">
+          <Link href="/pricing" className="block group">
+            <div className="relative overflow-hidden p-4 sm:p-5 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-500/20 rounded-2xl hover:border-purple-500/40 transition-all">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">👑</span>
+                  <div>
+                    <p className="font-semibold text-white">{language === 'tr' ? 'PRO\'ya Yükselt' : language === 'ru' ? 'Перейти на PRO' : language === 'de' ? 'Auf PRO upgraden' : language === 'fr' ? 'Passer à PRO' : 'Upgrade to PRO'}</p>
+                    <p className="text-sm text-gray-400">{language === 'tr' ? '1000 kredi/ay, öncelikli destek, gelişmiş özellikler' : language === 'ru' ? '1000 кредитов/мес, приоритетная поддержка' : language === 'de' ? '1000 Credits/Monat, Priority-Support' : language === 'fr' ? '1000 crédits/mois, support prioritaire' : '1000 credits/mo, priority support, advanced features'}</p>
+                  </div>
+                </div>
+                <div className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-semibold text-sm group-hover:opacity-90 transition whitespace-nowrap">
+                  {language === 'tr' ? 'Planları Gör →' : language === 'ru' ? 'Смотреть планы →' : language === 'de' ? 'Pläne ansehen →' : language === 'fr' ? 'Voir les plans →' : 'View Plans →'}
+                </div>
+              </div>
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl"></div>
+            </div>
+          </Link>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Welcome Section */}

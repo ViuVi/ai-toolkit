@@ -317,7 +317,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
+              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
                 {t.pricing.cta.starter}
               </Link>
             </div>
@@ -338,7 +338,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block w-full py-3 rounded-full text-center font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition">
+              <Link href={isLoggedIn ? "/pricing" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition">
                 {t.pricing.cta.pro}
               </Link>
             </div>
@@ -358,7 +358,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/contact" className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
+              <Link href={isLoggedIn ? "/pricing" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
                 {t.pricing.cta.agency}
               </Link>
             </div>
