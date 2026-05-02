@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
   try {
     const { originalContent, content, sourceFormat, contentType, targetPlatforms, language } = await request.json()
     const finalContent = originalContent || content || ''
-    const finalFormat = sourceFormat || sourceFormat2 || 'blog'
+    const finalFormat = sourceFormat || contentType || 'blog'
 
-    if (!content) {
+    if (!finalContent) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
