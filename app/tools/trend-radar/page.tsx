@@ -53,16 +53,25 @@ export default function TrendRadarPage() {
 
     // Normalize safely
     try {
-    if (data.result?.trends && !data.result.trending_topics) {
-      data.result.trending_topics = data.result.trends.map((t: any) => ({
-        topic: t.trend, category: t.growth === 'rising' ? 'RISING FAST' : t.growth === 'peak' ? 'PEAK' : 'STEADY',
-        why_trending: t.how_to_use, hooks: [t.example_content].filter(Boolean), potential: t.potential
-      }))
-    }
-    if (data.result?.prediction && !data.result.action_plan) {
-      data.result.action_plan = { today: data.result.prediction, this_week: data.result.content_formats?.join(', ') || '' }
-    }
-      } catch {}
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+      if (data.result && !data.result.raw) {
+        if (data.result.trends && !data.result.trending_topics) {
+          data.result.trending_topics = data.result.trends.map((t: any) => ({
+            topic: t.trend || t.topic, category: t.growth === 'rising' ? 'RISING FAST' : t.growth === 'peak' ? 'PEAK' : 'STEADY',
+            why_trending: t.how_to_use || t.why_trending, hooks: [t.example_content].filter(Boolean), potential: t.potential
+          }))
+        }
+        if (!data.result.action_plan && data.result.prediction) {
+          data.result.action_plan = { today: data.result.prediction, this_week: data.result.content_formats?.join(', ') || '' }
+        }
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

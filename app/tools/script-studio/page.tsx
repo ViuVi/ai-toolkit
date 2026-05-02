@@ -59,19 +59,28 @@ export default function ScriptStudioPage() {
 
     // Normalize safely
     try {
-    if (data.result && !data.result.script && data.result.full_script) {
-      data.result = { script: { full_script: data.result.full_script, hook: data.result.script?.hook || data.result.hook, ...data.result }, ...data.result }
-    }
-    if (data.result?.script && !data.result.script.full_script && data.result.full_script) {
-      data.result.script.full_script = data.result.full_script
-    }
-    if (data.result && !data.result.scene_breakdown && data.result.script?.main_points) {
-      data.result.scene_breakdown = data.result.script.main_points.map((p: any, i: number) => ({ scene: i+1, section: p.point, text: p.script, duration: '', visual: p.visual_cue }))
-    }
-    if (data.result && !data.result.title_options && data.result.tips) {
-      data.result.title_options = data.result.tips
-    }
-      } catch {}
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+      if (data.result && !data.result.raw) {
+        if (data.result.script && !data.result.script.full_script) {
+          const parts = [data.result.script.hook, data.result.script.intro]
+          if (data.result.script.main_points) parts.push(...data.result.script.main_points.map((p: any) => p.script || p.point))
+          if (data.result.script.cta) parts.push(data.result.script.cta)
+          data.result.script.full_script = parts.filter(Boolean).join('\n\n')
+        }
+        if (!data.result.scene_breakdown && data.result.script?.main_points) {
+          data.result.scene_breakdown = data.result.script.main_points.map((p: any, i: number) => ({ scene: i+1, section: p.point || p.topic, text: p.script || p.content, duration: p.duration || '', visual: p.visual_cue || '' }))
+        }
+        if (!data.result.title_options && data.result.script?.title_suggestions) data.result.title_options = data.result.script.title_suggestions
+        if (!data.result.title_options && data.result.tips) data.result.title_options = data.result.tips
+        if (!data.result.filming_tips && data.result.script?.filming_tips) data.result.filming_tips = data.result.script.filming_tips
+      }
+    } catch {}
       if (res.ok && data.result) {
         setResult(data.result)
       } else {

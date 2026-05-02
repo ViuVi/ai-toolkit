@@ -53,6 +53,22 @@ export default function CaptionGeneratorPage() {
         body: JSON.stringify({ topic, platform, tone, language, includeHashtags: true, includeEmojis: true })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+      if (data.result?.captions) {
+        data.result.captions = data.result.captions.map((cap: any) => ({
+          ...cap, caption: cap.caption || cap.text, emotion: cap.emotion || cap.style, cta_type: cap.cta_type || cap.best_for
+        }))
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

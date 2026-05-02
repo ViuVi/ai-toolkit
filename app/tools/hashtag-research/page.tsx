@@ -52,6 +52,26 @@ export default function HashtagResearchPage() {
         body: JSON.stringify({ topic, niche, platform, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+      if (data.result && !data.result.raw) {
+        if (data.result.hashtag_sets && !data.result.recommended_set) {
+          const all = data.result.hashtag_sets.flatMap((set: any) => set.hashtags || [])
+          data.result.recommended_set = { hashtags: all, copy_paste: all.join(' ') }
+        }
+        if (data.result.recommended_set && !data.result.recommended_set.copy_paste) {
+          data.result.recommended_set.copy_paste = (data.result.recommended_set.hashtags || []).join(' ')
+        }
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

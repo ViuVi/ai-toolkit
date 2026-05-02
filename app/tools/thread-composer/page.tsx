@@ -55,21 +55,23 @@ export default function ThreadComposerPage() {
 
     // Normalize safely
     try {
-    if (data.result?.thread?.tweets && !data.result.tweets) {
-      data.result.tweets = data.result.thread.tweets.map((t: any) => ({
-        ...t, text: t.content || t.text, type: t.purpose
-      }))
-    }
-    if (data.result?.thread?.hook_tweet && !data.result.hook_alternatives) {
-      data.result.hook_alternatives = [data.result.thread.hook_tweet]
-    }
-    if (data.result?.best_posting_time && !data.result.posting_strategy) {
-      data.result.posting_strategy = data.result.best_posting_time
-    }
-    if (data.result?.engagement_tips && !data.result.self_replies) {
-      data.result.self_replies = data.result.engagement_tips
-    }
-      } catch {}
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+      if (data.result && !data.result.raw) {
+        if (data.result.thread?.tweets && !data.result.tweets) {
+          data.result.tweets = data.result.thread.tweets.map((t: any) => ({ ...t, text: t.content || t.text, type: t.purpose }))
+        }
+        if (data.result.thread?.hook_tweet && !data.result.hook_alternatives) data.result.hook_alternatives = [data.result.thread.hook_tweet]
+        if (data.result.best_posting_time && !data.result.posting_strategy) data.result.posting_strategy = data.result.best_posting_time
+        if (data.result.engagement_tips && !data.result.self_replies) data.result.self_replies = data.result.engagement_tips
+        if (!data.result.full_thread && data.result.tweets) data.result.full_thread = data.result.tweets.map((t: any) => t.text || t.content).join('\n\n')
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

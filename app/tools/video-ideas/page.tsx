@@ -49,6 +49,17 @@ export default function VideoIdeasPage() {
         body: JSON.stringify({ niche, platform, count, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result?.raw) {
+        try {
+          let raw = data.result.raw.trim()
+          const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
+          if (fb !== -1 && lb !== -1) { data.result = JSON.parse(raw.substring(fb, lb + 1)) }
+        } catch {}
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch { setError('Connection error') }

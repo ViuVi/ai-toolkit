@@ -5,7 +5,9 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, platform, style, includeEmoji, includeHashtags, language } = await request.json()
+    const { topic, platform, style, tone, includeEmoji, includeEmojis, includeHashtags, language } = await request.json()
+    const finalStyle = style || tone || 'engaging'
+    const finalEmoji = includeEmoji ?? includeEmojis ?? true
 
     if (!topic) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
@@ -53,7 +55,7 @@ You MUST return ONLY valid JSON:
     const userPrompt = `Generate 15 viral captions for: "${topic}"
 
 Platform: ${platform || 'instagram'}
-Style: ${style || 'engaging'}
+Style: ${finalStyle}
 Include emojis: ${includeEmoji !== false ? 'yes' : 'no'}
 Include hashtags: ${includeHashtags !== false ? 'yes, add 3-5 relevant hashtags' : 'no'}
 ${langMap[language as string] || langMap['en']}
