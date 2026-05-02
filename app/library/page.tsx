@@ -8,7 +8,7 @@ import { resultToMarkdown, resultToPlainText, downloadFile } from '@/lib/export-
 
 const toolIcons: Record<string, string> = {
   'hook-generator': '🎣', 'caption-generator': '✍️', 'script-studio': '🎬',
-  'video-finder': '🔍', 'trend-radar': '📡', 'steal-video': '🎯',
+  'trend-radar': '📡', 'steal-video': '🎯',
   'content-planner': '📅', 'viral-analyzer': '📊', 'hashtag-research': '#️⃣',
   'competitor-spy': '🕵️', 'ab-tester': '⚔️', 'carousel-planner': '🎠',
   'thread-composer': '🧵', 'engagement-booster': '🚀', 'posting-optimizer': '⏰',
@@ -115,7 +115,6 @@ function getPreviewText(result: any): string {
   // Video Ideas
   if (result.ideas?.[0]?.title) return result.ideas[0].title + (result.ideas[0].hook ? ' — ' + result.ideas[0].hook : '')
 
-  // Video Finder
   if (result.video_ideas?.[0]?.title) return result.video_ideas[0].title
   if (result.trending_videos?.[0]?.title) return result.trending_videos[0].title
 
@@ -235,7 +234,7 @@ export default function LibraryPage() {
     }
   }
 
-  const toolList = ['all', 'hook-generator', 'caption-generator', 'script-studio', 'video-finder', 'trend-radar', 'steal-video', 'content-planner', 'viral-analyzer', 'hashtag-research', 'competitor-spy', 'ab-tester', 'carousel-planner', 'thread-composer', 'engagement-booster', 'posting-optimizer', 'content-repurposer']
+  const toolList = ['all', 'hook-generator', 'caption-generator', 'script-studio', 'trend-radar', 'steal-video', 'content-planner', 'viral-analyzer', 'hashtag-research', 'competitor-spy', 'ab-tester', 'carousel-planner', 'thread-composer', 'engagement-booster', 'posting-optimizer', 'content-repurposer', 'viral-score', 'bio-generator', 'video-ideas']
 
   if (!user) return null
 
