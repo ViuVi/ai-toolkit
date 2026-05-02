@@ -23,6 +23,13 @@ const texts: Record<string, Record<string, string>> = {
     logout: 'Logout',
     watchAd: 'Watch Ad',
     watchAdDesc: 'Watch a short ad to earn credits',
+    dailyBonus: 'Daily Bonus',
+    dailyBonusDesc: 'Claim your free daily credits!',
+    dailyClaimed: 'Already claimed today',
+    claimBonus: 'Claim +10',
+    bonusClaimed: 'Claimed! +10 credits',
+    comeBackTomorrow: 'Come back tomorrow!',
+    streak: 'Day Streak',
     watching: 'Watching Ad...',
     remaining: 'seconds remaining',
     complete: '+10 Credits Added!',
@@ -63,6 +70,13 @@ const texts: Record<string, Record<string, string>> = {
     logout: 'Çıkış',
     watchAd: 'Reklam İzle',
     watchAdDesc: 'Kredi kazanmak için reklam izle',
+    dailyBonus: 'Günlük Bonus',
+    dailyBonusDesc: 'Ücretsiz günlük kredilerinizi alın!',
+    dailyClaimed: 'Bugün zaten alındı',
+    claimBonus: '+10 Al',
+    bonusClaimed: 'Alındı! +10 kredi',
+    comeBackTomorrow: 'Yarın tekrar gelin!',
+    streak: 'Gün Serisi',
     watching: 'Reklam İzleniyor...',
     remaining: 'saniye kaldı',
     complete: '+10 Kredi Eklendi!',
@@ -103,6 +117,13 @@ const texts: Record<string, Record<string, string>> = {
     logout: 'Выход',
     watchAd: 'Смотреть рекламу',
     watchAdDesc: 'Смотрите рекламу для кредитов',
+    dailyBonus: 'Ежедневный бонус',
+    dailyBonusDesc: 'Получите бесплатные кредиты!',
+    dailyClaimed: 'Уже получено сегодня',
+    claimBonus: 'Получить +10',
+    bonusClaimed: 'Получено! +10 кредитов',
+    comeBackTomorrow: 'Приходите завтра!',
+    streak: 'Дней подряд',
     watching: 'Просмотр рекламы...',
     remaining: 'секунд осталось',
     complete: '+10 Кредитов!',
@@ -143,6 +164,13 @@ const texts: Record<string, Record<string, string>> = {
     logout: 'Abmelden',
     watchAd: 'Werbung ansehen',
     watchAdDesc: 'Werbung ansehen für Credits',
+    dailyBonus: 'Täglicher Bonus',
+    dailyBonusDesc: 'Holen Sie sich Ihre Credits!',
+    dailyClaimed: 'Heute bereits abgeholt',
+    claimBonus: '+10 abholen',
+    bonusClaimed: 'Abgeholt! +10 Credits',
+    comeBackTomorrow: 'Kommen Sie morgen wieder!',
+    streak: 'Tage Serie',
     watching: 'Werbung läuft...',
     remaining: 'Sekunden übrig',
     complete: '+10 Credits!',
@@ -183,6 +211,13 @@ const texts: Record<string, Record<string, string>> = {
     logout: 'Déconnexion',
     watchAd: 'Voir la pub',
     watchAdDesc: 'Regardez une pub pour des crédits',
+    dailyBonus: 'Bonus quotidien',
+    dailyBonusDesc: 'Réclamez vos crédits gratuits!',
+    dailyClaimed: 'Déjà réclamé aujourd\'hui',
+    claimBonus: 'Réclamer +10',
+    bonusClaimed: 'Réclamé! +10 crédits',
+    comeBackTomorrow: 'Revenez demain!',
+    streak: 'Jours consécutifs',
     watching: 'Pub en cours...',
     remaining: 'secondes restantes',
     complete: '+10 Crédits!',
@@ -339,6 +374,10 @@ export default function DashboardPage() {
   const [plan, setPlan] = useState('free')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [showAdModal, setShowAdModal] = useState(false)
+  const [dailyBonusClaimed, setDailyBonusClaimed] = useState(false)
+  const [dailyBonusLoading, setDailyBonusLoading] = useState(false)
+  const [dailyBonusMessage, setDailyBonusMessage] = useState('')
+  const [dailyStreak, setDailyStreak] = useState(0)
   const [adCountdown, setAdCountdown] = useState(30)
   const [adComplete, setAdComplete] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
@@ -373,6 +412,7 @@ export default function DashboardPage() {
         setSession(session)
         fetchCredits(session.user.id)
         fetchStats(session.user.id)
+        checkDailyBonus(session)
         fetchReferral(session.user.id)
         fetchBrandProfile(session.user.id)
         
@@ -446,6 +486,39 @@ export default function DashboardPage() {
   const shareOnWhatsApp = () => {
     const text = `Hey! I'm using MediaToolkit to create viral content. Use my code ${referralData?.referralCode} and get 100 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const checkDailyBonus = async (sess: any) => {
+    try {
+      const res = await fetch('/api/daily-bonus', {
+        headers: { 'Authorization': `Bearer ${sess.access_token}` }
+      })
+      const data = await res.json()
+      if (data.claimed) setDailyBonusClaimed(true)
+      if (data.streak) setDailyStreak(data.streak)
+    } catch {}
+  }
+
+  const claimDailyBonus = async () => {
+    if (!session || dailyBonusClaimed || dailyBonusLoading) return
+    setDailyBonusLoading(true)
+    try {
+      const res = await fetch('/api/daily-bonus', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setDailyBonusClaimed(true)
+        setCredits(data.newBalance)
+        setDailyStreak(data.streak || 0)
+        setDailyBonusMessage(t.bonusClaimed)
+        setTimeout(() => setDailyBonusMessage(''), 3000)
+      } else {
+        setDailyBonusClaimed(true)
+      }
+    } catch {}
+    setDailyBonusLoading(false)
   }
 
   const fetchStats = async (userId: string) => {
@@ -1004,6 +1077,31 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Daily Bonus Card */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🎁</span>
+              <div>
+                <h3 className="font-semibold text-amber-400">{t.dailyBonus}</h3>
+                <p className="text-sm text-gray-400">{dailyBonusClaimed ? t.comeBackTomorrow : t.dailyBonusDesc}</p>
+                {dailyStreak > 0 && <p className="text-xs text-amber-500/60 mt-0.5">🔥 {dailyStreak} {t.streak}</p>}
+              </div>
+            </div>
+            {dailyBonusMessage ? (
+              <span className="px-4 py-2 bg-green-500/20 text-green-400 rounded-xl text-sm font-medium">✓ +10</span>
+            ) : (
+              <button
+                onClick={claimDailyBonus}
+                disabled={dailyBonusClaimed || dailyBonusLoading}
+                className={`px-4 py-2 rounded-xl font-medium text-sm transition ${dailyBonusClaimed ? 'bg-gray-500/20 text-gray-500 cursor-not-allowed' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
+              >
+                {dailyBonusLoading ? '...' : dailyBonusClaimed ? '✓' : t.claimBonus}
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Watch Ad Card - Mobile */}
         <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl sm:hidden">
           <div className="flex items-center justify-between">
@@ -1080,10 +1178,13 @@ export default function DashboardPage() {
                 <div className="text-6xl mb-4">📺</div>
                 <h3 className="text-xl font-bold mb-2">{t.watching}</h3>
                 
-                {/* Fake Ad Content */}
-                <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl">
-                  <p className="text-sm text-gray-300 mb-2">✨ MediaToolkit Pro ✨</p>
-                  <p className="text-xs text-gray-400">Unlock unlimited credits and premium features!</p>
+                {/* Ad Content */}
+                <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl min-h-[200px] flex items-center justify-center">
+                  <div id="monetag-ad-container">
+                    <p className="text-sm text-gray-300 mb-2">✨ MediaToolkit Pro ✨</p>
+                    <p className="text-xs text-gray-400">Upgrade to Pro for 1000 credits/month!</p>
+                    <p className="text-xs text-purple-400 mt-2">$4.99/month → mediatoolkit.site/pricing</p>
+                  </div>
                 </div>
 
                 {/* Countdown */}
