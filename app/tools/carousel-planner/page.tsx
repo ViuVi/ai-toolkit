@@ -52,6 +52,16 @@ export default function CarouselPlannerPage() {
         body: JSON.stringify({ topic, slideCount, style, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.slides && data.result.carousel?.slides) data.result.slides = data.result.carousel.slides
+        if (!data.result.carousel_concept && data.result.carousel?.title) data.result.carousel_concept = data.result.carousel.title
+        if (!data.result.caption && data.result.carousel?.caption) data.result.caption = data.result.carousel.caption
+        if (!data.result.design_specs && data.result.design_tips) data.result.design_specs = data.result.design_tips
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

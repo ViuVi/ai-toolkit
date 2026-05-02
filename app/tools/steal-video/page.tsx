@@ -54,9 +54,9 @@ export default function StealVideoPage() {
       })
       const data = await res.json()
 
-    // Normalize result safely
+    // Normalize safely
     try {
-      if (data.result?.raw && !data.result.script && !data.result.your_versions) {
+      if (data.result?.raw && !data.result.analysis) {
         try {
           let raw = data.result.raw.trim()
           const fb = raw.indexOf('{'); const lb = raw.lastIndexOf('}')
@@ -64,21 +64,47 @@ export default function StealVideoPage() {
         } catch {}
       }
       if (data.result && !data.result.raw) {
-        if (data.result.your_versions && !data.result.content_ideas) data.result.content_ideas = data.result.your_versions
-        if (data.result.script_template && !data.result.script) data.result.script = { full_script: data.result.script_template }
-        if (data.result.analysis?.hook_breakdown && !data.result.hook) data.result.hook = { text: data.result.analysis.hook_breakdown }
-        if (data.result.analysis && !data.result.shot_list) {
-          const tactics = data.result.analysis.retention_tactics || data.result.analysis.viral_elements || []
-          data.result.shot_list = tactics.map((t: any) => typeof t === 'string' ? { shot: t, description: '', duration: '' } : t)
+        if (!data.result.script && data.result.script_template) data.result.script = { full_script: data.result.script_template }
+        if (!data.result.hook && data.result.analysis?.hook_breakdown) data.result.hook = { text: data.result.analysis.hook_breakdown }
+        if (!data.result.shot_list) {
+          const src = data.result.analysis?.retention_tactics || data.result.analysis?.viral_elements || data.result.your_versions || []
+          data.result.shot_list = src.map((t: any) => typeof t === 'string' ? { shot: t, description: '', duration: '' } : { shot: t.angle || t.hook || t, description: t.outline || t.differentiator || '', duration: '' })
         }
-        if (data.result.your_versions && !data.result.shot_list) {
-          data.result.shot_list = data.result.your_versions.map((v: any) => ({ shot: v.angle || v.hook, description: v.outline || '', duration: '' }))
-        }
-        if (!data.result.caption) data.result.caption = { text: data.result.production_tips?.join('. ') || '' }
+        if (!data.result.caption) data.result.caption = { text: data.result.hashtags?.join(' ') || data.result.production_tips?.join('. ') || '' }
         else if (typeof data.result.caption === 'string') data.result.caption = { text: data.result.caption }
-        if (data.result.hashtags && !Array.isArray(data.result.hashtags)) data.result.hashtags = []
+        if (!data.result.content_ideas && data.result.your_versions) data.result.content_ideas = data.result.your_versions
       }
     } catch {}
+
+    // Normalize API response
+    if (data.result?.your_versions && !data.result.content_ideas) {
+      data.result.content_ideas = data.result.your_versions
+    }
+    if (data.result?.script_template && !data.result.script) {
+      data.result.script = { full_script: data.result.script_template }
+    }
+    if (data.result?.analysis) {
+      if (data.result.analysis.hook_breakdown && !data.result.hook) {
+        data.result.hook = { text: data.result.analysis.hook_breakdown }
+      }
+      if (!data.result.shot_list) {
+        const tactics = data.result.analysis.retention_tactics || data.result.analysis.viral_elements || []
+        data.result.shot_list = tactics.map((t: any) => typeof t === 'string' ? { shot: t, description: '', duration: '' } : t)
+      }
+    }
+    if (data.result?.your_versions && !data.result.shot_list) {
+      data.result.shot_list = data.result.your_versions.map((v: any) => ({
+        shot: v.angle || v.hook, description: v.outline || v.differentiator, duration: ''
+      }))
+    }
+    if (!data.result?.caption) {
+      data.result.caption = { text: data.result?.production_tips?.join('. ') || '' }
+    } else if (typeof data.result.caption === 'string') {
+      data.result.caption = { text: data.result.caption }
+    }
+    if (data.result?.hashtags && !Array.isArray(data.result.hashtags)) {
+      data.result.hashtags = []
+    }
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

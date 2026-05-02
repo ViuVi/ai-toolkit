@@ -51,6 +51,22 @@ export default function ContentPlannerPage() {
         body: JSON.stringify({ niche, platforms, postsPerWeek, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.strategy && data.result.content_pillars) data.result.strategy = { pillars: data.result.content_pillars, posting_frequency: data.result.posting_frequency || '' }
+        if (data.result.calendar && Array.isArray(data.result.calendar)) {
+          data.result.calendar = data.result.calendar.map((week: any) => ({
+            ...week,
+            days: (week.days || []).map((day: any) => ({
+              ...day,
+              posts: (day.posts || []).map((post: any) => ({ ...post, topic: post.topic || post.title, type: post.type || post.format }))
+            }))
+          }))
+        }
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

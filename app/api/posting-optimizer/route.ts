@@ -5,7 +5,9 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, platform, timezone, audienceType, language } = await request.json()
+    const { niche, platform, platforms, timezone, targetAudience: audienceType, audienceType: audienceType2, language } = await request.json()
+    const finalPlatform = platform || (platforms ? platforms.split(',')[0] : 'instagram')
+    const finalAudience = audienceType || audienceType2 || ''
 
     if (!niche) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 })

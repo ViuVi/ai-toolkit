@@ -54,6 +54,28 @@ export default function CompetitorSpyPage() {
 
     // Normalize safely
     try {
+      if (data.result && !data.result.raw) {
+        if (data.result.competitor_analysis) {
+          const ca = data.result.competitor_analysis
+          if (!data.result.what_they_do_right) {
+            const items = ca.engagement_tactics || ca.top_performing_content || []
+            data.result.what_they_do_right = items.map((t: any) => typeof t === 'string' ? { strength: t, learn_from: '' } : { strength: t.tactic || t.content || JSON.stringify(t), learn_from: t.why || t.impact || '' })
+          }
+          if (!data.result.what_you_can_do_better) {
+            const items = ca.weaknesses || data.result.opportunities || []
+            data.result.what_you_can_do_better = items.map((o: any) => typeof o === 'string' ? { weakness: o, your_opportunity: '' } : { weakness: o.gap || o.weakness || o, your_opportunity: o.your_angle || o.opportunity || '' })
+          }
+        }
+        if (data.result.opportunities && !data.result.action_plan) {
+          data.result.action_plan = (data.result.content_ideas || data.result.opportunities).map((item: any, i: number) => typeof item === 'string' ? { priority: i + 1, action: item } : { priority: item.priority || i + 1, action: item.idea || item.action || item.gap || JSON.stringify(item) })
+        }
+        if (data.result.action_plan && Array.isArray(data.result.action_plan)) {
+          data.result.action_plan = data.result.action_plan.map((item: any, i: number) => typeof item === 'string' ? { priority: i + 1, action: item } : item)
+        }
+      }
+    } catch {}
+
+    // Normalize API response
     if (data.result?.competitor_analysis) {
       const ca = data.result.competitor_analysis
       if (!data.result.what_they_do_right) {
@@ -78,7 +100,6 @@ export default function CompetitorSpyPage() {
         priority: i + 1, action: typeof idea === 'string' ? idea : (idea.idea + (idea.hook ? ' — Hook: ' + idea.hook : ''))
       }))
     }
-      } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

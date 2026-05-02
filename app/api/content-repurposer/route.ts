@@ -5,7 +5,9 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, sourceFormat, targetPlatforms, language } = await request.json()
+    const { originalContent: content, content: content2, sourceFormat, contentType: sourceFormat2, targetPlatforms, language } = await request.json()
+    const finalContent = content || content2
+    const finalFormat = sourceFormat || sourceFormat2 || 'blog'
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })

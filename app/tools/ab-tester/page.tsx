@@ -52,6 +52,18 @@ export default function ABTesterPage() {
         body: JSON.stringify({ contentA: optionA, contentB: optionB, testType: contentType, platform, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.option_a && data.result.analysis?.version_a) data.result.option_a = data.result.analysis.version_a
+        if (!data.result.option_b && data.result.analysis?.version_b) data.result.option_b = data.result.analysis.version_b
+        if (data.result.option_a && !data.result.option_a.total_score && data.result.option_a.score) data.result.option_a.total_score = data.result.option_a.score * 10
+        if (data.result.option_b && !data.result.option_b.total_score && data.result.option_b.score) data.result.option_b.total_score = data.result.option_b.score * 10
+        if (!data.result.winner_reason && data.result.recommendation) data.result.winner_reason = data.result.recommendation
+        if (!data.result.hybrid_suggestion && data.result.improved_version) data.result.hybrid_suggestion = data.result.improved_version
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

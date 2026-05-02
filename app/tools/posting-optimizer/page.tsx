@@ -56,6 +56,22 @@ export default function PostingOptimizerPage() {
         body: JSON.stringify({ niche, targetAudience, platforms: platforms.join(','), language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.optimal_times && data.result.best_times) {
+          if (typeof data.result.best_times === 'object' && !Array.isArray(data.result.best_times)) {
+            const days = Object.entries(data.result.best_times)
+            data.result.optimal_times = days.map(([day, times]: [string, any]) => ({ day, times: Array.isArray(times) ? times.join(', ') : times }))
+            data.result.weekly_schedule = days.map(([day, times]: [string, any]) => ({ day, slots: Array.isArray(times) ? times : [times] }))
+          } else {
+            data.result.optimal_times = data.result.best_times
+          }
+        }
+        if (!data.result.pro_tips && data.result.tips) data.result.pro_tips = data.result.tips
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

@@ -51,6 +51,16 @@ export default function EngagementBoosterPage() {
         body: JSON.stringify({ niche, contentType, platform, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.comment_starters && data.result.engagement_hooks) data.result.comment_starters = data.result.engagement_hooks
+        if (!data.result.cta_lines && data.result.cta_suggestions) data.result.cta_lines = data.result.cta_suggestions
+        if (!data.result.questions && data.result.reply_starters) data.result.questions = data.result.reply_starters
+        if (!data.result.save_triggers && data.result.optimized_versions) data.result.save_triggers = data.result.optimized_versions.map((v: any) => v.version || v.changes?.[0] || JSON.stringify(v))
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

@@ -51,6 +51,20 @@ export default function ContentRepurposerPage() {
         body: JSON.stringify({ originalContent, contentType, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (data.result.repurposed && Array.isArray(data.result.repurposed)) {
+          const r = data.result.repurposed
+          if (!data.result.tiktok_scripts) data.result.tiktok_scripts = r.filter((x: any) => x.platform?.toLowerCase().includes('tiktok'))
+          if (!data.result.instagram_carousel) data.result.instagram_carousel = r.filter((x: any) => x.platform?.toLowerCase().includes('instagram'))
+          if (!data.result.twitter_threads) data.result.twitter_threads = r.filter((x: any) => x.platform?.toLowerCase().includes('twitter') || x.platform?.toLowerCase().includes('x'))
+          if (!data.result.linkedin_posts) data.result.linkedin_posts = r.filter((x: any) => x.platform?.toLowerCase().includes('linkedin'))
+          if (!data.result.youtube_short) data.result.youtube_short = r.filter((x: any) => x.platform?.toLowerCase().includes('youtube'))
+        }
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }

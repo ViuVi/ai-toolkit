@@ -50,6 +50,20 @@ export default function ViralAnalyzerPage() {
         body: JSON.stringify({ content, platform, language })
       })
       const data = await res.json()
+
+    // Normalize safely
+    try {
+      if (data.result && !data.result.raw) {
+        if (!data.result.final_score && data.result.viral_score) data.result.final_score = data.result.viral_score
+        if (!data.result.final_score && data.result.breakdown) {
+          const b = data.result.breakdown
+          data.result.final_score = Math.round(((b.hook_strength || 0) + (b.emotional_impact || 0) + (b.shareability || 0) + (b.trend_alignment || 0) + (b.uniqueness || 0)) / 5 * 10)
+        }
+        if (!data.result.scores && data.result.breakdown) data.result.scores = data.result.breakdown
+        if (!data.result.verdict && data.result.overall_verdict) data.result.verdict = data.result.overall_verdict
+        if (!data.result.rewritten_hook && data.result.suggested_hook) data.result.rewritten_hook = data.result.suggested_hook
+      }
+    } catch {}
       if (res.ok && data.result) { setResult(data.result); if (data.newBalance !== undefined) setCredits(data.newBalance) }
       else setError(data.error || 'Error')
     } catch (e) { setError('Connection error') }
