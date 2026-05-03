@@ -608,8 +608,10 @@ export default function DashboardPage() {
   }
 
   const startWatchingAd = () => {
+    // Open Monetag ad in new tab
+    window.open('https://omg10.com/4/10955810', '_blank')
     setShowAdModal(true)
-    setAdCountdown(30)
+    setAdCountdown(15)
     setAdComplete(false)
   }
 
@@ -1192,7 +1194,7 @@ export default function DashboardPage() {
                   <div className="w-full bg-white/10 rounded-full h-2 mb-2">
                     <div 
                       className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${((30 - adCountdown) / 30) * 100}%` }}
+                      style={{ width: `${((15 - adCountdown) / 15) * 100}%` }}
                     ></div>
                   </div>
                   <p className="text-sm text-gray-400">{adCountdown} {t.remaining}</p>
