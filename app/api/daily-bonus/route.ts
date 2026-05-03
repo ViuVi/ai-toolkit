@@ -15,46 +15,24 @@ async function getUserFromToken(request: NextRequest) {
   return user
 }
 
-// GET: Check if daily bonus was claimed today + streak
+// GET: Check if daily bonus was claimed today
 export async function GET(request: NextRequest) {
   try {
     const user = await getUserFromToken(request)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    const today = new Date().toISOString().split('T')[0]
 
-    const { count } = await supabaseAdmin
-      .from('credit_logs')
-      .select('*', { count: 'exact', head: true })
+    const { data: userData } = await supabaseAdmin
+      .from('credits')
+      .select('daily_bonus_date, daily_streak')
       .eq('user_id', user.id)
-      .eq('reason', 'daily_bonus')
-      .gte('created_at', todayStart.toISOString())
+      .single()
 
-    // Calculate streak
-    let streak = 0
-    const { data: recentBonuses } = await supabaseAdmin
-      .from('credit_logs')
-      .select('created_at')
-      .eq('user_id', user.id)
-      .eq('reason', 'daily_bonus')
-      .order('created_at', { ascending: false })
-      .limit(30)
+    const claimed = userData?.daily_bonus_date === today
+    const streak = userData?.daily_streak || 0
 
-    if (recentBonuses && recentBonuses.length > 0) {
-      streak = 1
-      for (let i = 1; i < recentBonuses.length; i++) {
-        const prev = new Date(recentBonuses[i - 1].created_at)
-        const curr = new Date(recentBonuses[i].created_at)
-        prev.setHours(0, 0, 0, 0)
-        curr.setHours(0, 0, 0, 0)
-        const diffDays = (prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24)
-        if (diffDays <= 1.5) streak++
-        else break
-      }
-    }
-
-    return NextResponse.json({ claimed: (count || 0) > 0, streak })
+    return NextResponse.json({ claimed, streak })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -66,39 +44,45 @@ export async function POST(request: NextRequest) {
     const user = await getUserFromToken(request)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    const today = new Date().toISOString().split('T')[0]
 
-    // Check if already claimed today
-    const { count } = await supabaseAdmin
-      .from('credit_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('reason', 'daily_bonus')
-      .gte('created_at', todayStart.toISOString())
-
-    if ((count || 0) > 0) {
-      return NextResponse.json({ error: 'Already claimed today', claimed: true }, { status: 429 })
-    }
-
-    // Get current balance
     const { data: userData } = await supabaseAdmin
       .from('credits')
-      .select('balance')
+      .select('balance, daily_bonus_date, daily_streak')
       .eq('user_id', user.id)
       .single()
 
     if (!userData) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
+    // Already claimed today
+    if (userData.daily_bonus_date === today) {
+      return NextResponse.json({ error: 'Already claimed today', claimed: true }, { status: 429 })
+    }
+
+    // Calculate streak
+    let newStreak = 1
+    if (userData.daily_bonus_date) {
+      const lastDate = new Date(userData.daily_bonus_date)
+      const todayDate = new Date(today)
+      const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+      if (diffDays === 1) {
+        newStreak = (userData.daily_streak || 0) + 1
+      }
+    }
+
     const newBalance = userData.balance + DAILY_BONUS
 
-    // Update balance
+    // Update balance + daily bonus date + streak
     await supabaseAdmin
       .from('credits')
-      .update({ balance: newBalance })
+      .update({
+        balance: newBalance,
+        daily_bonus_date: today,
+        daily_streak: newStreak
+      })
       .eq('user_id', user.id)
 
-    // Log the bonus
+    // Also log to credit_logs if table exists
     try {
       await supabaseAdmin.from('credit_logs').insert({
         user_id: user.id,
@@ -108,29 +92,7 @@ export async function POST(request: NextRequest) {
       })
     } catch {}
 
-    // Calculate streak
-    let streak = 1
-    const { data: recentBonuses } = await supabaseAdmin
-      .from('credit_logs')
-      .select('created_at')
-      .eq('user_id', user.id)
-      .eq('reason', 'daily_bonus')
-      .order('created_at', { ascending: false })
-      .limit(30)
-
-    if (recentBonuses && recentBonuses.length > 1) {
-      for (let i = 1; i < recentBonuses.length; i++) {
-        const prev = new Date(recentBonuses[i - 1].created_at)
-        const curr = new Date(recentBonuses[i].created_at)
-        prev.setHours(0, 0, 0, 0)
-        curr.setHours(0, 0, 0, 0)
-        const diffDays = (prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24)
-        if (diffDays <= 1.5) streak++
-        else break
-      }
-    }
-
-    return NextResponse.json({ success: true, reward: DAILY_BONUS, newBalance, streak })
+    return NextResponse.json({ success: true, reward: DAILY_BONUS, newBalance, streak: newStreak })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
