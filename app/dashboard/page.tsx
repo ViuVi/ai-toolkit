@@ -378,7 +378,6 @@ export default function DashboardPage() {
   const [dailyBonusLoading, setDailyBonusLoading] = useState(false)
   const [dailyBonusMessage, setDailyBonusMessage] = useState('')
   const [dailyStreak, setDailyStreak] = useState(0)
-  const [adCountdown, setAdCountdown] = useState(30)
   const [adComplete, setAdComplete] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
   const [showAvatarModal, setShowAvatarModal] = useState(false)
@@ -489,13 +488,29 @@ export default function DashboardPage() {
   }
 
   const checkDailyBonus = async (sess: any) => {
+    // Check localStorage first for immediate UI feedback
+    const lastClaim = localStorage.getItem('daily_bonus_last_claim')
+    const today = new Date().toISOString().split('T')[0]
+    if (lastClaim === today) {
+      setDailyBonusClaimed(true)
+      const savedStreak = parseInt(localStorage.getItem('daily_bonus_streak') || '0')
+      setDailyStreak(savedStreak)
+      return
+    }
+    // Also verify server-side
     try {
       const res = await fetch('/api/daily-bonus', {
         headers: { 'Authorization': `Bearer ${sess.access_token}` }
       })
       const data = await res.json()
-      if (data.claimed) setDailyBonusClaimed(true)
-      if (data.streak) setDailyStreak(data.streak)
+      if (data.claimed) {
+        setDailyBonusClaimed(true)
+        localStorage.setItem('daily_bonus_last_claim', today)
+      }
+      if (data.streak) {
+        setDailyStreak(data.streak)
+        localStorage.setItem('daily_bonus_streak', String(data.streak))
+      }
     } catch {}
   }
 
@@ -513,9 +528,14 @@ export default function DashboardPage() {
         setCredits(data.newBalance)
         setDailyStreak(data.streak || 0)
         setDailyBonusMessage(t.bonusClaimed)
+        const today = new Date().toISOString().split('T')[0]
+        localStorage.setItem('daily_bonus_last_claim', today)
+        localStorage.setItem('daily_bonus_streak', String(data.streak || 0))
         setTimeout(() => setDailyBonusMessage(''), 3000)
-      } else {
+      } else if (data.claimed) {
         setDailyBonusClaimed(true)
+        const today = new Date().toISOString().split('T')[0]
+        localStorage.setItem('daily_bonus_last_claim', today)
       }
     } catch {}
     setDailyBonusLoading(false)
@@ -607,27 +627,10 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  const startWatchingAd = () => {
+  const startWatchingAd = async () => {
     // Open Monetag ad in new tab
     window.open('https://omg10.com/4/10955810', '_blank')
-    setShowAdModal(true)
-    setAdCountdown(15)
-    setAdComplete(false)
-  }
-
-  useEffect(() => {
-    if (showAdModal && adCountdown > 0 && !adComplete) {
-      const timer = setTimeout(() => setAdCountdown(adCountdown - 1), 1000)
-      return () => clearTimeout(timer)
-    } else if (showAdModal && adCountdown === 0 && !adComplete) {
-      addAdCredits()
-    }
-  }, [showAdModal, adCountdown, adComplete])
-
-  const addAdCredits = async () => {
-    if (!user) return
-    setAdComplete(true)
-    
+    // Give credits immediately (ad is shown in new tab)
     try {
       const s = await supabase.auth.getSession()
       const res = await fetch('/api/watch-ad', {
@@ -635,18 +638,20 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${s.data.session?.access_token}` }
       })
       const data = await res.json()
-      
       if (res.ok && data.success) {
         setCredits(data.newBalance)
+        setShowAdModal(true)
+        setAdComplete(true)
+        setTimeout(() => setShowAdModal(false), 2500)
+      } else if (data.code === 'AD_LIMIT') {
+        setShowAdModal(true)
+        setAdComplete(true)
+        setTimeout(() => setShowAdModal(false), 2500)
       }
-    } catch (err) {
-      console.error('Ad credit error:', err)
-    }
-    
-    setTimeout(() => {
-      setShowAdModal(false)
-    }, 2000)
+    } catch {}
   }
+
+
 
   // Avatar Upload
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1171,49 +1176,13 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Ad Modal */}
+      {/* Ad Modal - Success notification */}
       {showAdModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 max-w-md w-full text-center">
-            {!adComplete ? (
-              <>
-                <div className="text-6xl mb-4">📺</div>
-                <h3 className="text-xl font-bold mb-2">{t.watching}</h3>
-                
-                {/* Ad Content */}
-                <div className="my-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl min-h-[200px] flex items-center justify-center">
-                  <div id="monetag-ad-container">
-                    <p className="text-sm text-gray-300 mb-2">✨ MediaToolkit Pro ✨</p>
-                    <p className="text-xs text-gray-400">Upgrade to Pro for 1000 credits/month!</p>
-                    <p className="text-xs text-purple-400 mt-2">$4.99/month → mediatoolkit.site/pricing</p>
-                  </div>
-                </div>
-
-                {/* Countdown */}
-                <div className="mb-4">
-                  <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-                    <div 
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${((15 - adCountdown) / 15) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-gray-400">{adCountdown} {t.remaining}</p>
-                </div>
-
-                <button
-                  onClick={() => setShowAdModal(false)}
-                  className="text-sm text-gray-500 hover:text-gray-300 transition"
-                >
-                  {t.cancel}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="text-6xl mb-4">🎉</div>
-                <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
-                <p className="text-gray-400">+{plan === 'pro' ? 50 : 10} {t.credits}</p>
-              </>
-            )}
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowAdModal(false)}>
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+            <div className="text-6xl mb-4">🎉</div>
+            <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
+            <p className="text-gray-400">+{plan === 'pro' ? 50 : 10} {t.credits}</p>
           </div>
         </div>
       )}
