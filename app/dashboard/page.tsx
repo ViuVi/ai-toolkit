@@ -379,6 +379,9 @@ export default function DashboardPage() {
   const [dailyBonusMessage, setDailyBonusMessage] = useState('')
   const [dailyStreak, setDailyStreak] = useState(0)
   const [adComplete, setAdComplete] = useState(false)
+  const [adsRemaining, setAdsRemaining] = useState(5)
+  const [adMessage, setAdMessage] = useState('')
+  const [adLoading, setAdLoading] = useState(false)
   const [showLangMenu, setShowLangMenu] = useState(false)
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -412,6 +415,7 @@ export default function DashboardPage() {
         fetchCredits(session.user.id)
         fetchStats(session.user.id)
         checkDailyBonus(session)
+        checkAdsRemaining(session)
         fetchReferral(session.user.id)
         fetchBrandProfile(session.user.id)
         
@@ -485,6 +489,12 @@ export default function DashboardPage() {
   const shareOnWhatsApp = () => {
     const text = `Hey! I'm using MediaToolkit to create viral content. Use my code ${referralData?.referralCode} and get 100 FREE credits! 🎁 https://mediatoolkit.site/register?ref=${referralData?.referralCode}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const checkAdsRemaining = async (sess: any) => {
+    const todayKey = 'ads_remaining_' + new Date().toISOString().split('T')[0]
+    const cached = localStorage.getItem(todayKey)
+    if (cached !== null) setAdsRemaining(parseInt(cached))
   }
 
   const checkDailyBonus = async (sess: any) => {
@@ -628,9 +638,8 @@ export default function DashboardPage() {
   }
 
   const startWatchingAd = async () => {
-    // Open Monetag ad in new tab
-    window.open('https://omg10.com/4/10955810', '_blank')
-    // Give credits immediately (ad is shown in new tab)
+    if (adLoading || adsRemaining <= 0) return
+    setAdLoading(true)
     try {
       const s = await supabase.auth.getSession()
       const res = await fetch('/api/watch-ad', {
@@ -639,16 +648,24 @@ export default function DashboardPage() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
+        // Only open ad AFTER server confirms it's allowed
+        window.open('https://omg10.com/4/10955810', '_blank')
         setCredits(data.newBalance)
+        const remaining = data.adsRemaining ?? (adsRemaining - 1)
+        setAdsRemaining(remaining)
+        localStorage.setItem('ads_remaining_' + new Date().toISOString().split('T')[0], String(remaining))
+        setAdMessage(`+${data.reward} credits! ${remaining} ads remaining today`)
         setShowAdModal(true)
-        setAdComplete(true)
-        setTimeout(() => setShowAdModal(false), 2500)
+        setTimeout(() => { setShowAdModal(false); setAdMessage('') }, 5000)
       } else if (data.code === 'AD_LIMIT') {
+        setAdsRemaining(0)
+        localStorage.setItem('ads_remaining_' + new Date().toISOString().split('T')[0], '0')
+        setAdMessage('Daily ad limit reached (5/5). Come back tomorrow!')
         setShowAdModal(true)
-        setAdComplete(true)
-        setTimeout(() => setShowAdModal(false), 2500)
+        setTimeout(() => { setShowAdModal(false); setAdMessage('') }, 5000)
       }
     } catch {}
+    setAdLoading(false)
   }
 
 
@@ -1113,8 +1130,8 @@ export default function DashboardPage() {
         <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl sm:hidden">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-green-400">{t.watchAd}</h3>
-              <p className="text-sm text-gray-400">{t.watchAdDesc}</p>
+              <h3 className="font-semibold text-green-400">{t.watchAd} <span className="text-xs text-gray-500 font-normal">({adsRemaining}/5)</span></h3>
+              <p className="text-sm text-gray-400">{adsRemaining > 0 ? t.watchAdDesc : (language === 'tr' ? 'Günlük limit doldu' : 'Daily limit reached')}</p>
             </div>
             <button
               onClick={startWatchingAd}
@@ -1176,13 +1193,24 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Ad Modal - Success notification */}
+      {/* Ad Modal - Success notification (5 seconds) */}
       {showAdModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowAdModal(false)}>
           <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-            <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
-            <p className="text-gray-400">+{plan === 'pro' ? 50 : 10} {t.credits}</p>
+            {adsRemaining > 0 || adMessage.includes('+') ? (
+              <>
+                <div className="text-6xl mb-4">🎉</div>
+                <h3 className="text-xl font-bold text-green-400 mb-2">{t.complete}</h3>
+                <p className="text-white text-lg font-semibold mb-2">+{plan === 'pro' ? 50 : 10} {t.credits}</p>
+                <p className="text-gray-400 text-sm">{adMessage}</p>
+              </>
+            ) : (
+              <>
+                <div className="text-6xl mb-4">⏰</div>
+                <h3 className="text-xl font-bold text-yellow-400 mb-2">{language === 'tr' ? 'Günlük limit doldu' : 'Daily limit reached'}</h3>
+                <p className="text-gray-400 text-sm">{language === 'tr' ? 'Yarın tekrar gelin! (5/5)' : 'Come back tomorrow! (5/5)'}</p>
+              </>
+            )}
           </div>
         </div>
       )}
