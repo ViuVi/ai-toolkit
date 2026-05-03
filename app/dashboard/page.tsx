@@ -638,7 +638,13 @@ export default function DashboardPage() {
   }
 
   const startWatchingAd = async () => {
-    if (adLoading || adsRemaining <= 0) return
+    if (adLoading) return
+    if (adsRemaining <= 0) {
+      setAdMessage(language === 'tr' ? 'Günlük reklam hakkınız doldu (5/5). Yarın tekrar gelin!' : 'Daily ad limit reached (5/5). Come back tomorrow!')
+      setShowAdModal(true)
+      setTimeout(() => { setShowAdModal(false); setAdMessage('') }, 5000)
+      return
+    }
     setAdLoading(true)
     try {
       const s = await supabase.auth.getSession()
