@@ -94,6 +94,7 @@ const testimonials = [
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [showLangMenu, setShowLangMenu] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const { language, setLanguage } = useLanguage()
   const t = texts[language] || texts.en
@@ -142,15 +143,17 @@ export default function HomePage() {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="relative group">
-              <button className="px-2 py-1.5 text-sm text-gray-400 hover:text-white transition">🌐 {language.toUpperCase()}</button>
-              <div className="absolute right-0 mt-2 w-28 bg-[#1a1a2e] border border-white/10 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-1 z-50">
-                {['en','tr','ru','de','fr'].map(l => (
-                  <button key={l} onClick={() => setLanguage(l as any)} className={`w-full px-4 py-2 text-left text-sm hover:bg-white/5 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>
-                    {l.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+            <div className="relative">
+              <button onClick={() => setShowLangMenu(!showLangMenu)} className="px-2 py-1.5 text-sm text-gray-400 hover:text-white transition">🌐 {language.toUpperCase()}</button>
+              {showLangMenu && (
+                <div className="absolute right-0 mt-2 w-28 bg-[#1a1a2e] border border-white/10 rounded-xl py-1 z-50">
+                  {['en','tr','ru','de','fr'].map(l => (
+                    <button key={l} onClick={() => { setLanguage(l as any); setShowLangMenu(false) }} className={`w-full px-4 py-2 text-left text-sm hover:bg-white/5 ${language === l ? 'text-purple-400' : 'text-gray-400'}`}>
+                      {l.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {isLoggedIn ? (
@@ -317,7 +320,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
+              <Link href="/register" className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
                 {t.pricing.cta.starter}
               </Link>
             </div>
@@ -338,7 +341,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href={isLoggedIn ? "/pricing" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition">
+              <Link href="/register" className="block w-full py-3 rounded-full text-center font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition">
                 {t.pricing.cta.pro}
               </Link>
             </div>
@@ -358,7 +361,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href={isLoggedIn ? "/pricing" : "/register"} className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
+              <Link href="/contact" className="block w-full py-3 rounded-full text-center font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition">
                 {t.pricing.cta.agency}
               </Link>
             </div>
