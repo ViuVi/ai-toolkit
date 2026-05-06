@@ -23,6 +23,220 @@ const texts: Record<string, Record<string, string>> = {
   fr: { title: 'Bibliothèque', subtitle: 'Tout votre contenu IA en un seul endroit', all: 'Tout', favorites: 'Favoris', search: 'Rechercher...', empty: 'Pas encore de contenu', emptyDesc: 'Utilisez les outils', delete: 'Supprimer', confirmDelete: 'Êtes-vous sûr ?', noResults: 'Aucun résultat', showing: 'Affichage', of: 'sur', items: 'éléments', prev: 'Précédent', next: 'Suivant' }
 }
 
+
+function renderResult(result: any, toolName: string): string {
+  if (!result) return ''
+  
+  // Try parse raw
+  if (result.raw) {
+    try {
+      const fb = result.raw.indexOf('{'); const lb = result.raw.lastIndexOf('}')
+      if (fb !== -1 && lb !== -1) return renderResult(JSON.parse(result.raw.substring(fb, lb + 1)), toolName)
+    } catch {}
+    return result.raw
+  }
+
+  const sections: string[] = []
+
+  // Hook Generator
+  if (result.hooks) {
+    result.hooks.forEach((h: any, i: number) => {
+      sections.push(`Hook ${i+1}: ${h.text || h.hook || ''}`)
+      if (h.why_it_works) sections.push(`  Why: ${h.why_it_works}`)
+    })
+    if (result.best_hook?.text) sections.push(`\n⭐ Best Hook: ${result.best_hook.text}`)
+  }
+
+  // Caption Generator
+  if (result.captions) {
+    result.captions.forEach((cap: any, i: number) => {
+      sections.push(`Caption ${i+1}: ${cap.caption || cap.text || ''}`)
+      if (cap.emotion || cap.style) sections.push(`  Style: ${cap.emotion || cap.style}`)
+    })
+  }
+
+  // Script Studio
+  if (result.script?.full_script || result.full_script) {
+    sections.push(`📝 Script:\n${result.script?.full_script || result.full_script}`)
+    if (result.scene_breakdown) {
+      sections.push('\n🎬 Scenes:')
+      result.scene_breakdown.forEach((s: any) => sections.push(`  ${s.scene || s.section}: ${s.text || s.section}`))
+    }
+  }
+
+  // Viral Analyzer
+  if (result.final_score || result.viral_score) {
+    sections.push(`📊 Viral Score: ${result.final_score || result.viral_score}/100`)
+    if (result.verdict || result.overall_verdict) sections.push(`Verdict: ${result.verdict || result.overall_verdict}`)
+    if (result.scores || result.breakdown) {
+      const s = result.scores || result.breakdown
+      Object.entries(s).forEach(([k, v]) => sections.push(`  ${k.replace(/_/g, ' ')}: ${v}/10`))
+    }
+    if (result.rewritten_hook) sections.push(`\n✨ Improved Hook: ${result.rewritten_hook}`)
+  }
+
+  // A/B Tester
+  if (result.winner) {
+    sections.push(`🏆 Winner: ${result.winner}`)
+    if (result.winner_reason || result.recommendation) sections.push(`Reason: ${result.winner_reason || result.recommendation}`)
+    if (result.option_a) sections.push(`\nOption A: ${result.option_a.total_score || result.option_a.score || ''}/100`)
+    if (result.option_b) sections.push(`Option B: ${result.option_b.total_score || result.option_b.score || ''}/100`)
+    if (result.hybrid_suggestion || result.improved_version) sections.push(`\n💡 Hybrid: ${result.hybrid_suggestion || result.improved_version}`)
+  }
+
+  // Competitor Spy
+  if (result.what_they_do_right) {
+    sections.push('✅ Strengths:')
+    result.what_they_do_right.forEach((s: any) => sections.push(`  • ${typeof s === 'string' ? s : s.strength || JSON.stringify(s)}`))
+  }
+  if (result.what_you_can_do_better) {
+    sections.push('\n🎯 Opportunities:')
+    result.what_you_can_do_better.forEach((w: any) => sections.push(`  • ${typeof w === 'string' ? w : w.weakness || w.your_opportunity || JSON.stringify(w)}`))
+  }
+  if (result.action_plan && !result.what_they_do_right) {
+    sections.push('📋 Action Plan:')
+    result.action_plan.forEach((a: any) => sections.push(`  ${typeof a === 'string' ? a : (a.priority ? a.priority + '. ' : '') + (a.action || JSON.stringify(a))}`))
+  }
+
+  // Trend Radar
+  if (result.trending_topics || result.trends) {
+    sections.push('📡 Trending Topics:')
+    ;(result.trending_topics || result.trends).forEach((t: any) => {
+      sections.push(`  🔥 ${t.topic || t.trend}`)
+      if (t.why_trending || t.how_to_use) sections.push(`     ${t.why_trending || t.how_to_use}`)
+    })
+  }
+
+  // Thread Composer
+  if (result.tweets || result.thread?.tweets) {
+    sections.push('🧵 Thread:')
+    ;(result.tweets || result.thread.tweets).forEach((t: any, i: number) => {
+      sections.push(`  ${i+1}. ${t.text || t.content || ''}`)
+    })
+  }
+
+  // Carousel Planner
+  if (result.slides || result.carousel?.slides) {
+    if (result.carousel_concept || result.carousel?.title) sections.push(`🎠 ${result.carousel_concept || result.carousel.title}`)
+    sections.push('Slides:')
+    ;(result.slides || result.carousel.slides).forEach((s: any, i: number) => {
+      sections.push(`  ${i+1}. ${s.headline || s.title || s.content || ''}`)
+    })
+  }
+
+  // Content Planner
+  if (result.strategy || result.content_pillars) {
+    if (result.content_pillars) sections.push(`📌 Pillars: ${result.content_pillars.join(', ')}`)
+    if (result.strategy?.posting_frequency) sections.push(`📅 Frequency: ${result.strategy.posting_frequency}`)
+  }
+  if (result.calendar) {
+    sections.push('\n📅 Calendar:')
+    result.calendar.forEach((week: any) => {
+      if (week.days) week.days.forEach((day: any) => {
+        if (day.posts) day.posts.forEach((post: any) => {
+          sections.push(`  ${day.day || ''}: ${post.topic || post.title || ''} (${post.type || post.format || ''})`)
+        })
+      })
+    })
+  }
+
+  // Hashtag Research
+  if (result.recommended_set?.hashtags || result.hashtag_sets) {
+    sections.push('#️⃣ Hashtags:')
+    const tags = result.recommended_set?.hashtags || result.hashtag_sets?.flatMap((s: any) => s.hashtags || []) || []
+    sections.push(`  ${tags.join(' ')}`)
+    if (result.recommended_set?.copy_paste) sections.push(`\n📋 Copy: ${result.recommended_set.copy_paste}`)
+  }
+
+  // Content Repurposer
+  if (result.repurposed || result.tiktok_scripts || result.instagram_carousel) {
+    const platforms = ['tiktok_scripts', 'instagram_carousel', 'twitter_threads', 'linkedin_posts', 'youtube_short']
+    const labels: Record<string, string> = { tiktok_scripts: '🎵 TikTok', instagram_carousel: '📸 Instagram', twitter_threads: '🐦 Twitter', linkedin_posts: '💼 LinkedIn', youtube_short: '🎬 YouTube' }
+    platforms.forEach(p => {
+      const items = result[p]
+      if (items?.length) {
+        sections.push(`\n${labels[p] || p}:`)
+        items.forEach((item: any) => sections.push(`  ${item.content || item.text || JSON.stringify(item).substring(0, 200)}`))
+      }
+    })
+    if (result.repurposed && !result.tiktok_scripts) {
+      result.repurposed.forEach((r: any) => sections.push(`\n${r.platform}: ${r.content || r.text || ''}`))
+    }
+  }
+
+  // Engagement Booster
+  if (result.comment_starters || result.engagement_hooks) {
+    sections.push('🚀 Engagement Hooks:')
+    ;(result.comment_starters || result.engagement_hooks || []).forEach((h: any) => sections.push(`  • ${typeof h === 'string' ? h : h.text || JSON.stringify(h)}`))
+  }
+  if (result.cta_lines) {
+    sections.push('\n📢 CTA Lines:')
+    result.cta_lines.forEach((l: any) => sections.push(`  • ${typeof l === 'string' ? l : l.text || JSON.stringify(l)}`))
+  }
+
+  // Posting Optimizer
+  if (result.optimal_times || result.best_times) {
+    sections.push('⏰ Best Posting Times:')
+    ;(result.optimal_times || Object.entries(result.best_times || {})).forEach((t: any) => {
+      if (Array.isArray(t)) sections.push(`  ${t[0]}: ${typeof t[1] === 'string' ? t[1] : JSON.stringify(t[1])}`)
+      else sections.push(`  ${t.day || ''}: ${t.times || t.time || JSON.stringify(t)}`)
+    })
+  }
+
+  // Steal This Video
+  if (result.analysis?.hook_breakdown || result.hook?.text) {
+    sections.push(`🎣 Hook: ${result.hook?.text || result.analysis?.hook_breakdown}`)
+  }
+  if (result.script?.full_script && !result.hooks) {
+    sections.push(`\n📝 Script: ${result.script.full_script}`)
+  }
+  if (result.shot_list) {
+    sections.push('\n🎬 Shot List:')
+    result.shot_list.forEach((s: any) => sections.push(`  • ${typeof s === 'string' ? s : s.shot || JSON.stringify(s)}`))
+  }
+  if (result.content_ideas || result.your_versions) {
+    sections.push('\n💡 Your Versions:')
+    ;(result.content_ideas || result.your_versions).forEach((v: any) => sections.push(`  • ${v.angle || v.hook || v.title || JSON.stringify(v)}`))
+  }
+
+  // Bio Generator
+  if (result.bios) {
+    result.bios.forEach((b: any, i: number) => {
+      sections.push(`Bio ${i+1} (${b.platform || ''}): ${b.text || b.bio || ''}`)
+    })
+  }
+
+  // Video Ideas
+  if (result.ideas) {
+    result.ideas.forEach((idea: any, i: number) => {
+      sections.push(`💡 Idea ${i+1}: ${idea.title || ''}`)
+      if (idea.hook) sections.push(`  Hook: ${idea.hook}`)
+      if (idea.format) sections.push(`  Format: ${idea.format}`)
+      if (idea.why_now) sections.push(`  Why now: ${idea.why_now}`)
+    })
+  }
+
+  // Viral Score Predictor
+  if (result.optimized_content) {
+    sections.push(`✨ Optimized: ${result.optimized_content}`)
+    if (result.predicted_score_after) sections.push(`Score: ${result.predicted_score_after}/100`)
+  }
+
+  // If nothing matched, try generic extraction
+  if (sections.length === 0) {
+    for (const [key, val] of Object.entries(result)) {
+      if (key === 'raw' || key === 'dna_code') continue
+      if (typeof val === 'string' && val.length > 0) sections.push(`${key.replace(/_/g, ' ')}: ${val}`)
+      else if (Array.isArray(val) && val.length > 0) {
+        sections.push(`${key.replace(/_/g, ' ')}:`)
+        val.slice(0, 10).forEach((item: any) => sections.push(`  • ${typeof item === 'string' ? item : JSON.stringify(item).substring(0, 150)}`))
+      }
+    }
+  }
+
+  return sections.join('\n')
+}
+
 function getPreviewText(result: any): string {
   if (!result) return ''
   
@@ -334,7 +548,7 @@ export default function LibraryPage() {
                   {/* Expanded view */}
                   {expandedId === item.id && (
                     <div className="mt-3 pt-3 border-t border-white/5 max-h-60 overflow-y-auto">
-                      <pre className="text-xs text-gray-400 whitespace-pre-wrap">{JSON.stringify(item.result, null, 2)}</pre>
+                      <pre className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{renderResult(item.result, item.tool_name)}</pre>
                     </div>
                   )}
 
